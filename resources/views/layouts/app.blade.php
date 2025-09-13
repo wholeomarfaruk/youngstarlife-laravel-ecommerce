@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Young Star</title>
+    <title>YOUNGSTAR Life</title>
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('frontend/img/youngstar logo-circle.png') }}">
     <!-- font awesome -->
