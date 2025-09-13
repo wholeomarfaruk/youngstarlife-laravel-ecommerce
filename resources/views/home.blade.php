@@ -119,18 +119,17 @@
         }
     </style>
 
-        <section class="sec-style-1 my-3">
-            <div class="container">
+    <section class="sec-style-1 my-3">
+        <div class="container">
 
 
-                <div class="sec-header">
-                    <h2 class="sec-title text-primary-color">Latest Products - নতুন পণ্য</h2>
-                    <hr class="divider mt-0 text-primary-color bg-primary-color " style="height: 2px;">
-                </div>
-                <div class="sec-body">
-                    <div class="sec-grid-box">
-                        @foreach ($products as $product)
-
+            <div class="sec-header">
+                <h2 class="sec-title text-primary-color">Latest Products - নতুন পণ্য</h2>
+                <hr class="divider mt-0 text-primary-color bg-primary-color " style="height: 2px;">
+            </div>
+            <div class="sec-body">
+                <div class="sec-grid-box">
+                    @foreach ($products as $product)
                         <div class="sec-grid-item p-card-1">
 
                             <div class="p-img-box">
@@ -140,8 +139,14 @@
                             </div>
                             <div class="p-info">
                                 <div class="prices">
-                                    <del class="old-price">৳ 1000</del>
-                                    <span class="price">৳ {{ $product->price }}</span>
+                                    @if ($product->discount_price > 0)
+                                        <del class="old-price">৳ {{ $product->price }}</del>
+                                        <span class="price">৳ {{ $product->discount_price }}</span>
+                                    @else
+                                        
+                                        <span class="price">৳ {{ $product->price }}</span>
+                                    @endif
+
                                 </div>
                                 <a href="#">
 
@@ -159,10 +164,9 @@
 
 
                         </div>
- @endforeach
-                    </div>
+                    @endforeach
                 </div>
             </div>
-        </section>
-
+        </div>
+    </section>
 @endsection
