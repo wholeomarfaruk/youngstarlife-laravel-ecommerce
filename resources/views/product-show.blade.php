@@ -108,7 +108,7 @@
                                 @if ($product?->sizes->count() > 0)
                                     <div class="col-12">
                                         <div class="mb-3">
-                                            <label class="form-label fw-bold fs-5 d-block">সাইজ নুম</label>
+                                            <label class="form-label fw-bold fs-5 d-block">সাইজ</label>
                                             <style>
                                                 .size-option {
                                                     display: inline-block;
@@ -247,16 +247,18 @@
                         <table class="table ">
 
                             <tbody class="fw-bold fs-6 ">
-                                <tr>
-
-                                    <td>ডেলিভারি চার্জ ঢাকার ভিতরে </td>
-                                    <td>৳80</td>
-                                </tr>
-                                <tr>
-
-                                    <td>ডেলিভারি চার্জ ঢাকার বাইরে</td>
-                                    <td>৳150</td>
-                                </tr>
+                                @if ($deliveryAreas->isEmpty())
+                                    <tr>
+                                        <td colspan="2" class="text-center">ডেলিভারি এরিয়া সেট করা নেই</td>
+                                    </tr>
+                                @else
+                                @foreach ($deliveryAreas as $deliveryArea)
+                                    <tr>
+                                        <td>{{ $deliveryArea?->name }}</td>
+                                        <td>৳{{ $deliveryArea?->charge }}</td>
+                                    </tr>
+                                @endforeach
+                                @endif
 
                             </tbody>
                         </table>
