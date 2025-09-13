@@ -80,8 +80,11 @@ class HomeController extends Controller
     public function productShow(Request $request, $slug)
     {
         $product = products::where('slug', $slug)->first();
+        if (!$product) {
+            abort(404);
+        }
         $deliveryAreas = delivery_areas::latest()->limit(5)->get();
-      
+
         return view('product-show', compact('product', 'deliveryAreas'));
     }
 }
