@@ -1,0 +1,185 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Raleway:wght@400;500;600;700&display=swap');
+
+
+:root{
+  --primary-color: #03be44;
+  --primary-accent-color: #02a53b;
+}
+/* Apply font rules */
+body {
+    font-family: 'SolaimanLipi', 'Raleway', Arial, sans-serif;
+}
+.text-primary-color{
+  color: var(--primary-color);
+
+}
+.text-primary-hover:hover{
+  color: var(--primary-accent-color) !important;
+}
+.bg-primary-color{
+  background-color: var(--primary-color);
+}
+.btn-primary{
+   --bs-btn-font-weight: 600;
+  --bs-btn-color: var(--bs-white);
+  --bs-btn-bg: var(--primary-color);
+  --bs-btn-border-color: var(--primary-color);
+  --bs-btn-hover-color: var(--bs-white);
+  --bs-btn-hover-bg: var(--primary-accent-color);
+  --bs-btn-hover-border-color: var(--primary-accent-color);
+  --bs-btn-focus-shadow-rgb: var(--bd-violet-rgb);
+  --bs-btn-active-color: var(--bs-btn-hover-color);
+  --bs-btn-active-bg: #{shade-color($bd-violet, 20%)};
+  --bs-btn-active-border-color: #{shade-color($bd-violet, 20%)};
+}
+.icon-shape {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    vertical-align: middle;
+}
+
+.icon-sm {
+    width: 2rem;
+    height: 2rem;
+
+}
+
+
+/* Swiper  */
+ .swiper {
+      width: 100%;
+      height: 100%;
+    }
+
+    .swiper-slide {
+      text-align: center;
+      font-size: 18px;
+      background: #444;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .swiper-slide img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+
+
+    .swiper {
+      width: 100%;
+      height: 300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .swiper-slide {
+      background-size: cover;
+      background-position: center;
+    }
+
+    .mySwiper2 {
+      height: 80%;
+      width: 100%;
+    }
+
+    .mySwiper {
+      height: 20%;
+      box-sizing: border-box;
+      padding: 10px 0;
+    }
+
+    .mySwiper .swiper-slide {
+      width: 25%;
+      height: 100%;
+      opacity: 0.4;
+    }
+
+    .mySwiper .swiper-slide-thumb-active {
+      opacity: 1;
+    }
+
+    .swiper-slide img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+
+.video-thumb {
+  position: relative;
+  display: inline-block;
+}
+
+.video-thumb img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 8px;
+}
+
+/* Make sure slides don’t collapse */
+.swiper-slide {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+
+/* Anchor should take full size */
+.swiper-slide a {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* Images responsive inside */
+.swiper-slide img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+/* Play button overlay */
+.play-button {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  color: #fff;
+  pointer-events: none; /* clicks go to <a> */
+}
+
+.navbar .navbar-brand,
+.navbar .navbar-nav .nav-item .nav-link{
+  color: #fff;
+}
+
+@media (max-width:992px){
+.quick-contact li{
+  font-size: 14px !important;
+
+}
+#faq ul li{
+  font-size: 14px !important;
+}
+}
+@media (max-width:600px){
+/* .quick-contact  {
+  gap: 5px !important;
+  flex-direction: column;
+
+} */
+.quick-contact li{
+  font-size: 12px !important;
+}
+}

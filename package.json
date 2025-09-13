@@ -1,0 +1,36 @@
+{
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite",
+        "sass": "sass scss:css --style=expanded --source-map",
+        "sass:watch": "sass --watch scss:css --style=expanded --source-map",
+        "sass:build": "sass scss:css --style=compressed --no-source-map"
+    },
+    "devDependencies": {
+        "@popperjs/core": "^2.11.8",
+        "autoprefixer": "^10.4.21",
+        "axios": "^1.7.4",
+        "bootstrap": "^5.3.8",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^1.0.1",
+        "postcss": "^8.4.53",
+        "sass": "^1.92.1",
+        "tailwindcss": "^3.4.13",
+        "vite": "^6.1.0"
+    },
+    "dependencies": {
+        "sweetalert": "^2.1.2"
+    },
+    "name": "seldomfashion-project",
+    "version": "1.0.0",
+    "description": "<p align=\"center\"><a href=\"https://laravel.com\" target=\"_blank\"><img src=\"https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg\" width=\"400\" alt=\"Laravel Logo\"></a></p>",
+    "main": "postcss.config.js",
+    "directories": {
+        "test": "tests"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC"
+}
