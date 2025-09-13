@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Young Star</title>
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="{{ asset('frontend/img/seldom-rounded.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('frontend/img/youngstar logo-circle.png') }}">
     <!-- font awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css"
         integrity="sha512-DxV+EoADOkOygM4IR9yXP8Sb2qwgidEmeqAEmDKIOfPRQZOWbXCzLC6vjbZyy0vPisbH2SyW27+ddLVCN+OMzQ=="
@@ -56,8 +56,9 @@
 
             <div class="container">
                 <a class="navbar-brand" href="/">
-                    {{-- <img src="{{ asset('frontend/img/logo-transparent.png') }}" alt="" style="width:50px; "> --}}
-                    <i class="fa-regular fa-star me-1"></i>YOUNGSTAR Life</a>
+                    <img src="{{ asset('frontend/img/youngstar logo-circle.png') }}" alt="" style="width:50px; ">
+                    {{-- <i class="fa-regular fa-star me-1"> --}}
+                        </i>YOUNGSTAR Life</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false"
                     aria-label="Toggle navigation">
@@ -108,7 +109,7 @@
                     <li class="list-inline fw-bold fs-6 "><a href="https://wa.me/8801613046803" target="_blank"
                             class="text-decoration-none text-primary-color text-primary-hover"><i
                                 class="fa-brands fa-whatsapp"></i> WhatsApp </a></li>
-                    
+
                     <li class="list-inline fw-bold fs-6"><a href="tel:+8801613-046803"
                             class="text-decoration-none text-primary-color text-primary-hover"> <i
                                 class="fa-solid fa-phone"></i> Call Us +88 01613-046803</a></li>
