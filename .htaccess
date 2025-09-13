@@ -41,8 +41,5 @@
         Header set Cache-Control "public, max-age=31536000, immutable"
     </FilesMatch>
 
-    # Gzip / Brotli compression (if enabled in Apache)
-    <FilesMatch "\.(js|css|html|json|xml|svg)$">
-        Header set Content-Encoding gzip
-    </FilesMatch>
+
 </IfModule>
