@@ -144,7 +144,7 @@
                                         <span class="price">৳ {{ $product->discount_price }}</span>
                                     @else
 
-                                        <span class="price">Price ৳ {{ $product->price }}</span>
+                                        <span class="price">Price - ৳ {{ $product->price }}</span>
                                     @endif
 
                                 </div>
