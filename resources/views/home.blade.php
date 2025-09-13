@@ -148,7 +148,7 @@
                                     @endif
 
                                 </div>
-                                <a href="#">
+                                <a href="{{ route('product.show', $product->slug) }}">
 
                                     <h1 class="p-title">{{ $product->name }}</h1>
                                 </a>
@@ -159,7 +159,7 @@
                                 </a>
                             </div>
                             <div class="p-btn-group">
-                                <a class="btn btn-primary w-100 d-block" href="#">Buy Now</a>
+                                <a class="btn btn-primary w-100 d-block" href="{{ route('product.show', $product->slug) }}">Buy Now</a>
                             </div>
 
 
