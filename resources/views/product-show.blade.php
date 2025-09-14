@@ -234,7 +234,7 @@
 
                                 </div>
                                 <div class="col-12">
-                                    <button type="submit"
+                                    <button id="order-button" type="submit"
                                         class="btn btn-primary bg-primary-color mb-3 w-100 fw-bold fs-5 py-2">অর্ডার
                                         করুন</button>
                                 </div>
@@ -366,7 +366,8 @@
             }
         });
     </script>
-    <script>
+  <script>
+
         $(document).ready(function() {
             let pamount = "{{ $product->price }}";
             pamount = parseFloat(pamount);
@@ -410,12 +411,12 @@
             });
 
             function sentInitialCheckout() {
-                console.log('sentInitialCheckout');
                 let value = parseFloat($("#total").text());
                 let quantity = parseFloat($(".quantity-field").val());
                 let name = $("input[name='name").val();
                 let phone = $("input[name='phone").val();
                 let address = $("input[name='address").val();
+                let size = $("select[name='size").val();
 
                 console.log(value);
 
@@ -429,9 +430,9 @@
                             item_id: "{{ $product->id }}", // String, required
                             price: pamount, // Number, two decimals, required
                             quantity: quantity, // Integer, required
-                            item_category: "Women's Clothing", // String, optional but advised if available
-                            item_brand: 'Seldom', // String, optional, might be useful if you sell different brands
-                            item_variant: 'Women 3 Piece dress' // String, optional
+                            item_category: "Men's Clothing", // String, optional but advised if available
+                            item_brand: 'YoungStar Life', // String, optional, might be useful if you sell different brands
+                            item_variant: size // String, optional
                         }]
                     },
                     // user_data অবজেক্টে শুধুমাত্র সেই ডেটা রাখুন যা আপনার কাছে উপলব্ধ
@@ -455,24 +456,26 @@
 
             }
 
-
             $('#order-button').on('click', function(e) {
+                e.preventDefault();
+
                 let value = parseFloat($("#total").text());
                 let quantity = parseFloat($(".quantity-field").val());
-                let name = $("input[name='name").val();
-                let phone = $("input[name='phone").val();
-                let address = $("input[name='address").val();
+                let name = $("input[name='name']").val();
+                let phone = $("input[name='phone']").val();
+                let address = $("input[name='address']").val();
 
+                // Run your custom logic
+                sentInitialCheckout();
+                setTimeout(() => {
 
-                if (name.length > 0 && phone.length > 0 && address.length > 0) {
-                    sentInitialCheckout();
-                } else {
-                    sentInitialCheckout();
-                    console.log('Please fill up the form');
-                }
+                }, 1000);
+                // Trigger normal validation + submit
+                document.getElementById("order-form").requestSubmit();
             });
 
 
         })
+       
     </script>
 @endpush

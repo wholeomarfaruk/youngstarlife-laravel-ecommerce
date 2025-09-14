@@ -99,3 +99,43 @@
         </div>
     </div>
 @endsection
+@push('scripts')
+    <script>
+        dataLayer = window.dataLayer || [];
+        dataLayer.push({
+            event: 'purchase',
+
+            ecommerce: {
+                value: {{ $order->total }}, // Number, two decimals, required
+                currency: 'BDT', // String, required
+                transaction_id: '{{ $order->id }}', // String, required, unique identifier of order/transaction
+                items: [{
+                    item_name: "{{ $orderItems->first()->product->name }}", // String, required
+                    item_id: "{{ $orderItems->first()->product->id }}", // String, required
+                    price: {{ $orderItems->first()->product->price }}, // Number, two decimals, required
+                    quantity: '{{ $orderItems->first()->quantity }}' ?? 1, // Integer, required
+                    item_category: "Man's Clothing", // String, optional but advised if available
+                    item_brand: 'YoungStar Life', // String, optional, might be useful if you sell different brands
+                    item_variant: '{{json_decode($item->options)->size}}' // String, optional
+                }]
+            },
+            // user_data অবজেক্টে শুধুমাত্র সেই ডেটা রাখুন যা আপনার কাছে উপলব্ধ
+            // অথবা, যদি কোনো ইউজার ডেটা না থাকে, তাহলে এই অংশটি বাদ দিন।
+            // উদাহরণস্বরূপ, যদি আপনি একটি সেশন আইডি ট্র্যাক করতে পারেন:
+            user_data: {
+                first_name: "{{ $order->name }}" ?? null, // বা এই লাইনগুলো বাদ দিন
+                // last_name: null,
+                // email_address: null,
+                phone_number: "{{ $order->phone }}" ?? null,
+                street: "{{ $order->address }}" ?? null,
+                // country: "BD", // IP Address থেকে পাওয়া গেলে
+                // city: null,
+                // region: null,
+                // postal_code: null,
+                user_id: sessionStorage.getItem('visitorId') ||
+                    null, // উদাহরণ: সেশন স্টোরেজ থেকে visitorId ব্যবহার করা
+                // new_customer: 'true' // এটি অনুমান করা কঠিন হবে
+            }
+        });
+    </script>
+@endpush
