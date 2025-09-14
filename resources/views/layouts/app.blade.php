@@ -32,11 +32,32 @@
 
 
 
- @stack('styles')
+    @stack('styles')
+    <!-- Google Tag Manager -->
+    <script>
+        (function(w, d, s, l, i) {
+            w[l] = w[l] || [];
+            w[l].push({
+                'gtm.start': new Date().getTime(),
+                event: 'gtm.js'
+            });
+            var f = d.getElementsByTagName(s)[0],
+                j = d.createElement(s),
+                dl = l != 'dataLayer' ? '&l=' + l : '';
+            j.async = true;
+            j.src =
+                'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+            f.parentNode.insertBefore(j, f);
+        })(window, document, 'script', 'dataLayer', 'GTM-TVMLT6DT');
+    </script>
+    <!-- End Google Tag Manager -->
 </head>
 
 <body class="bg-white bg-opacity-50">
-
+    <!-- Google Tag Manager (noscript) -->
+    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TVMLT6DT" height="0" width="0"
+            style="display:none;visibility:hidden"></iframe></noscript>
+    <!-- End Google Tag Manager (noscript) -->
     <header id="header-area" class="shadow bg-white">
         <div class="container">
             <div class="topbar d-flex justify-content-center">
@@ -56,9 +77,10 @@
 
             <div class="container">
                 <a class="navbar-brand" href="/">
-                    <img src="{{ asset('frontend/img/youngstar logo-circle.png') }}" alt="" style="width:50px; ">
+                    <img src="{{ asset('frontend/img/youngstar logo-circle.png') }}" alt=""
+                        style="width:50px; ">
                     {{-- <i class="fa-regular fa-star me-1"> --}}
-                        </i>YOUNGSTAR Life</a>
+                    </i>YOUNGSTAR Life</a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
                     data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false"
                     aria-label="Toggle navigation">
@@ -103,7 +125,8 @@
     </main>
     <footer id="footer-area" class="border-top">
         <div class="container py-3">
-            <h5 class="text-center fw-semibold text-primary-color"> যেকোনো তথ্যের জন্য আমাদের মেসেজ করুন অথবা কল করুন।</h5>
+            <h5 class="text-center fw-semibold text-primary-color"> যেকোনো তথ্যের জন্য আমাদের মেসেজ করুন অথবা কল করুন।
+            </h5>
             <div class="topbar d-flex justify-content-center">
                 <ul class="quick-contact list-inline d-flex justify-content-end gap-3 py-2 mb-0 align-items-center ">
                     <li class="list-inline fw-bold fs-6 "><a href="https://wa.me/8801613046803" target="_blank"
