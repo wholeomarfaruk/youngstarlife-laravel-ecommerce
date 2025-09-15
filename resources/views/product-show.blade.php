@@ -430,7 +430,7 @@
                             item_id: "{{ $product->id }}", // String, required
                             price: pamount, // Number, two decimals, required
                             quantity: quantity, // Integer, required
-                            item_category: "Men's Clothing", // String, optional but advised if available
+                            item_category: "Pants", // String, optional but advised if available
                             item_brand: 'YoungStar Life', // String, optional, might be useful if you sell different brands
                             item_variant: size // String, optional
                         }]
@@ -476,6 +476,6 @@
 
 
         })
-       
+
     </script>
 @endpush

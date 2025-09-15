@@ -51,6 +51,7 @@
         })(window, document, 'script', 'dataLayer', 'GTM-TVMLT6DT');
     </script>
     <!-- End Google Tag Manager -->
+    <meta name="facebook-domain-verification" content="q3e3x73iwktzrop9d227rx2rj9bm8v" />
 </head>
 
 <body class="bg-white bg-opacity-50">

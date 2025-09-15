@@ -114,7 +114,7 @@
                     item_id: "{{ $orderItems->first()->product->id }}", // String, required
                     price: {{ $orderItems->first()->product->price }}, // Number, two decimals, required
                     quantity: '{{ $orderItems->first()->quantity }}' ?? 1, // Integer, required
-                    item_category: "Man's Clothing", // String, optional but advised if available
+                    item_category: "Pants", // String, optional but advised if available
                     item_brand: 'YoungStar Life', // String, optional, might be useful if you sell different brands
                     item_variant: '{{json_decode($item->options)->size}}' // String, optional
                 }]
