@@ -301,8 +301,7 @@
             div.setAttribute("data-id", sizeId);
 
             div.innerHTML = `
-        <input type="text" name="sizes[size][]" value="${value}" placeholder="Enter size">
-        <input type="text" name="sizes[qty][]" value="${value}" placeholder="Enter Quantity">
+        <input type="text" name="sizes[]" value="${value}" placeholder="Enter size">
 
         <button type="button" onclick="deleteSize(${sizeId})">   <i class="icon-trash-2 text-danger"></i></button>
       `;
