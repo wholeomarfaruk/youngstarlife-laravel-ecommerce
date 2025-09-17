@@ -143,8 +143,8 @@
                                         <del class="old-price">৳ {{ $product->price }}</del>
                                         <span class="price">৳ {{ $product->discount_price }}</span>
                                     @else
-
-                                        <span class="old-price">Price : </span> <span class="price"> ৳ {{ $product->price }}</span>
+                                        <span class="old-price">Price : </span> <span class="price"> ৳
+                                            {{ $product->price }}</span>
                                     @endif
 
                                 </div>
@@ -159,17 +159,21 @@
                                 </a>
                             </div>
                             <div class="p-btn-group">
-                                <a class="btn btn-primary w-100 d-block" href="{{ route('product.show', $product->slug) }}">Buy Now</a>
+                                <a class="btn btn-primary w-100 d-block"
+                                    href="{{ route('product.show', $product->slug) }}">Buy Now</a>
                             </div>
 
 
                         </div>
                     @endforeach
                 </div>
+                <div class="d-flex justify-content-center mt-3">
+                    {{ $products->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         </div>
     </section>
-      <section id="faq" class=" mb-3">
+    <section id="faq" class=" mb-3">
         <div class="container">
 
             <h1 class="fs-5 fw-bold bg-primary-color text-center py-3 px-3 text-white">সচরাচর জিজ্ঞাস্য প্রশ্নাবলি
