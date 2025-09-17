@@ -211,10 +211,13 @@
                             @enderror
                         </fieldset>
                     </div>
-                    <h2 class="fs-10">Product Sizes</h2>
-                    <div id="sizes-container"></div>
+                    <div>
+                        <h2 class="" style="font-size: 16px;">Product Sizes</h2>
+                        <div id="sizes-container"></div>
 
-                    <button type="button" onclick="addSize()">+ Add Size</button>
+                        <button type="button" onclick="addSize()">+ Add Size</button>
+
+                    </div>
 
 
 
@@ -227,6 +230,16 @@
     <!-- content area end -->
 @endsection
 @push('scripts')
+    @if (Session::has('error'))
+        <script>
+            Swal.fire({
+                icon: "error",
+                title: "Oops...",
+                text: "{{ Session::get('error') }}",
+            });
+        </script>
+    @endif
+
     <script>
         $(function() {
             $('#myFile').on('change', function() {
@@ -283,14 +296,15 @@
             const container = document.getElementById("sizes-container");
 
             const div = document.createElement("div");
-            div.className = "size-row";
-            div.className = "mb-5";
+
+            div.classList.add('size-row', 'mb-5', 'd-flex', 'justify-content-between', 'align-items-center');
             div.setAttribute("data-id", sizeId);
 
             div.innerHTML = `
-        <input type="text" name="sizes[]" value="${value}" placeholder="Enter size">
+        <input type="text" name="sizes[size][]" value="${value}" placeholder="Enter size">
+        <input type="text" name="sizes[qty][]" value="${value}" placeholder="Enter Quantity">
 
-        <button type="button" onclick="deleteSize(${sizeId})">Delete</button>
+        <button type="button" onclick="deleteSize(${sizeId})">   <i class="icon-trash-2 text-danger"></i></button>
       `;
 
             container.appendChild(div);

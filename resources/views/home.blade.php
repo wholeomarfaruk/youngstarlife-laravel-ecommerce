@@ -53,7 +53,7 @@
 
         .p-card-1 .p-img-box img {
             width: 100%;
-            height: 350px;
+            height: 576px;
             object-fit: cover;
             border-radius: 8px;
             transition: all 0.2s ease-in-out;

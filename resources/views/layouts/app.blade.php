@@ -94,7 +94,7 @@
                         </li>
 
 
-                        <li class="nav-item dropdown fs-5">
+                        {{-- <li class="nav-item dropdown fs-5">
                             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
                                 aria-expanded="false">
                                 Collections
@@ -104,7 +104,7 @@
                                 <li><a class="dropdown-item fs-5" href="#">Premium Collection</a></li>
                                 <li><a class="dropdown-item fs-5" href="#">Party Waear</a></li>
                             </ul>
-                        </li>
+                        </li> --}}
                         <li class="nav-item fs-5">
                             <a class="nav-link" href="/">All Products</a>
                         </li>

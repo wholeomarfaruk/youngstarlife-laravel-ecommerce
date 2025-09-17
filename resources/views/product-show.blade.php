@@ -1,5 +1,37 @@
 @extends('layouts.app')
 
+@push('styles')
+    <style>
+        .mySwiper2 .swiper-slide {
+            height: 670px;
+
+            text-align: center;
+        }
+
+        .mySwiper2 .swiper-slide img {
+            height: 100%;
+            width: auto;
+            margin: 0 auto;
+            object-fit: contain;
+
+        }
+
+        .mySwiper2 .swiper-slide img a {
+            display: block;
+            text-align: center;
+        }
+
+        .navigation .swiper-slide {
+            height: 100px;
+
+        }
+
+        .navigation .swiper-slide img {
+            height: 100%;
+            width: cover;
+        }
+    </style>
+@endpush
 @section('content')
     <section id="breadcrumn-area" class="mt-3">
         <div class="container">
@@ -16,7 +48,7 @@
     <section id="product" class="mb-3">
         <div class="container">
             <div class="row">
-                <div class="col-lg-6 left ">
+                <div class="col-lg-5 left ">
                     <!-- Swiper -->
                     <div style=" max-width: 650px;" class="shadow">
                         <div style="--swiper-navigation-color: #fff; --swiper-pagination-color: #fff"
@@ -43,7 +75,7 @@
                             <div class="swiper-button-prev"></div>
                         </div>
 
-                        <div thumbsSlider="" class="swiper mySwiper">
+                        <div  class="swiper mySwiper navigation">
                             <div class="swiper-wrapper">
 
 
@@ -69,7 +101,7 @@
                     </div>
                     <!-- Swiper JS -->
                 </div>
-                <div class="col-lg-6 right details ">
+                <div class="col-lg-7 right details ">
 
                     <h1 class="title text-primary-color fw-bolder mt-3">{{ $product?->name }}</h1>
                     <div>

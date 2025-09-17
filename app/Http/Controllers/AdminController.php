@@ -62,91 +62,98 @@ class AdminController extends Controller
             'quantity' => 'required|integer',
             'image' => 'mimes:jpg,jpeg,png,webp|max:2048',
         ]);
-        $product = new products();
+        try {
+            //code...
 
-        $product->name = $request->name;
+            $product = new products();
 
-        $product->price = $request->price;
-        if ($request->discount_price) {
-            $product->discount_price = $request->discount_price;
-        }
-        if ($request->name) {
-            $slug = Str::slug($request->name);
-            if (products::where('slug', $slug)->exists()) {
-                $slug = $slug . '-' . Carbon::now()->timestamp;
+            $product->name = $request->name;
+
+            $product->price = $request->price;
+            if ($request->discount_price) {
+                $product->discount_price = $request->discount_price;
             }
-            $product->slug = $slug;
-        }
-        $product->featured = $request->featured ? true : false;
-
-        if ($request->sku) {
-            $product->sku = $request->sku;
-        }
-        $product->stock_status = $request->stock_status;
-
-        $product->quantity = $request->quantity;
-
-
-
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $extension = $image->getClientOriginalExtension();
-            $filename = Carbon::now()->timestamp . "." . $extension;
-            $this->generateProductThumbnailImage($image, $filename);
-            $product->image = $filename;
-        }
-
-        if ($request->description) {
-            $product->description = $request->description;
-        }
-        if ($request->short_description) {
-            $product->short_description = $request->short_description;
-        }
-
-        $product->save();
-        if ($request->has('sizes')) {
-
-            foreach ($request->sizes as $key => $size) {
-                $size = Size::create([
-                    'products_id' => $product->id,
-                    'name' => $size
-                ]);
+            if ($request->name) {
+                $slug = Str::slug($request->name);
+                if (products::where('slug', $slug)->exists()) {
+                    $slug = $slug . '-' . Carbon::now()->timestamp;
+                }
+                $product->slug = $slug;
             }
-        }
-        if ($request->hasFile('images')) {
+            $product->featured = $request->featured ? true : false;
 
-            // Store file in 'public/media'
-            $images = $request->file('images');
-            $path = 'storage/images/products/' . $product->id . '/';
-            if (!file_exists(public_path($path))) {
-                mkdir(public_path($path), 0777, true);
+            if ($request->sku) {
+                $product->sku = $request->sku;
             }
-            foreach ($images as $key => $file) {
+            $product->stock_status = $request->stock_status;
 
-                // Save in media table
+            $product->quantity = $request->quantity;
 
-                $media = new Media();
-                $media->filename = basename($file->getClientOriginalName());
-                $media->original_name = $file->getClientOriginalName();
-                $media->mime_type = $file->getMimeType();
-                $media->extension = $file->getClientOriginalExtension();
-                $media->size = $file->getSize();
-                $media->type = 'image';
-                $media->category = 'product_images';
-                $media->disk = 'public';
-                $media->path = $path . $file->getClientOriginalName();
-                $media->mediable_id = $product->id;
-                $media->mediable_type = products::class;
-                if ($request->has('caption')) {
-                    $media->caption = $request->input('caption');
+
+
+            if ($request->hasFile('image')) {
+                $image = $request->file('image');
+                $extension = $image->getClientOriginalExtension();
+                $filename = Carbon::now()->timestamp . "." . $extension;
+                $this->generateProductThumbnailImage($image, $filename);
+                $product->image = $filename;
+            }
+
+            if ($request->description) {
+                $product->description = $request->description;
+            }
+            if ($request->short_description) {
+                $product->short_description = $request->short_description;
+            }
+
+            $product->save();
+            if ($request->has('sizes')) {
+
+                foreach ($request->sizes as $key => $size) {
+                    $size = Size::create([
+                        'products_id' => $product->id,
+                        'name' => $size
+                    ]);
+                }
+            }
+            if ($request->hasFile('images')) {
+
+                // Store file in 'public/media'
+                $images = $request->file('images');
+                $path = 'storage/images/products/' . $product->id . '/';
+                if (!file_exists(public_path($path))) {
+                    mkdir(public_path($path), 0777, true);
+                }
+                foreach ($images as $key => $file) {
+
+                    // Save in media table
+
+                    $media = new Media();
+                    $media->filename = basename($file->getClientOriginalName());
+                    $media->original_name = $file->getClientOriginalName();
+                    $media->mime_type = $file->getMimeType();
+                    $media->extension = $file->getClientOriginalExtension();
+                    $media->size = $file->getSize();
+                    $media->type = 'image';
+                    $media->category = 'product_images';
+                    $media->disk = 'public';
+                    $media->path = $path . $file->getClientOriginalName();
+                    $media->mediable_id = $product->id;
+                    $media->mediable_type = products::class;
+                    if ($request->has('caption')) {
+                        $media->caption = $request->input('caption');
+                    }
+
+                    $media->user_id = auth()->id();
+                    $media->save();
+                    $file->move(public_path($path), $file->getClientOriginalName());
+
                 }
 
-                $media->user_id = auth()->id();
-                $media->save();
-                $file->move(public_path($path), $file->getClientOriginalName());
 
             }
-
+        } catch (\Throwable $th) {
+                    return redirect()->back()->with('error', $th->getMessage());
 
         }
         return redirect()->route('admin.products')->with('status', 'Product Added Successfully');
@@ -190,9 +197,9 @@ class AdminController extends Controller
             $product->slug = $slug;
         }
 
-        if ($request->discount_price) {
+
             $product->discount_price = $request->discount_price;
-        }
+        
         if ($request->sku) {
             $product->sku = $request->sku;
         }
