@@ -28,7 +28,7 @@
         }
     </style>
 
-    <link rel="stylesheet" href="{{ asset('frontend/css/style.css?v=1.0.0') }}">
+    <link rel="stylesheet" href="{{ asset('frontend/css/style.css?v=1.0.1') }}">
 
 
 
