@@ -66,7 +66,7 @@
                         <fieldset class="name">
                             <div class="body-title mb-10">Discount Price <span class="tf-color-1">*</span></div>
                             <input class="mb-10 @error('regular_price') is-invalid @enderror" type="text"
-                                placeholder="Enter price" name="discount_price" tabindex="0" value="{{ old('price') }}"
+                                placeholder="Enter price" name="discount_price" tabindex="0" value="{{ old('discount_price') }}"
                                 aria-required="true" required="required" autofocus>
                             @error('discount_price')
                                 <span class="invalid-feedback" role="alert">

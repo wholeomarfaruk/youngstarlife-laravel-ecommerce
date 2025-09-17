@@ -189,9 +189,9 @@ class AdminController extends Controller
         $product = products::find($request->id);
         $product->name = $request->name;
         $product->price = $request->price;
-        if ($request->name) {
-            $slug = Str::slug($request->name);
-            if (products::where('slug', $slug)->exists()) {
+        if ($request->slug) {
+            $slug = $request->slug;
+            if (products::where('slug', $slug)->whereNotIn('id', [$product->id])->exists()) {
                 $slug = $slug . '-' . Carbon::now()->timestamp;
             }
             $product->slug = $slug;
@@ -199,7 +199,7 @@ class AdminController extends Controller
 
 
             $product->discount_price = $request->discount_price;
-        
+
         if ($request->sku) {
             $product->sku = $request->sku;
         }

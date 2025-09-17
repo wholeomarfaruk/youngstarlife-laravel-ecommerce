@@ -51,7 +51,17 @@
                             </span>
                         @enderror
                     </fieldset>
-
+<fieldset class="name">
+                        <div class="body-title mb-10">Slug <span class="tf-color-1">*</span></div>
+                        <input class="mb-10 @error('slug') is-invalid @enderror" type="text"
+                            placeholder="Enter slug" name="slug" tabindex="0" value="{{ $product->slug }}"
+                            aria-required="true" required="required" onchange="stringtoSlug(this.value)" autofocus id="slug_input">
+                        @error('slug')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </fieldset>
 
                     <div class="cols gap22">
                         <fieldset class="name">
