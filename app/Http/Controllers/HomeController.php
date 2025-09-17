@@ -15,7 +15,7 @@ class HomeController extends Controller
     public function index()
     {
 
-        $products = products::orderBy('created_at', 'desc')->paginate(10);
+        $products = products::orderBy('created_at', 'desc')->paginate(9);
         $deliveryAreas = delivery_areas::all();
         $slides = Slide::all();
         $analytics = Analytic::all();
@@ -83,8 +83,8 @@ class HomeController extends Controller
         if (!$product) {
             abort(404);
         }
-        $deliveryAreas = delivery_areas::latest()->limit(5)->get();
-
-        return view('product-show', compact('product', 'deliveryAreas'));
+        $deliveryAreas = delivery_areas::limit(5)->get();
+        $products = products::where('id', '!=', $product->id)->latest()->limit(4)->get();
+        return view('product-show', compact('product', 'deliveryAreas', 'products'));
     }
 }

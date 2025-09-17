@@ -299,6 +299,58 @@
             </div>
         </div>
     </section>
+        @if ($products->count() > 0)
+        <section class="sec-style-2 my-3">
+            <div class="container">
+
+
+                <div class="sec-header">
+                    <h2 class="sec-title text-primary-color">More Products - আরো দেখুন</h2>
+                    <hr class="divider mt-0 text-primary-color bg-primary-color " style="height: 2px;">
+                </div>
+                <div class="sec-body">
+                    <div class="sec-grid-box">
+                        @foreach ($products as $product)
+                            <div class="sec-grid-item p-card-1">
+
+                                <div class="p-img-box">
+                                    <a href="{{ route('product.show', $product->slug) }}">
+                                        <img src="{{ asset('storage/images/products/' . $product->image) }}"
+                                            alt="">
+                                    </a>
+                                </div>
+                                <div class="p-info">
+                                    <div class="prices">
+                                        @if ($product->discount_price && $product->discount_price > 0)
+                                            <del class="old-price">৳ {{ $product->price }}</del>
+                                            <span class="price">৳ {{ $product->discount_price }}</span>
+                                        @else
+                                            <span class="price">Price: ৳ {{ $product->price }}</span>
+                                        @endif
+                                    </div>
+                                    <a href="{{ route('product.show', $product->slug) }}">
+
+                                        <h1 class="p-title">{{ $product->name }}</h1>
+                                    </a>
+                                    <a href="{{ route('product.show', $product->slug) }}">
+                                        <p class="p-description">
+                                            বিস্তারিত দেখুন
+                                        </p>
+                                    </a>
+                                </div>
+                                <div class="p-btn-group">
+                                    <a class="btn btn-primary w-100 d-block"
+                                        href="{{ route('product.show', $product->slug) }}">Buy Now</a>
+                                </div>
+
+
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            </div>
+        </section>
+    @endif
     <section id="faq" class=" mb-3">
         <div class="container">
 
