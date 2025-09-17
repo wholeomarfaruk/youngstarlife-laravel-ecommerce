@@ -15,7 +15,7 @@ class HomeController extends Controller
     public function index()
     {
 
-        $products = products::orderBy('created_at', 'desc')->paginate(9);
+        $products = products::orderBy('created_at', 'desc')->paginate(10);
         $deliveryAreas = delivery_areas::all();
         $slides = Slide::all();
         $analytics = Analytic::all();
