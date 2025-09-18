@@ -15,7 +15,7 @@ class HomeController extends Controller
     public function index()
     {
 
-        $products = products::orderBy('created_at', 'desc')->orderBy('featured', true)->paginate(10);
+        $products = products::orderBy('featured', 'desc')->where('featured', true)->paginate(10)->merge(products::orderBy('featured', 'asc')->where('featured', false)->paginate(10));
 
         $deliveryAreas = delivery_areas::all();
         $slides = Slide::all();
