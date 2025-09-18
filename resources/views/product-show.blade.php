@@ -75,7 +75,7 @@
                             <div class="swiper-button-prev"></div>
                         </div>
 
-                        <div  class="swiper mySwiper navigation">
+                        <div class="swiper mySwiper navigation">
                             <div class="swiper-wrapper">
 
 
@@ -241,8 +241,8 @@
                                                 <i class="fa-solid fa-circle-minus text-primary-color"></i>
                                             </button>
                                             <!-- <input type="button" value="-"
-                                                                                            class="button-minus border rounded-circle btn-primary  icon-shape icon-sm mx-1 lh-0"
-                                                                                            > -->
+                                                                                                    class="button-minus border rounded-circle btn-primary  icon-shape icon-sm mx-1 lh-0"
+                                                                                                    > -->
                                             <input type="number" step="1" max="10" min="1"
                                                 value="1" name="quantity"
                                                 class="quantity-field border-0 text-center w-25 form-control ">
@@ -284,12 +284,12 @@
                                         <td colspan="2" class="text-center">ডেলিভারি এরিয়া সেট করা নেই</td>
                                     </tr>
                                 @else
-                                @foreach ($deliveryAreas as $deliveryArea)
-                                    <tr>
-                                        <td>{{ $deliveryArea?->name }}</td>
-                                        <td>৳{{ $deliveryArea?->charge }}</td>
-                                    </tr>
-                                @endforeach
+                                    @foreach ($deliveryAreas as $deliveryArea)
+                                        <tr>
+                                            <td>{{ $deliveryArea?->name }}</td>
+                                            <td>৳{{ $deliveryArea?->charge }}</td>
+                                        </tr>
+                                    @endforeach
                                 @endif
 
                             </tbody>
@@ -299,7 +299,7 @@
             </div>
         </div>
     </section>
-        @if ($products->count() > 0)
+    @if ($products->count() > 0)
         <section class="sec-style-2 my-3">
             <div class="container">
 
@@ -310,29 +310,29 @@
                 </div>
                 <div class="sec-body">
                     <div class="sec-grid-box">
-                        @foreach ($products as $product)
+                        @foreach ($products as $pitem)
                             <div class="sec-grid-item p-card-1">
 
                                 <div class="p-img-box">
-                                    <a href="{{ route('product.show', $product->slug) }}">
-                                        <img src="{{ asset('storage/images/products/' . $product->image) }}"
+                                    <a href="{{ route('product.show', $pitem->slug) }}">
+                                        <img src="{{ asset('storage/images/products/' . $pitem->image) }}"
                                             alt="">
                                     </a>
                                 </div>
                                 <div class="p-info">
                                     <div class="prices">
-                                        @if ($product->discount_price && $product->discount_price > 0)
-                                            <del class="old-price">৳ {{ $product->price }}</del>
-                                            <span class="price">৳ {{ $product->discount_price }}</span>
+                                        @if ($pitem->discount_price && $pitem->discount_price > 0)
+                                            <del class="old-price">৳ {{ $pitem->price }}</del>
+                                            <span class="price">৳ {{ $pitem->discount_price }}</span>
                                         @else
-                                            <span class="price">Price: ৳ {{ $product->price }}</span>
+                                            <span class="price">Price: ৳ {{ $pitem->price }}</span>
                                         @endif
                                     </div>
-                                    <a href="{{ route('product.show', $product->slug) }}">
+                                    <a href="{{ route('product.show', $pitem->slug) }}">
 
-                                        <h1 class="p-title">{{ $product->name }}</h1>
+                                        <h1 class="p-title">{{ $pitem->name }}</h1>
                                     </a>
-                                    <a href="{{ route('product.show', $product->slug) }}">
+                                    <a href="{{ route('product.show', $pitem->slug) }}">
                                         <p class="p-description">
                                             বিস্তারিত দেখুন
                                         </p>
@@ -340,7 +340,7 @@
                                 </div>
                                 <div class="p-btn-group">
                                     <a class="btn btn-primary w-100 d-block"
-                                        href="{{ route('product.show', $product->slug) }}">Buy Now</a>
+                                        href="{{ route('product.show', $pitem->slug) }}">Buy Now</a>
                                 </div>
 
 
@@ -450,10 +450,9 @@
             }
         });
     </script>
-  <script>
-
+    <script>
         $(document).ready(function() {
-            let pamount = "{{ $product->price }}";
+            let pamount = "{{ $product->discount_price ?? $product->price }}";
             pamount = parseFloat(pamount);
             console.log('dom ready');
             dataLayer = window.dataLayer || [];
@@ -470,9 +469,9 @@
                         item_id: "{{ $product->id }}", // String, required
                         price: pamount, // Number, two decimals, required
                         quantity: 1, // Integer, required
-                        item_category: "Women's Clothing", // String, optional but advised if available
-                        item_brand: 'Seldom', // String, optional, might be useful if you sell different brands
-                        item_variant: 'Women 3 Piece dress' // String, optional
+                        item_category: "Pants", // String, optional but advised if available
+                        item_brand: 'YoungStar Life', // String, optional, might be useful if you sell different brands
+                        item_variant: null // String, optional
                     }]
                 },
                 // user_data অবজেক্টে শুধুমাত্র সেই ডেটা রাখুন যা আপনার কাছে উপলব্ধ
@@ -560,6 +559,5 @@
 
 
         })
-
     </script>
 @endpush

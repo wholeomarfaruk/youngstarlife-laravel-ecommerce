@@ -280,7 +280,7 @@ class CartController extends Controller
             $deliveryCharge = $deliveryArea->charge;
 
             // Convert price and delivery charge to float for calculation
-            $price = (float) $product->price;
+            $price = (float) ($product->discount_price ?? $product->price);
             $quantity = (float) $request->quantity;
             $delivery = (float) $deliveryCharge;
 
@@ -305,7 +305,7 @@ class CartController extends Controller
             $orderItem = new Order_Item();
             $orderItem->order_id = $order->id;
             $orderItem->product_id = $request->product_id;
-            $orderItem->price = $product->price;
+            $orderItem->price = $price;
             $orderItem->quantity = $request->quantity;
             if($request->has('size')){
 
@@ -329,7 +329,7 @@ class CartController extends Controller
         $orderItems = Order_Item::where('order_id', $order->id)->get();
         $subtotal = 0;
         $orderItems->transform(function ($item) {
-            $item->subtotal = $item->price * $item->quantity;
+            $item->subtotal = (float) ($item->discount_price ?? $item->price) * $item->quantity;
             return $item;
         });
 

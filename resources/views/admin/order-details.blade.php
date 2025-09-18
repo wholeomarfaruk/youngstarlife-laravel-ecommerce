@@ -106,7 +106,7 @@
                                 <td class="text-center">{{$item->quantity}}</td>
                                 <td class="text-center">{{$item->product->sku}}</td>
 
-                                <td class="text-center">{{$item->options}}</td>
+                                <td class="text-center">{{$item->options}} </td>
                                 <td class="text-center">{{$item->return_status ? 'Yes' : 'No'}}</td>
                                 <td class="text-center">
                                     <div class="list-icon-function view-icon">

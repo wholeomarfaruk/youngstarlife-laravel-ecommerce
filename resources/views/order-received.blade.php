@@ -41,7 +41,7 @@
 
                             <p class="order-product-size">Size: {{json_decode($item->options)->size}}</p>
                         </div>
-                        <p class="order-product-price ms-auto">{{$item->product->price}} x {{$item->quantity}} = {{$item->subtotal}}  টাকা</p>
+                        <p class="order-product-price ms-auto">{{$item->product->discount_price && $item->product->discount_price > 0 ? $item->product->discount_price : $item->product->price}} x {{$item->quantity}} = {{$item->subtotal}}  টাকা</p>
                     </div>
                     <hr class="m-0">
                 @endforeach
@@ -112,7 +112,7 @@
                 items: [{
                     item_name: "{{ $orderItems->first()->product->name }}", // String, required
                     item_id: "{{ $orderItems->first()->product->id }}", // String, required
-                    price: {{ $orderItems->first()->product->price }}, // Number, two decimals, required
+                    price: {{ $orderItems->first()->product->discount_price ?? $orderItems->first()->product->price }}, // Number, two decimals, required
                     quantity: '{{ $orderItems->first()->quantity }}' ?? 1, // Integer, required
                     item_category: "Pants", // String, optional but advised if available
                     item_brand: 'YoungStar Life', // String, optional, might be useful if you sell different brands

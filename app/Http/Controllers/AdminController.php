@@ -23,7 +23,22 @@ class AdminController extends Controller
 {
     public function index()
     {
-        return view('admin.index');
+    //pending
+        $pending_orders = Order::where('status', 'pending')->count();
+        $pending_orders_sum = Order::where('status', 'pending')->sum('total');
+        //delivered
+        $delivered_orders = Order::where('status', 'delivered')->count();
+        $delivered_orders_sum = Order::where('status', 'delivered')->sum('total');
+        //cancelled
+        $cancelled_orders = Order::where('status', 'cancelled')->count();
+        $cancelled_orders_sum = Order::where('status', 'cancelled')->sum('total');
+        //total
+        $total_orders = Order::count();
+        $total_orders_sum = Order::sum('total');
+
+        $orders= Order::orderBy('created_at', 'desc')->limit(10)->get();
+
+        return view('admin.index', compact('pending_orders', 'delivered_orders', 'cancelled_orders', 'total_orders', 'pending_orders_sum', 'delivered_orders_sum', 'cancelled_orders_sum', 'total_orders_sum', 'orders'));
     }
     public function login()
     {
