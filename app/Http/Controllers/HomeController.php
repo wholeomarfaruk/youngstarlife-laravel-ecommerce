@@ -15,9 +15,12 @@ class HomeController extends Controller
     public function index()
     {
 
-        $products = products::orderByDesc('featured') // featured first
+        $products = Products::orderByDesc('featured') // featured first
             ->orderByDesc('created_at')               // newest first
-            ->paginate(8);
+            ->paginate(12);
+        $deliveryAreas = delivery_areas::all();
+        $slides = Slide::all();
+        $analytics = Analytic::all();
         return view('home', compact('products', 'deliveryAreas', 'slides', 'analytics'));
     }
 
