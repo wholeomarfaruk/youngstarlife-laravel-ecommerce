@@ -23,7 +23,7 @@ class AdminController extends Controller
 {
     public function index()
     {
-    //pending
+        //pending
         $pending_orders = Order::where('status', 'pending')->count();
         $pending_orders_sum = Order::where('status', 'pending')->sum('total');
         //delivered
@@ -36,7 +36,7 @@ class AdminController extends Controller
         $total_orders = Order::count();
         $total_orders_sum = Order::sum('total');
 
-        $orders= Order::orderBy('created_at', 'desc')->limit(10)->get();
+        $orders = Order::orderBy('created_at', 'desc')->limit(10)->get();
 
         return view('admin.index', compact('pending_orders', 'delivered_orders', 'cancelled_orders', 'total_orders', 'pending_orders_sum', 'delivered_orders_sum', 'cancelled_orders_sum', 'total_orders_sum', 'orders'));
     }
@@ -168,7 +168,7 @@ class AdminController extends Controller
 
             }
         } catch (\Throwable $th) {
-                    return redirect()->back()->with('error', $th->getMessage());
+            return redirect()->back()->with('error', $th->getMessage());
 
         }
         return redirect()->route('admin.products')->with('status', 'Product Added Successfully');
@@ -213,7 +213,7 @@ class AdminController extends Controller
         }
 
 
-            $product->discount_price = $request->discount_price;
+        $product->discount_price = $request->discount_price;
 
         if ($request->sku) {
             $product->sku = $request->sku;
@@ -366,10 +366,27 @@ class AdminController extends Controller
         $coupon->delete();
         return redirect()->route('admin.coupons')->with('status', 'Coupon Deleted Successfully');
     }
-    public function orders()
+    public function orders(Request $request)
     {
-        $orders = Order::orderBy('created_at', 'desc')->paginate(10);
-        return view('admin.orders', compact('orders'));
+        if ($request->has('search')) {
+            $search = $request->search;
+            $orders = Order::where('name', 'LIKE', '%' . $search . '%')
+                ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                ->orderBy('created_at', 'desc')
+                ->paginate(10);
+        } elseif ($request->has('order_status')) {
+            $status = $request->order_status;
+            $orders = Order::where('status', $status)->orderBy('created_at', 'desc')->paginate(10);
+        } else {
+            $orders = Order::orderBy('created_at', 'desc')->paginate(10);
+
+        }
+        $status_group = Order::select('status')
+            ->selectRaw('COUNT(*) as count')
+            ->groupBy('status')
+            ->get();
+        $orders_count = Order::count();
+        return view('admin.orders', compact('orders', 'status_group', 'orders_count'));
     }
 
     public function orderDetails($id)
@@ -382,7 +399,6 @@ class AdminController extends Controller
     {
 
 
-
         $order = Order::find($request->order_id);
         if ($order->status == $request->status) {
 
@@ -390,11 +406,30 @@ class AdminController extends Controller
 
         } else {
 
-            if ($request->status == 'Delivered') {
-
+            if ($request->status == 'pending') {
                 $order->status = $request->status;
-                $order->is_paid = true;
+                $order->save();
+            }
+            if ($request->status == 'on_hold') {
+                $order->status = $request->status;
+                $order->save();
+            }
+            if ($request->status == 'confirmed') {
+                $order->status = $request->status;
+                $order->save();
+            }
+            if ($request->status == 'processing') {
+                $order->status = $request->status;
+                $order->save();
+            }
+            if ($request->status == 'in_transit') {
+                $order->status = $request->status;
+                $order->save();
+            }
+            if ($request->status == 'delivered') {
+                $order->status = $request->status;
                 $order->delivery_date = Carbon::now();
+                $order->is_paid = true;
                 $order->save();
             }
 
@@ -403,18 +438,31 @@ class AdminController extends Controller
                 $order->cancelled_date = Carbon::now();
                 $order->save();
             }
-            if ($request->status == 'processing') {
+
+            if ($request->status == 'returned') {
                 $order->status = $request->status;
-                $order->cancelled_date = Carbon::now();
                 $order->save();
             }
+
+
 
         }
 
 
 
 
+
         return redirect()->route('admin.orders.details', $order->id)->with('status', 'Order Status Updated Successfully');
+    }
+    public function deleteOrder($id)
+    {
+        $order = Order::find($id);
+        $orderItems = Order_Item::where('order_id', $id)->get();
+        foreach ($orderItems as $orderItem) {
+            $orderItem->delete();
+        }
+        $order->delete();
+        return redirect()->route('admin.orders')->with('status', 'Order Deleted Successfully');
     }
     public function deliveryAreas()
     {

@@ -95,6 +95,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
         Route::get('/orders/{id}/details', [AdminController::class, 'orderDetails'])->name('admin.orders.details');
         Route::put('/orders/{id}/update-status', [AdminController::class, 'orderStatusUpdate'])->name('admin.orders.update');
+                Route::delete('/orders/{id}/delete', [AdminController::class, 'deleteOrder'])->name('admin.orders.delete');
 
         //delivery areas
         Route::get('/delivery-areas', [AdminController::class, 'deliveryAreas'])->name('admin.deliveryareas');

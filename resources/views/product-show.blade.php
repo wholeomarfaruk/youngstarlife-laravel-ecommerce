@@ -111,13 +111,22 @@
 
                     <div class="row price-details align-items-center justify-content-between">
                         <div class="col-lg-6 Price text-start">
-                            {{-- <span class="regular-price fs-5"><del>৳ 2,199.00</del></span> --}}
-                            <strong class="fw-bold fs-4">Price: </strong>
-                            <span class="discount-price fs-2 fw-bold ">৳ {{ $product?->price }}</span>
+                            @if ($product?->discount_price && $product?->discount_price > 0)
+                                <strong class="fw-bold fs-4"></strong>
+                                <span class="regular-price fs-5"><del>৳ {{ $product?->price }} </del></span>
+                                <strong class="fw-bold fs-4"> </strong>
+                                <span class="discount-price fs-2 fw-bold "> ৳ {{ $product?->discount_price }}</span>
+                            @else
+                                <strong class="fw-bold fs-4">Price: </strong>
+                                <span class="discount-price fs-2 fw-bold ">৳ {{ $product?->price }}</span>
+                            @endif
+
                         </div>
-                        <!--<div class="col-lg-6">-->
-                        <!--    <h4 class="stock-in text-success text-end"> Stock Available</h4>-->
-                        <!--</div>-->
+                        @if ($product?->stock_status == 'out_of_stock')
+                            <div class="col-lg-6">
+                                <h4 class="stock-in text-danger text-end"> Stock Out </h4>
+                            </div>
+                        @endif
                     </div>
                     <hr>
                     <p class="fs-6 fw-bold">
@@ -134,7 +143,8 @@
                                 <div class="col-12">
                                     <input type="hidden" name="product_id" value="{{ $product?->id }}">
                                     <input type="hidden" name="product_price" id="product_price"
-                                        value="{{ $product?->price }}">
+                                        value="{{ $product->discount_price && $product->discount_price > 0 ? $product->discount_price : $product->price }}">
+
                                 </div>
 
                                 @if ($product?->sizes->count() > 0)
@@ -241,8 +251,8 @@
                                                 <i class="fa-solid fa-circle-minus text-primary-color"></i>
                                             </button>
                                             <!-- <input type="button" value="-"
-                                                                                                    class="button-minus border rounded-circle btn-primary  icon-shape icon-sm mx-1 lh-0"
-                                                                                                    > -->
+                                                                                                            class="button-minus border rounded-circle btn-primary  icon-shape icon-sm mx-1 lh-0"
+                                                                                                            > -->
                                             <input type="number" step="1" max="10" min="1"
                                                 value="1" name="quantity"
                                                 class="quantity-field border-0 text-center w-25 form-control ">
@@ -266,9 +276,9 @@
 
                                 </div>
                                 <div class="col-12">
-                                    <button id="order-button" type="submit"
+                                    <button id="order-button" type="submit"  {{ $product?->stock_status == 'out_of_stock' ? 'disabled' : '' }}
                                         class="btn btn-primary bg-primary-color mb-3 w-100 fw-bold fs-5 py-2">অর্ডার
-                                        করুন</button>
+                                        করুন {{ $product?->stock_status == 'out_of_stock' ? '(স্টক শেষ)' : '' }}</button>
                                 </div>
 
                             </div>

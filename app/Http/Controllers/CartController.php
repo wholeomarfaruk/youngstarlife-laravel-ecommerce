@@ -300,6 +300,17 @@ class CartController extends Controller
 
             $order->is_paid = false;
             $order->status = 'pending';
+             if ($request->server('REMOTE_ADDR')) {
+                $order->ip_address = $request->server('REMOTE_ADDR');
+            }
+
+            if ($request->server('HTTP_USER_AGENT')) {
+                $order->user_agent = $request->server('HTTP_USER_AGENT');
+            }
+
+            if($request->extra_data) {
+                $order->json = $request->extra_data;
+            }
             $order->save();
 
             $orderItem = new Order_Item();

@@ -38,7 +38,7 @@
                 <div class="section-menu-left">
                     <div class="box-logo">
                         <a href="{{ route('admin.index') }}" id="site-logo-inner">
-                            <h4>Seldom Fashion</h4>
+                            <h4>YoungStar Life</h4>
                             {{-- <img class="" id="logo_header" alt="" src="{{asset('admin-resource/images/logo/logo.png')}}" > --}}
                         </a>
                         <div class="button-show-hide">
@@ -495,7 +495,7 @@
                     <div class="main-content">
                         @yield('content')
                         <div class="bottom-page">
-                            <div class="body-text">Copyright © 2025 Seldom Fashion</div>
+                            <div class="body-text">Copyright © 2025 YoungStar Life</div>
                         </div>
                     </div>
 
