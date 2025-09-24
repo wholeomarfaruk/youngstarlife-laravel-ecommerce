@@ -462,7 +462,7 @@ class AdminController extends Controller
             $orderItem->delete();
         }
         $order->delete();
-        return redirect()->route('admin.orders')->with('status', 'Order Deleted Successfully');
+        return redirect()->back()->with('status', 'Order Deleted Successfully');
     }
     public function deliveryAreas()
     {

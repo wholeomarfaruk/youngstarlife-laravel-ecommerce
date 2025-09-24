@@ -30,7 +30,7 @@
                     <div class="wg-filter flex-grow">
 
                     </div>
-                    <a class="tf-button style-1 w208" href="{{ route('admin.orders') }}">Back</a>
+                    <a class="tf-button style-1 w208" href="{{ url()->previous() ? url()->previous() : route('admin.orders') }}">Back</a>
                 </div>
                 @if (session('status'))
                     <div class="alert alert-success" role="alert">
