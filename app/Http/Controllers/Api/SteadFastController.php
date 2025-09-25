@@ -14,7 +14,7 @@ class SteadFastController extends Controller
 
         // ✅ Check Authorization header
         $authHeader = $request->header('Authorization');
-        $expectedToken = 'Bearer ' . '#@$hwenfiwenr032u9404rj0iejwf90c9u4rn02#*#*';
+        $expectedToken = 'Bearer ' . 'hwenfiwenr032u9404rj0iejwf90c9u4rn023rj0f'; // Replace with your actual token
         // return response()->json(['status' => 'error', 'message' => $request->header(), 'token' => $expectedToken], 403);
 
         if ($authHeader !== $expectedToken) {
@@ -59,7 +59,7 @@ class SteadFastController extends Controller
         if ($notificationType === 'delivery_status') {
             // Do something with $consignmentId, $status etc.
 
-            if ($status === 'delivered') {
+            if ($status === 'Delivered') {
                 $order->status = 'delivered';
                 $order->delivery_date = now();
 
@@ -71,7 +71,7 @@ class SteadFastController extends Controller
                 $order->pickup_date = now();
 
 
-            } elseif ($status === 'cancelled') {
+            } elseif ($status === 'Cancelled') {
                 // Do something with $consignmentId, $status etc.
 
 
@@ -82,7 +82,7 @@ class SteadFastController extends Controller
             }
         }
 
-        
+
         $order->save();
 
         // ✅ Success response
