@@ -392,7 +392,7 @@ class AdminController extends Controller
     public function orderDetails($id)
     {
         $order = Order::find($id);
-        $orderItems = Order_Item::where('order_id', $id)->paginate(10);
+        $orderItems = Order_Item::where('order_id', $id)->paginate(20);
         return view('admin.order-details', compact('order', 'orderItems'));
     }
     public function orderStatusUpdate(Request $request)

@@ -25,7 +25,7 @@ class SteadFastController extends Controller
         }
 
         // ✅ Log the payload for debugging
-        Log::info('Webhook received:', $request->all());
+        // Log::info('Webhook received:', $request->all());
 
         // ✅ Example handling
         $notificationType = $request->input('notification_type');
