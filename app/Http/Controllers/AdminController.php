@@ -373,12 +373,12 @@ class AdminController extends Controller
             $orders = Order::where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
-                ->paginate(10);
+                ->paginate(20);
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
-            $orders = Order::where('status', $status)->orderBy('created_at', 'desc')->paginate(10);
+            $orders = Order::where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
-            $orders = Order::orderBy('created_at', 'desc')->paginate(10);
+            $orders = Order::orderBy('created_at', 'desc')->paginate(20);
 
         }
         $status_group = Order::select('status')

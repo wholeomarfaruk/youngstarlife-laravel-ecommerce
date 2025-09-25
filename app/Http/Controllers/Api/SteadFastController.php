@@ -32,6 +32,7 @@ class SteadFastController extends Controller
         $consignmentId = $request->input('consignment_id');
         $status = $request->input('status');
         $invoiceId = $request->input('invoice');
+
         $order = Order::find($invoiceId);
         if (!$order) {
             return response()->json([
@@ -39,7 +40,9 @@ class SteadFastController extends Controller
                 'message' => 'Invalid Invoice ID'
             ], 200);
         }
-
+        if(!$order->consignment_id){
+            $order->consignment_id = $consignmentId;
+        }
 
         // Make sure json_data is an array
         $data = $order->json_data ?? [];

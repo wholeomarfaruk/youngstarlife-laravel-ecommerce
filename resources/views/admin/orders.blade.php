@@ -38,21 +38,22 @@
                 <div class="wg-box">
                     <div class="flex items-center justify-start flex-wrap gap10">
                         <a class="tf-button style-1 text-capitalize" href="{{ route('admin.orders') }}">All
-                            ({{$orders_count }})</a>
+                            ({{ $orders_count }})</a>
 
                         @foreach ($status_group as $sg)
                             <a class="tf-button style-1 text-capitalize {{ request()->order_status == $sg->status ? 'bg-primary text-white' : '' }}"
                                 href="{{ route('admin.orders', ['order_status' => $sg->status]) }}">{{ $sg->status }}
-                                ({{ $sg->count }})</a>
+                                ({{ $sg->count }})
+                            </a>
                         @endforeach
                     </div>
 
                 </div>
                 <div class="wg-table table-all-user">
-                     <div class="divider"></div>
-                <div class="flex items-center justify-between flex-wrap gap10 wgp-pagination">
-                    {{ $orders->links('pagination::bootstrap-5') }}
-                </div>
+                    <div class="divider"></div>
+                    <div class="flex items-center justify-between flex-wrap gap10 wgp-pagination">
+                        {{ $orders->links('pagination::bootstrap-5') }}
+                    </div>
                     <div class="table-responsive">
                         <table class="table table-striped table-bordered">
                             <thead>
@@ -89,23 +90,26 @@
                                         <td class="text-center">{{ $order->created_at }}</td>
                                         <td class="text-center">{{ $order->Order_Item->count() }}</td>
                                         <td class="text-center">{{ $order->delivery_date }} </td>
-                                        <td class="d-flex justify-center gap-2 align-items-center">
-                                            <a href="{{ route('admin.orders.details', $order->id) }}">
-                                                <div class="list-icon-function view-icon">
-                                                    <div class="item eye">
-                                                        <i class="icon-eye"></i>
+                                        <td class="text-center">
+                                            <div clas="d-flex justify-center gap-2 align-items-center flex-direction-row" style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-direction: row;">
+                                                <a href="{{ route('admin.orders.details', $order->id) }}">
+                                                    <div class="list-icon-function view-icon">
+                                                        <div class="item eye">
+                                                            <i class="icon-eye"></i>
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            </a>
-                                            <form action="{{ route('admin.orders.delete', $order->id) }}" method="POST">
-                                                @csrf
-                                                @method('DELETE')
-                                                <div class="list-icon-function delete">
-                                                    <button type="submit" class="item trash">
-                                                        <i class="icon-trash"></i>
-                                                    </button>
-                                                </div>
-                                            </form>
+                                                </a>
+                                                <form action="{{ route('admin.orders.delete', $order->id) }}"
+                                                    method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <div class="list-icon-function delete">
+                                                        <button type="submit" class="item trash">
+                                                            <i class="icon-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </form>
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach
@@ -124,14 +128,14 @@
     <!-- content area end -->
 @endsection
 @push('scripts')
-<script>
-    $('.delete').click(function (e) {
-        e.preventDefault();
-        var form = $(this).closest('form');
-        var name = $(this).closest('tr').find('.pname').text();
-        if (confirm("Are you sure? You want to delete " + name)) {
-            form.submit();
-        }
-    })
-</script>
+    <script>
+        $('.delete').click(function(e) {
+            e.preventDefault();
+            var form = $(this).closest('form');
+            var name = $(this).closest('tr').find('.pname').text();
+            if (confirm("Are you sure? You want to delete " + name)) {
+                form.submit();
+            }
+        })
+    </script>
 @endpush
