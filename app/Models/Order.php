@@ -8,12 +8,15 @@ use App\Models\delivery_areas;
 
 class Order extends Model
 {
+      protected $casts = [
+        'json_data' => 'array', // automatically converts to/from JSON
+    ];
     public function Order_Item()
     {
         return $this->hasMany(Order_Item::class, 'order_id');
     }
 
-    public function delivery_areas()
+    public function delivery_area()
     {
         return $this->belongsTo(delivery_areas::class, 'delivery_area_id');
     }

@@ -136,6 +136,7 @@
                         <div class="w-half">
                              <h5>Shipping Address</h5>
                 <div class="my-account__address-item col-md-6">
+                    
                     <div class="my-account__address-item__detail">
                         <p>Name : {{ $order->name }}</p>
                         <p>Mobile : {{ $order->phone }}</p>
@@ -210,12 +211,12 @@
             </div>
             <div class="wg-box mt-5">
                 <h5>Extra Data</h5>
-                <div class="my-account__address-item col-md-6">
+                <div class="my-account__address-item col-md-12">
                     <div class="my-account__address-item__detail">
                         <p>IP Address: {{ $order->ip_address }}</p>
                         <p>User Agent: {{ $order->user_agent }}</p>
 
-                        <pre> {{ json_encode($order->json_data, JSON_PRETTY_PRINT) }}</pre>
+                        <pre style="font-size: 14px; line-height: 20px; "> {{ json_encode($order->json_data, JSON_PRETTY_PRINT) }}</pre>
                         <br>
                     </div>
                 </div>
