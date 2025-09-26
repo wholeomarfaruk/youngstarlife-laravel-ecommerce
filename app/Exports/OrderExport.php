@@ -24,10 +24,10 @@ class OrderExport implements FromCollection, WithHeadings, WithMapping
         if ($this->status) {
             return Order::with('Order_Item')
                 ->where('status', $this->status)
-                ->select('id', 'name', 'address', 'total', 'updated_at')
+                ->select('id', 'name', 'address','phone', 'total', 'updated_at')
                 ->get();
         }else{
-            return Order::with('Order_Item')->select('id', 'name', 'address', 'total', 'updated_at')->get();
+            return Order::with('Order_Item')->select('id', 'name','phone', 'address', 'total', 'updated_at')->get();
         }
     }
 
@@ -45,6 +45,7 @@ class OrderExport implements FromCollection, WithHeadings, WithMapping
             $order->id,
             $order->name,
             $order->address,
+            $order->phone,
             $order->total,
             $firstItem ? $productName : '',        // Item Description
             $firstItem ? $size : '',     // Size
@@ -58,6 +59,6 @@ class OrderExport implements FromCollection, WithHeadings, WithMapping
      */
     public function headings(): array
     {
-        return ['Date', 'ID', 'Customer Name', 'Address', 'Total', 'Item Description', 'Size'];
+        return ['Date', 'ID', 'Customer Name', 'Address','Phone', 'Total', 'Item Description', 'Size'];
     }
 }
