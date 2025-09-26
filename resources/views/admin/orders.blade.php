@@ -22,8 +22,8 @@
             </div>
 
             <div class="wg-box">
-                <div class="flex items-center justify-between gap10 flex-wrap">
-                    <div class="wg-filter flex-grow">
+                <div class="row " >
+                    <div class="wg-filter col-md-6 mb-3">
                         <form class="form-search">
                             <fieldset class="name">
                                 <input type="text" placeholder="Search here..." class="" name="search"
@@ -31,6 +31,23 @@
                             </fieldset>
                             <div class="button-submit">
                                 <button class="" type="submit"><i class="icon-search"></i></button>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="wg-filter col-md-6 mb-3">
+                        <form class="form-search" method="GET" action="{{ route('admin.orders.export') }}">
+                            <fieldset class="name">
+                                <select name="order_status" id="">
+                                    <option value="">Select Status</option>
+
+                                    @foreach ($status_group as $sg)
+                                        <option value="{{ $sg->status }}">{{ $sg->status }} ({{ $sg->count }})</option>
+                                    @endforeach
+
+                                </select>
+                            </fieldset>
+                            <div class="button-submit">
+                                <button class="" type="submit"><i class="icon-search"></i> Export</button>
                             </div>
                         </form>
                     </div>
@@ -91,7 +108,8 @@
                                         <td class="text-center">{{ $order->Order_Item->count() }}</td>
                                         <td class="text-center">{{ $order->delivery_date }} </td>
                                         <td class="text-center">
-                                            <div clas="d-flex justify-center gap-2 align-items-center flex-direction-row" style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-direction: row;">
+                                            <div clas="d-flex justify-center gap-2 align-items-center flex-direction-row"
+                                                style="display: flex; gap: 10px; justify-content: center; align-items: center; flex-direction: row;">
                                                 <a href="{{ route('admin.orders.details', $order->id) }}">
                                                     <div class="list-icon-function view-icon">
                                                         <div class="item eye">
