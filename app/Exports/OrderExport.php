@@ -9,12 +9,26 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 
 class OrderExport implements FromCollection, WithHeadings, WithMapping
 {
+    protected $status;
+
+    // Accept status in constructor
+    public function __construct($status = null)
+    {
+        $this->status = $status;
+    }
     /**
      * Return the data collection for the export
      */
-public function collection()
+    public function collection()
     {
-        return Order::with('Order_Item')->select('id', 'name', 'address', 'total', 'updated_at')->get();
+        if ($this->status) {
+            return Order::with('Order_Item')
+                ->where('status', $this->status)
+                ->select('id', 'name', 'address', 'total', 'updated_at')
+                ->get();
+        }else{
+            return Order::with('Order_Item')->select('id', 'name', 'address', 'total', 'updated_at')->get();
+        }
     }
 
     public function map($order): array
@@ -44,6 +58,6 @@ public function collection()
      */
     public function headings(): array
     {
-        return ['Date','ID', 'Customer Name', 'Address', 'Total', 'Item Description', 'Size'];
+        return ['Date', 'ID', 'Customer Name', 'Address', 'Total', 'Item Description', 'Size'];
     }
 }

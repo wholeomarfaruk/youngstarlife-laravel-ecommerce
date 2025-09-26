@@ -468,13 +468,15 @@ class AdminController extends Controller
     }
     public function exportOrders(Request $request)
     {
+        $order_status = $request->order_status ?? null;
         if($request->has('order_status')) {
 
-            $fileName = $request->order_status . '_orders_' . Carbon::now()->format('Y_m_d_H_i_s') . '.xlsx';
+            $fileName = $order_status . '_orders_' . Carbon::now()->format('Y_m_d_H_i_s') . '.xlsx';
         }else{
             $fileName = 'orders_' . Carbon::now()->format('Y_m_d_H_i_s') . '.xlsx';
         }
-        return Excel::download(new OrderExport, $fileName);
+
+        return Excel::download(new OrderExport($order_status), $fileName);
     }
     public function deliveryAreas()
     {
