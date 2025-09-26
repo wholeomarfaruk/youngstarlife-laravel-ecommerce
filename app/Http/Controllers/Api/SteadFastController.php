@@ -67,21 +67,13 @@ class SteadFastController extends Controller
                 $order->delivery_date = now();
 
             } elseif ($status === 'partial_delivered') {
-                // Do something with $consignmentId, $status etc.
-
-
                 $order->status = 'partial_delivered';
-                $order->pickup_date = now();
-
-
+                $order->delivery_date = now();
             } elseif ($status === 'Cancelled') {
-                // Do something with $consignmentId, $status etc.
-
-
                 $order->status = 'cancelled';
-                $order->pickup_date = now();
-
-
+                $order->cancelled_date = now();
+            }elseif($status === 'Pending') {
+                $order->status = 'in_transit';
             }
         }
 
