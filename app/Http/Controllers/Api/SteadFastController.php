@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class SteadFastController extends Controller
 {
@@ -62,17 +63,17 @@ class SteadFastController extends Controller
         if ($notificationType === 'delivery_status') {
             // Do something with $consignmentId, $status etc.
 
-            if ($status === 'Delivered') {
+            if (Str::lower($status) === 'delivered') {
                 $order->status = 'delivered';
                 $order->delivery_date = now();
 
-            } elseif ($status === 'partial_delivered') {
+            } elseif (Str::lower($status) === 'partial_delivered') {
                 $order->status = 'partial_delivered';
                 $order->delivery_date = now();
-            } elseif ($status === 'Cancelled') {
+            } elseif (Str::lower($status) === 'cancelled') {
                 $order->status = 'cancelled';
                 $order->cancelled_date = now();
-            }elseif($status === 'Pending') {
+            }elseif(Str::lower($status) === 'pending') {
                 $order->status = 'in_transit';
             }
         }
