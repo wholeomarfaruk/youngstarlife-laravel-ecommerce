@@ -27,6 +27,7 @@ Route::get('/admin/login', [AdminController::class, 'login'])->name('admin.login
 Route::post('/record-session', [SessionRecordController::class, 'store']);
 
 
+Route::get('/shop', [HomeController::class,'shop'])->name('shop');
 Route::get('/category/{slug}', [HomeController::class,'categoryShow'])->name('category.show');
 Route::get('/product/{slug}', [HomeController::class,'productShow'])->name('product.show');
 

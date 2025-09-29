@@ -24,6 +24,18 @@ class HomeController extends Controller
         $categories = Category::all();
         return view('home-one', compact('products', 'deliveryAreas', 'slides', 'analytics', 'categories'));
     }
+    public function shop()
+    {
+
+        $products = Products::orderByDesc('featured') // featured first
+            ->orderByDesc('created_at')               // newest first
+            ->paginate(12);
+        $deliveryAreas = delivery_areas::all();
+        $slides = Slide::all();
+        $analytics = Analytic::all();
+        $categories = Category::all();
+        return view('shop', compact('products', 'deliveryAreas', 'slides', 'analytics', 'categories'));
+    }
 
     public function ProductOne(Request $request)
     {

@@ -124,20 +124,12 @@
 
 
             <div class="sec-header">
-                <div class="d-flex justify-content-between">
-                    <div class="">
-                        <h2 class="sec-title text-primary-color">Latest Products - নতুন পণ্য</h2>
-                    </div>
-                    <div class=" text-right">
-                        <a href="{{ route('shop') }}" class="sec-title text-primary-color">সব পণ্য দেখুন</a>
-                    </div>
-                </div>
-
+                <h2 class="sec-title text-primary-color">Latest Products - নতুন পণ্য</h2>
                 <hr class="divider mt-0 text-primary-color bg-primary-color " style="height: 2px;">
             </div>
             <div class="sec-body">
                 <div class="sec-grid-box">
-                    @foreach ($products->take(6) as $product)
+                    @foreach ($products as $product)
                         <div class="sec-grid-item p-card-1">
 
                             <div class="p-img-box">
@@ -176,83 +168,11 @@
                     @endforeach
                 </div>
                 <div class="d-flex justify-content-center mt-3">
-                    <a href="{{ route('shop') }}" class="btn btn-primary "> See More</a>
-                    {{-- {{ $products->links('pagination::bootstrap-5') }} --}}
+                    {{ $products->links('pagination::bootstrap-5') }}
                 </div>
             </div>
         </div>
     </section>
-
-
-
-    @foreach ($categories as $category)
-        @if ($category->products->count() > 0)
-        <section class="sec-style-1 my-3">
-            <div class="container">
-                <div class="sec-header">
-                    <div class="d-flex justify-content-between">
-                        <div class="flex-grow">
-                            <h2 class="sec-title text-primary-color">{{ $category->name }}</h2>
-                        </div>
-                        <div class="text-right">
-                        <a href="{{ route('category.show', $category->slug) }}" class="sec-title text-primary-color">সব পণ্য দেখুন</a>
-                        </div>
-                    </div>
-
-                    <hr class="divider mt-0 text-primary-color bg-primary-color " style="height: 2px;">
-                </div>
-                <div class="sec-body">
-                    <div class="sec-grid-box">
-                        @foreach ($category?->products->take(6) as $product)
-                            <div class="sec-grid-item p-card-1">
-
-                                <div class="p-img-box">
-                                    <a href="{{ route('product.show', $product->slug) }}">
-                                        <img src="{{ asset('storage/images/products/' . $product->image) }}"
-                                            alt="">
-                                    </a>
-                                </div>
-                                <div class="p-info">
-                                    <div class="prices">
-                                        @if ($product->discount_price > 0)
-                                            <del class="old-price">৳ {{ $product->price }}</del>
-                                            <span class="price">৳ {{ $product->discount_price }}</span>
-                                        @else
-                                            <span class="old-price">Price : </span> <span class="price"> ৳
-                                                {{ $product->price }}</span>
-                                        @endif
-
-                                    </div>
-                                    <a href="{{ route('product.show', $product->slug) }}">
-
-                                        <h1 class="p-title">{{ $product->name }}</h1>
-                                    </a>
-                                    <a href="#">
-                                        <p class="p-description">
-                                            বিস্তারিত দেখুন
-                                        </p>
-                                    </a>
-                                </div>
-                                <div class="p-btn-group">
-                                    <a class="btn btn-primary w-100 d-block"
-                                        href="{{ route('product.show', $product->slug) }}">Buy Now</a>
-                                </div>
-
-
-                            </div>
-                        @endforeach
-                    </div>
-                    <div class="d-flex justify-content-center mt-3">
-                        <a href="{{ route('category.show', $category->slug) }}" class="btn btn-primary "> See More - {{ $category->name }}</a>
-
-                        {{-- {{ $products->links('pagination::bootstrap-5') }} --}}
-                    </div>
-                </div>
-            </div>
-        </section>
-        @endif
-    @endforeach
-
     <section id="faq" class=" mb-3">
         <div class="container">
 
