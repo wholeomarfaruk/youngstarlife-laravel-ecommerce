@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Category;
+use App\Models\products;
 use File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -176,6 +177,26 @@ class CategoryController extends Controller
 
     }
     // Remove the specified category from storage End.================================================
+    public function manageProducts($id){
+
+        $category = Category::find($id);
+        $Categoryproducts = $category->products ?? collect();
+        $ids = $Categoryproducts?->pluck('id')->toArray() ?? [];
+        $products = products::all()->except($ids);
+        return view('admin.category.manage-products', compact('category', 'products', 'Categoryproducts'));
+    }
+    public function assignProducts(Request $request, $id){
+
+        $category = Category::find($id);
+        $category->products()->attach($request->products);
+        return redirect()->back()->with('status', 'Product added successfully');
+    }
+    public function unassignProducts(Request $request, $id){
+        $category = Category::find($id);
+        $category->products()->detach($request->products);
+        return redirect()->back()->with('status', 'Product removed successfully');
+    }
+
 
 
 }

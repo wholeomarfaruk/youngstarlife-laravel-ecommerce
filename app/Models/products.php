@@ -29,4 +29,8 @@ class products extends Model
     {
         return $this->hasMany(Size::class);
     }
+       public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'product_category');
+    }
 }

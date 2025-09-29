@@ -181,6 +181,9 @@
                                                 @endif
                                             </span>
                                             <div class="actions">
+
+                                                <a href="{{ route('admin.categories.manage.products', $category->id) }}"
+                                                    class="btn btn-sm btn-primary">Manage Products</a>
                                                 <a href="{{ route('admin.categories.edit', $category->id) }}"
                                                     class="btn btn-sm btn-warning">Edit</a>
                                                 <form action="{{ route('admin.categories.delete', $category->id) }}"

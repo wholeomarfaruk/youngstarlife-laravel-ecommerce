@@ -1,4 +1,4 @@
-@extends('admin.layouts.admin')
+@extends('layouts.admin')
 
 @section('content')
     <!-- content area start -->
@@ -16,7 +16,7 @@
                         <i class="icon-chevron-right"></i>
                     </li>
                     <li>
-                        <a href="{{ route('admin.category.list') }}">
+                        <a href="#">
                             <div class="text-tiny">categorys</div>
                         </a>
                     </li>
@@ -30,7 +30,7 @@
             </div>
             <!-- new-category -->
             <div class="wg-box">
-                <form class="form-new-product form-style-1 needs-validation" action="{{ route('admin.category.update', $category->id) }}"
+                <form class="form-new-product form-style-1 needs-validation" action="{{ route('admin.categories.update', $category->id) }}"
                     method="POST" enctype="multipart/form-data" novalidate>
                     @csrf
                     @method('PUT')
@@ -54,8 +54,8 @@
                         <div class="select flex-grow">
                             <select class=" @error('status') is-invalid @enderror" name="status" required>
 
-                                <option value="1" {{ old('status', $category->status) == \App\Enums\CategoryStatus::ACTIVE->value ? 'selected' : '' }}>Active</option>
-                                <option value="0" {{old('status' , $category->status) == \App\Enums\CategoryStatus::INACTIVE->value ? 'selected' : ''}}>Inactive</option>
+                                <option value="1" {{ old('status', $category->status) == '1' ? 'selected' : '' }}>Active</option>
+                                <option value="0" {{old('status' , $category->status) ==  '0' ? 'selected' : ''}}>Inactive</option>
 
                             </select>
 

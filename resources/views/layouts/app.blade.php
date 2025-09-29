@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="{{ asset('frontend/library/swiper/swiper-bundle.min.css') }}">
     <!-- Fancy Box css -->
     <link rel="stylesheet" href="{{ asset('frontend/library/fancybox/fancybox.css') }}">
+    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.1/dist/dotlottie-wc.js" type="module"></script>
     <!-- Custom Css  -->
     <style>
         @font-face {
@@ -26,6 +27,7 @@
             font-weight: normal;
             font-style: normal;
         }
+
     </style>
 
     <link rel="stylesheet" href="{{ asset('frontend/css/style.css?v=1.0.1') }}">
@@ -122,10 +124,12 @@
     <main id="Content-body" class="py-3">
         <section>
             <div class="container p-0">
-                <a href="https://wa.me/8801613046803?text=আমি%20বড়%20সাইজের%20জন্য%20কাস্টোমাইজ%20করতে%20চাচ্ছি" style="text-decoration: none;">
-                <h3 class="text-center" style="color: #2c742c; font-weight: bold;"> কাস্টোমাইজ বড় সাইজের জন্য ওয়াটসএপ এ মেসেজ
-                    করুন</h3>
-                    </a>
+                <a href="https://wa.me/8801613046803?text=আমি%20বড়%20সাইজের%20জন্য%20কাস্টোমাইজ%20করতে%20চাচ্ছি"
+                    style="text-decoration: none;">
+                    <h3 class="text-center" style="color: #2c742c; font-weight: bold;"> কাস্টোমাইজ বড় সাইজের জন্য
+                        ওয়াটসএপ এ মেসেজ
+                        করুন</h3>
+                </a>
             </div>
         </section>
         @yield('content')
@@ -149,7 +153,22 @@
             </div>
         </div>
     </footer>
-
+    <div>
+        <style>
+                    .new-arrival{
+            position: absolute;
+            left: 0;
+            top: 150px;
+            width: 100px;
+        }
+        </style>
+        <div class="new-arrival">
+            <a href="#">
+                <dotlottie-wc src="https://lottie.host/8a7eb623-e79f-481e-b63f-555486c2e6a7/0Hmst73iRT.lottie"
+                    style="width: 100px;height: 100px" autoplay loop></dotlottie-wc>
+            </a>
+        </div>
+    </div>
     <!-- Jquery -->
     <script src="{{ asset('frontend/library/jquery/jquery-3.7.1.min.js') }}"></script>
     <!-- Bootstrap Js  -->

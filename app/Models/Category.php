@@ -15,4 +15,8 @@ public function parent()
 {
     return $this->belongsTo(Category::class, 'parent_id');
 }
+public function products()
+    {
+        return $this->belongsToMany(products::class, 'product_category');
+    }
 }

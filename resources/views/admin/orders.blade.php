@@ -49,7 +49,10 @@
                             <div class="button-submit">
                                 <button class="" type="submit"><i class="icon-search"></i> Export</button>
                             </div>
+
                         </form>
+                        <a class="tf-button style-1 w208" href="{{route('admin.products.add')}}"><i
+                            class="icon-plus"></i>Add new</a>
                     </div>
                 </div>
                 <div class="wg-box">

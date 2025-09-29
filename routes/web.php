@@ -27,7 +27,7 @@ Route::get('/admin/login', [AdminController::class, 'login'])->name('admin.login
 Route::post('/record-session', [SessionRecordController::class, 'store']);
 
 
-Route::get('/category/{slug}', [HomeController::class,'ProductOne'])->name('category.show');
+Route::get('/category/{slug}', [HomeController::class,'categoryShow'])->name('category.show');
 Route::get('/product/{slug}', [HomeController::class,'productShow'])->name('product.show');
 
 Route::get('/product/flower-silk-3-piece-dress', [HomeController::class,'ProductOne'])->name('product.one');
@@ -75,6 +75,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/categories/edit/{id}', [CategoryController::class, 'edit'])->name('admin.categories.edit');
         Route::post('/categories/update', [CategoryController::class, 'update'])->name('admin.categories.update');
         Route::delete('/categories/{id}/delete', [CategoryController::class, 'delete'])->name('admin.categories.delete');
+        Route::get('/categories/{id}/manage-products',[CategoryController::class, 'manageProducts'])->name('admin.categories.manage.products');
+        Route::post('/categories/{id}/assign-products', [CategoryController::class, 'assignProducts'])->name('admin.categories.assign.products');
+        Route::delete('/categories/{id}/unassign-products', [CategoryController::class, 'unassignProducts'])->name('admin.categories.unassign.products');
         // Products
         Route::get('/products', [AdminController::class, 'products'])->name('admin.products');
         Route::get('/products/add', [AdminController::class, 'productsAdd'])->name('admin.products.add');
