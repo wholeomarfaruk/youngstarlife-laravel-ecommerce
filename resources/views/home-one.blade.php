@@ -182,6 +182,9 @@
             </div>
         </div>
     </section>
+    @if ($categories->products->count() >0)
+
+
     @foreach ($categories as $category)
         <section class="sec-style-1 my-3">
             <div class="container">
@@ -247,6 +250,7 @@
             </div>
         </section>
     @endforeach
+     @endif
     <section id="faq" class=" mb-3">
         <div class="container">
 
