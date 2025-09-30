@@ -160,14 +160,15 @@
                 top: 150px;
                 width: 100px;
                 height: 100px;
-                background-color: #fff;
+                background-color: #d30707;
                 border-radius: 50%;
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
                 animation: bubbleandshake 2s infinite ease-in-out;
             }
-            .new-arrival text {
+            .new-arrival .text {
                 font-weight: 700;
-                -webkit-text-stroke: 1px #fff;
+                 -webkit-text-stroke: 1px black;
+    -webkit-text-fill-color: rgb(238, 9, 9);
             }
             @keyframes bubbleandshake {
                 0% {
