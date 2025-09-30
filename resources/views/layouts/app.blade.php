@@ -167,7 +167,7 @@
             }
             .new-arrival .text {
                 font-weight: 700;
-                color: #eb0a0a;
+                color: var(--primary-accent-color);
                 text-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 
             }
