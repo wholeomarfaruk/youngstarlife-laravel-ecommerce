@@ -185,7 +185,7 @@
         <div class="new-arrival">
             <a href="https://youngstar.life/category/cargo-pants" class="text-center text-decoration-none" >
                 <dotlottie-wc src="https://lottie.host/8a7eb623-e79f-481e-b63f-555486c2e6a7/0Hmst73iRT.lottie"
-                    style="width: 100px;height: 100px" autoplay loop></dotlottie-wc>
+                    style="width: 50px;height: 50px" autoplay loop></dotlottie-wc>
                 <span class="fw-semibold text-primary-color fs-6 text">Cargo Pants</span>
             </a>
         </div>
