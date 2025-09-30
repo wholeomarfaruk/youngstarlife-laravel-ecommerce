@@ -121,7 +121,7 @@
     <section class="sec-style-1 my-3">
         <div class="container">
             <div class="sec-header">
-                <div class="d-flex justify-content-center align-items-center bg-primary-color rounded" style="min-height: 200px;">
+                <div class="d-flex justify-content-center align-items-center bg-primary-color rounded" style="min-height: 100px;">
 
                     <h2 class="sec-title text-white fs-1" style="text-transform: uppercase;">{{ $category->name }}</h2>
                 </div>
