@@ -160,17 +160,20 @@
                 top: 150px;
                 width: 100px;
                 height: 100px;
-                background-color: #d30707;
+                background-color: #d30101;
                 border-radius: 50%;
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
                 animation: bubbleandshake 2s infinite ease-in-out;
             }
+
             .new-arrival .text {
                 font-weight: 700;
-                color: var(--primary-accent-color);
+                color: #fff;
                 text-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                font-size: 12px;
 
             }
+
             @keyframes bubbleandshake {
                 0% {
                     transform: translateY(0);
@@ -183,10 +186,14 @@
             }
         </style>
         <div class="new-arrival">
-            <a href="https://youngstar.life/category/cargo-pants" class="text-center text-decoration-none" >
+
+
+
+
+            <a href="https://youngstar.life/category/cargo-pants" class="text-center text-decoration-none">
                 <dotlottie-wc src="https://lottie.host/8a7eb623-e79f-481e-b63f-555486c2e6a7/0Hmst73iRT.lottie"
                     style="width: 50px;height: 50px" autoplay loop></dotlottie-wc>
-                <span class="fw-semibold text-primary-color fs-6 text">Cargo Pants</span>
+                <span class="fw-semibold text-primary-color fs-6 text ms-1">Cargo Pants</span>
             </a>
         </div>
     </div>
