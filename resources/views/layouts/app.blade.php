@@ -167,8 +167,9 @@
             }
             .new-arrival .text {
                 font-weight: 700;
-                 -webkit-text-stroke: 1px black;
-    -webkit-text-fill-color: rgb(238, 9, 9);
+                color: #eb0a0a;
+                text-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+
             }
             @keyframes bubbleandshake {
                 0% {
