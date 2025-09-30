@@ -145,7 +145,7 @@
                                 <td>{{ $pitem->id }}</td>
                                 <td class="pname">
                                     <div class="image">
-                                        <img src="{{ asset('storage/images/products/thumbnails/'.$pitem->image)}}" alt="{{$product->name}}" class="image">
+                                        <img src="{{ asset('storage/images/products/thumbnails/'.$pitem->image)}}" alt="{{$pitem->name}}" class="image">
                                     </div>
                                     <div class="name">
                                         <a target="_blank" href="{{route('product.show', $pitem->slug)}}" class="body-title-2">{{ $pitem->name }}</a>
