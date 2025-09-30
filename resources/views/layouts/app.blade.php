@@ -159,6 +159,21 @@
                 left: 20px;
                 top: 150px;
                 width: 100px;
+                height: 100px;
+                background-color: #fff;
+                border-radius: 50%;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+                animation: bubbleandshake 2s infinite ease-in-out;
+            }
+            @keyframes bubbleandshake {
+                0% {
+                    transform: translateY(0);
+                }
+
+                50% {
+                    transform: translateY(-10px);
+                }
+
             }
         </style>
         <div class="new-arrival">
