@@ -116,12 +116,12 @@
                 </form>
             </div>
             <div class="wg-box">
-                                <div class="table-responsive">
+                <div class="table-responsive">
                     @if (Session::has('status'))
-                    <div class="alert alert-success" role="alert">
-                        {{ Session::get('status') }}
-                    </div>
-                     @endif
+                        <div class="alert alert-success" role="alert">
+                            {{ Session::get('status') }}
+                        </div>
+                    @endif
                     <table class="table table-striped table-bordered">
                         <thead>
 
@@ -137,46 +137,48 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @if(count($Categoryproducts) > 0)
-                            @foreach ($Categoryproducts as $pitem )
-
-
-                            <tr>
-                                <td>{{ $pitem->id }}</td>
-                                <td class="pname">
-                                    <div class="image">
-                                        <img src="{{ asset('storage/images/products/thumbnails/'.$pitem->image)}}" alt="{{$pitem->name}}" class="image">
-                                    </div>
-                                    <div class="name">
-                                        <a target="_blank" href="{{route('product.show', $pitem->slug)}}" class="body-title-2">{{ $pitem->name }}</a>
-                                        <div class="text-tiny mt-3">{{$pitem->slug}}</div>
-                                    </div>
-                                </td>
-                                <td>{{$pitem->price}}</td>
-                                <td>{{$pitem->sku}}</td>
-                                <td>{{$pitem->stock_status}}</td>
-                                <td>{{$pitem->quantity}}</td>
-                                <td>{{$pitem->featured == 1 ? 'Yes' : 'No' }}</td>
-                                <td>
-                                    <div class="list-icon-function">
-
-
-                                        <form action="{{route('admin.categories.unassign.products', ['id'=>$category->id])}}" method="POST">
-                                            @csrf
-                                            @method('DELETE')
-                                            <input type="hidden" name="products" value="{{$pitem->id}}">
-                                            <div class="item text-danger delete">
-                                                <i class="icon-trash-2"></i>
+                            @if (count($Categoryproducts) > 0)
+                                @foreach ($Categoryproducts as $pitem)
+                                    <tr>
+                                        <td>{{ $pitem->id }}</td>
+                                        <td class="pname">
+                                            <div class="image">
+                                                <img src="{{ asset('storage/images/products/thumbnails/' . $pitem->image) }}"
+                                                    alt="{{ $pitem->name }}" class="image">
                                             </div>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                            @endforeach
+                                            <div class="name">
+                                                <a target="_blank" href="{{ route('product.show', $pitem->slug) }}"
+                                                    class="body-title-2">{{ $pitem->name }}</a>
+                                                <div class="text-tiny mt-3">{{ $pitem->slug }}</div>
+                                            </div>
+                                        </td>
+                                        <td>{{ $pitem->price }}</td>
+                                        <td>{{ $pitem->sku }}</td>
+                                        <td>{{ $pitem->stock_status }}</td>
+                                        <td>{{ $pitem->quantity }}</td>
+                                        <td>{{ $pitem->featured == 1 ? 'Yes' : 'No' }}</td>
+                                        <td>
+                                            <div class="list-icon-function">
+
+
+                                                <form
+                                                    action="{{ route('admin.categories.unassign.products', ['id' => $category->id]) }}"
+                                                    method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <input type="hidden" name="products" value="{{ $pitem->id }}">
+                                                    <div class="item text-danger delete">
+                                                        <i class="icon-trash-2"></i>
+                                                    </div>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
                             @else
-                            <tr>
-                                <td colspan="8" class="text-center">No products found</td>
-                            </tr>
+                                <tr>
+                                    <td colspan="8" class="text-center">No products found</td>
+                                </tr>
                             @endif
                         </tbody>
                     </table>
@@ -184,7 +186,7 @@
             </div>
             <div class="divider"></div>
             <div class="flex items-center justify-between flex-wrap gap10 wgp-pagination mt-5">
-                {{-- {{ $categories->links('pagination::bootstrap-5') }} --}}
+                {{ $Categoryproducts->links('pagination::bootstrap-5') }}
             </div>
         </div>
     </div>
