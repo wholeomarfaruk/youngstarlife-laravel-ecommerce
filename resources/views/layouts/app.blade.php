@@ -165,6 +165,10 @@
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
                 animation: bubbleandshake 2s infinite ease-in-out;
             }
+            .new-arrival text {
+                font-weight: 700;
+                -webkit-text-stroke: 1px #fff;
+            }
             @keyframes bubbleandshake {
                 0% {
                     transform: translateY(0);
@@ -180,7 +184,7 @@
             <a href="https://youngstar.life/category/cargo-pants" class="text-center text-decoration-none" >
                 <dotlottie-wc src="https://lottie.host/8a7eb623-e79f-481e-b63f-555486c2e6a7/0Hmst73iRT.lottie"
                     style="width: 100px;height: 100px" autoplay loop></dotlottie-wc>
-                <span class="fw-semibold text-primary-color fs-6">Cargo Pants</span>
+                <span class="fw-semibold text-primary-color fs-6 text">Cargo Pants</span>
             </a>
         </div>
     </div>
