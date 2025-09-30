@@ -190,8 +190,7 @@
             </div>
         </div>
     </div>
-    </div>
-    </div>
+
 
     <!-- content area end -->
 @endsection
