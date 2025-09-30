@@ -164,6 +164,9 @@
                 border-radius: 50%;
                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
                 animation: bubbleandshake 2s infinite ease-in-out;
+                cursor: grab;
+                z-index: 99;
+                user-select: none;
             }
 
             .new-arrival .text {
@@ -185,7 +188,7 @@
 
             }
         </style>
-        <div class="new-arrival">
+        <div class="new-arrival" id="dragBtn">
 
 
 
@@ -211,6 +214,7 @@
     <script src="{{ asset('frontend/js/script.js') }}"></script>
     <!-- Initialize Swiper -->
     <!-- Initialize Swiper -->
+
     <script>
         var swiper = new Swiper(".mySwiper", {
             spaceBetween: 10,
