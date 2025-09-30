@@ -155,7 +155,7 @@
     <div>
         <style>
             .new-arrival {
-                position: absolute;
+                position: fixed;
                 left: 20px;
                 top: 150px;
                 width: 100px;
