@@ -68,7 +68,7 @@
                                         <img src="{{ asset('storage/images/products/thumbnails/'.$product->image)}}" alt="{{$product->name}}" class="image">
                                     </div>
                                     <div class="name">
-                                        <a href="#" class="body-title-2">{{ $product->name }}</a>
+                                        <a target="_blank" href="{{route('product.show',$product->slug)}}" class="body-title-2">{{ $product->name }}</a>
                                         <div class="text-tiny mt-3">{{$product->slug}}</div>
                                     </div>
                                 </td>
