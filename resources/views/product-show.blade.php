@@ -606,7 +606,7 @@
                     body: JSON.stringify(order_data)
                 })
 
-                event.preventDefault();
+                // event.preventDefault();
 
             })
     </script>
