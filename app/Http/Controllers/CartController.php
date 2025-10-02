@@ -330,6 +330,72 @@ class CartController extends Controller
             return $th->getMessage();
         }
     }
+    public function orderAutosave(Request $request)
+    {
+        // return $request->all();
+
+        $validated = $request->validate([
+            'phone' => 'required',
+        ]);
+
+        try {
+            //code...
+
+            $product = products::find($request->product_id);
+            $deliveryArea = delivery_areas::find($request->delivery_area);
+            $deliveryCharge = $deliveryArea->charge;
+
+            // Convert price and delivery charge to float for calculation
+            $price = (float) ($product->discount_price ?? $product->price);
+            $quantity = (float) $request->quantity;
+            $delivery = (float) $deliveryCharge;
+
+            // Calculate total
+            $total = ($price * $quantity) + $delivery;
+            $order = new Order();
+            $order->name = $request->name;
+            $order->phone = $request->phone;
+            $order->address = $request->address;
+            $order->delivery_area_id = $deliveryArea->id ?? null;
+            $order->cod_percentage = '0';
+            $order->cod_charge = '0';
+            $order->subtotal = $total;
+            $order->total = $total ?? '0';
+            $order->discount = '0';
+            $order->fee = $deliveryArea->charge ?? 0;
+
+            $order->is_paid = false;
+            $order->status = 'autosave';
+             if ($request->server('REMOTE_ADDR')) {
+                $order->ip_address = $request->server('REMOTE_ADDR');
+            }
+
+            if ($request->server('HTTP_USER_AGENT')) {
+                $order->user_agent = $request->server('HTTP_USER_AGENT');
+            }
+
+            if($request->extra_data) {
+                $order->json = $request->extra_data;
+            }
+            $order->save();
+
+            $orderItem = new Order_Item();
+            $orderItem->order_id = $order->id;
+            $orderItem->product_id = $request->product_id;
+            $orderItem->price = $price;
+            $orderItem->quantity = $request->quantity;
+            if($request->has('size')){
+
+                $orderItem->options = json_encode(['size' => $request->size ?? '']);
+            }
+            $orderItem->save();
+
+            return redirect()->route('order.received', ['order' => $order->id]);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return $th->getMessage();
+        }
+    }
     public function order_received(Request $request)
     {
 

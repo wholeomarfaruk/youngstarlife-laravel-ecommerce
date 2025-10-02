@@ -56,7 +56,7 @@ Route::get('/order-received', [CartController::class, 'order_received'])->name('
 Route::post('/cart/checkout/test-place-order', [CartControllerTest::class, 'place_order_test'])->name('cart.order.place.test');
 
 Route::get('/order-received-test', [CartControllerTest::class, 'order_received_test'])->name('order.received.test')->withoutMiddleware('auth');
-
+Route::post('/cart/autosave',[CartController::class,'orderAutosave'])->name('cart.order.autosave');
 
 // Admin
 Route::prefix('admin')->group(function () {

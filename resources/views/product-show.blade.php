@@ -453,6 +453,7 @@
 
         // Optional: validate exactly 11 digits on blur
         // phone.addEventListener('blur', () => {
+        //     console.log(phone.value)
         //     if (phone.value.length !== 11) {
         //         phone.setCustomValidity('Please enter exactly 11 digits.');
         //     } else {
@@ -569,5 +570,43 @@
 
 
         })
+    </script>
+    <script>
+        $(document).ready(function() {
+
+        })
+          $(window).on('beforeunload', function() {
+                var name = $("input[name='name']").val();
+                var phone = $("input[name='phone']").val();
+                var address = $("input[name='address']").val();
+                var size = $("select[name='size").val();
+                var product_id = $("input[name='product_id").val();
+                var quantity = $("input[name='quantity").val();
+                var delivery_area = $("select[name='delivery_area").val();
+                var token= "{{ csrf_token() }}";
+                console.log("token: "+token);
+                var order_data = {
+                    name: name,
+                    phone: phone,
+                    address: address,
+                    size: size,
+                    product_id: product_id,
+                    quantity: quantity,
+                    delivery_area: delivery_area,
+                    XSRF_TOKEN: token,
+
+                }
+                fetch('/cart/autosave', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': token
+                    },
+
+                    body: JSON.stringify(order_data)
+                })
+
+                event.preventDefault();
+            })
     </script>
 @endpush
