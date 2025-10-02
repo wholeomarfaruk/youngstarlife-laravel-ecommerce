@@ -441,7 +441,7 @@
 
         // Strip non-digits on input & cap at 11
         phone.addEventListener('input', () => {
-            phone.value = phone.value.replace(/\D/g, '').slice(0, 11);
+            phone.value = phone.value.replace(/\D/g, '');
         });
 
         // Block non-digit keypress (still keep Backspace, Delete, arrows, Tab)
