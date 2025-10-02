@@ -200,7 +200,7 @@ class AdminController extends Controller
             'stock_status' => 'required|in:in_stock,out_of_stock',
             'featured' => 'boolean',
             'quantity' => 'required|integer',
-            'image' => 'mimes:jpg,jpeg,png|max:2048',
+            'image' => 'mimes:jpg,jpeg,png,webp|max:2048',
 
         ]);
         $product = products::find($request->id);
