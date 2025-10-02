@@ -212,7 +212,7 @@
                                         <label class="form-label fw-bold fs-5">আপনার মোবাইল লিখুন
                                         </label>
                                         <input name="phone" id="phone" type="text" class="form-control" required
-                                            minlength="11" maxlength="11" inputmode="numeric" pattern="\d{11}"
+                                            minlength="11"  inputmode="numeric"
                                             autocomplete="tel" placeholder="Type Your Phone Number">
 
                                     </div>
@@ -452,13 +452,13 @@
         });
 
         // Optional: validate exactly 11 digits on blur
-        phone.addEventListener('blur', () => {
-            if (phone.value.length !== 11) {
-                phone.setCustomValidity('Please enter exactly 11 digits.');
-            } else {
-                phone.setCustomValidity('');
-            }
-        });
+        // phone.addEventListener('blur', () => {
+        //     if (phone.value.length !== 11) {
+        //         phone.setCustomValidity('Please enter exactly 11 digits.');
+        //     } else {
+        //         phone.setCustomValidity('');
+        //     }
+        // });
     </script>
     <script>
         $(document).ready(function() {
