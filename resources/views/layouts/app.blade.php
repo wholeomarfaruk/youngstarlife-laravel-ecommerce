@@ -107,10 +107,16 @@
                             </ul>
                         </li> --}}
                         <li class="nav-item fs-5">
-                            <a class="nav-link" href="/">All Products</a>
+                            <a class="nav-link" href="/shop">All Products</a>
                         </li>
                         <li class="nav-item fs-5">
-                            <a class="nav-link" href="#">Contact</a>
+                            <a class="nav-link" href="/category/combo-offer">Combo Offer</a>
+                        </li>
+                        <li class="nav-item fs-5">
+                            <a class="nav-link" href="/category/joggers-pant">Joggers</a>
+                        </li>
+                        <li class="nav-item fs-5">
+                            <a class="nav-link" href="/category/cargo-pants">Cargo</a>
                         </li>
                     </ul>
                 </div>
