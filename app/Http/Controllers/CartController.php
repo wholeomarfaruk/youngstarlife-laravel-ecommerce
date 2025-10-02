@@ -271,6 +271,17 @@ class CartController extends Controller
             'address' => 'required',
             'delivery_area' => 'required',
         ]);
+        $phone = preg_replace('/\D/', '', $request->phone);
+        if (str_starts_with($phone, '88') && strlen($phone) > 11) {
+            $phone = substr($phone, 2);
+        }
+        if (str_starts_with($phone, '0') && strlen($phone) == 10) {
+            $phone = '0' . $phone;
+        }
+
+        $extra_data = [];
+        $extra_data['order_data'] = $request->all();
+
 
         try {
             //code...
@@ -288,7 +299,7 @@ class CartController extends Controller
             $total = ($price * $quantity) + $delivery;
             $order = new Order();
             $order->name = $request->name;
-            $order->phone = $request->phone;
+            $order->phone =$phone ?? $request->phone;
             $order->address = $request->address;
             $order->delivery_area_id = $deliveryArea->id ?? null;
             $order->cod_percentage = '0';
@@ -300,7 +311,7 @@ class CartController extends Controller
 
             $order->is_paid = false;
             $order->status = 'pending';
-             if ($request->server('REMOTE_ADDR')) {
+            if ($request->server('REMOTE_ADDR')) {
                 $order->ip_address = $request->server('REMOTE_ADDR');
             }
 
@@ -308,8 +319,8 @@ class CartController extends Controller
                 $order->user_agent = $request->server('HTTP_USER_AGENT');
             }
 
-            if($request->extra_data) {
-                $order->json = $request->extra_data;
+            if ($extra_data) {
+                $order->json_data = $extra_data;
             }
             $order->save();
 
@@ -318,7 +329,7 @@ class CartController extends Controller
             $orderItem->product_id = $request->product_id;
             $orderItem->price = $price;
             $orderItem->quantity = $request->quantity;
-            if($request->has('size')){
+            if ($request->has('size')) {
 
                 $orderItem->options = json_encode(['size' => $request->size ?? '']);
             }
@@ -337,6 +348,17 @@ class CartController extends Controller
         $validated = $request->validate([
             'phone' => 'required',
         ]);
+        $phone = preg_replace('/\D/', '', $request->phone);
+        if (str_starts_with($phone, '88') && strlen($phone) > 11) {
+            $phone = substr($phone, 2);
+        }
+        if (str_starts_with($phone, '0') && strlen($phone) == 10) {
+            $phone = '0' . $phone;
+        }
+
+        $extra_data = [];
+        $extra_data['order_data'] = $request->all();
+
 
         try {
             //code...
@@ -354,7 +376,7 @@ class CartController extends Controller
             $total = ($price * $quantity) + $delivery;
             $order = new Order();
             $order->name = $request->name;
-            $order->phone = $request->phone;
+            $order->phone = $phone ?? $request->phone;
             $order->address = $request->address;
             $order->delivery_area_id = $deliveryArea->id ?? null;
             $order->cod_percentage = '0';
@@ -366,7 +388,7 @@ class CartController extends Controller
 
             $order->is_paid = false;
             $order->status = 'autosave';
-             if ($request->server('REMOTE_ADDR')) {
+            if ($request->server('REMOTE_ADDR')) {
                 $order->ip_address = $request->server('REMOTE_ADDR');
             }
 
@@ -374,8 +396,8 @@ class CartController extends Controller
                 $order->user_agent = $request->server('HTTP_USER_AGENT');
             }
 
-            if($request->extra_data) {
-                $order->json = $request->extra_data;
+            if ($extra_data) {
+                $order->json_data = $extra_data;
             }
             $order->save();
 
@@ -384,13 +406,17 @@ class CartController extends Controller
             $orderItem->product_id = $request->product_id;
             $orderItem->price = $price;
             $orderItem->quantity = $request->quantity;
-            if($request->has('size')){
+            if ($request->has('size')) {
 
                 $orderItem->options = json_encode(['size' => $request->size ?? '']);
             }
             $orderItem->save();
 
-            return redirect()->route('order.received', ['order' => $order->id]);
+            return response()->json([
+                'success' => true,
+                'message' => 'Order autosaved successfully!',
+                'order_id' => $order->id,
+            ]);
         } catch (\Throwable $th) {
             //throw $th;
             return $th->getMessage();
@@ -439,6 +465,6 @@ class CartController extends Controller
             'currency' => 'BDT'
         ];
         // return $orderItems;
-        return view('order-received', compact('order', 'orderItems','dataLayer'));
+        return view('order-received', compact('order', 'orderItems', 'dataLayer'));
     }
 }
