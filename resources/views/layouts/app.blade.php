@@ -91,7 +91,7 @@
                 <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
                     <ul class="navbar-nav ">
                         <li class="nav-item fs-5">
-                            <a class="nav-link active" aria-current="page" href="/">Home</a>
+                            <a class="nav-link {{ Request::is('/') ? 'active' : '' }}" aria-current="page" href="/">Home</a>
                         </li>
 
 
@@ -107,16 +107,16 @@
                             </ul>
                         </li> --}}
                         <li class="nav-item fs-5">
-                            <a class="nav-link" href="/shop">All Products</a>
+                            <a class="nav-link {{ Request::is('shop') ? 'active' : '' }}" href="/shop">All Products</a>
                         </li>
                         <li class="nav-item fs-5">
-                            <a class="nav-link" href="/category/combo-offer">Combo Offer</a>
+                            <a class="nav-link {{ Request::is('category/combo-offer') ? 'active' : '' }}" href="/category/combo-offer">Combo Offer</a>
                         </li>
                         <li class="nav-item fs-5">
-                            <a class="nav-link" href="/category/joggers-pant">Joggers</a>
+                            <a class="nav-link {{ Request::is('category/joggers-pant') ? 'active' : '' }}" href="/category/joggers-pant">Joggers</a>
                         </li>
                         <li class="nav-item fs-5">
-                            <a class="nav-link" href="/category/cargo-pants">Cargo</a>
+                            <a class="nav-link {{ Request::is('category/cargo-pants') ? 'active' : '' }}" href="/category/cargo-pants">Cargo</a>
                         </li>
                     </ul>
                 </div>
