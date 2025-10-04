@@ -34,6 +34,8 @@
 
 
     @stack('styles')
+
+    @if(app()->environment('production'))
     <!-- Google Tag Manager -->
     <script>
         (function(w, d, s, l, i) {
@@ -51,15 +53,19 @@
             f.parentNode.insertBefore(j, f);
         })(window, document, 'script', 'dataLayer', 'GTM-TVMLT6DT');
     </script>
+    @endif
+
     <!-- End Google Tag Manager -->
     <meta name="facebook-domain-verification" content="q3e3x73iwktzrop9d227rx2rj9bm8v" />
 </head>
 
 <body class="bg-white bg-opacity-50">
-    <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TVMLT6DT" height="0" width="0"
-            style="display:none;visibility:hidden"></iframe></noscript>
-    <!-- End Google Tag Manager (noscript) -->
+        @if(app()->environment('production'))
+            <!-- Google Tag Manager (noscript) -->
+            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TVMLT6DT" height="0" width="0"
+                    style="display:none;visibility:hidden"></iframe></noscript>
+            <!-- End Google Tag Manager (noscript) -->
+        @endif
     <header id="header-area" class="shadow bg-white">
         <div class="container">
             <div class="topbar d-flex justify-content-center">

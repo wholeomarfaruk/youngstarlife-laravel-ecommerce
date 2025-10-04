@@ -99,7 +99,9 @@ class HomeController extends Controller
             abort(404);
         }
         $deliveryAreas = delivery_areas::limit(5)->get();
-        $products = products::where('id', '!=', $product->id)->latest()->limit(4)->get();
+        $products = products::where('id', '!=', $product->id)->inRandomOrder()->limit(8)->get();
+       
+
         return view('product-show', compact('product', 'deliveryAreas', 'products'));
     }
     public function categoryShow(Request $request, $slug)
