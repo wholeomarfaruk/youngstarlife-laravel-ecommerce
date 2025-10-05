@@ -1,5 +1,5 @@
 <?php
-
+use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CartControllerTest;
 use App\Http\Controllers\SessionRecordController;
@@ -18,7 +18,7 @@ Auth::routes();
 //     return view('home');
 
 // });
-Route::get('/',[HomeController::class,'index'])->name('home');
+Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/admin/login', [AdminController::class, 'login'])->name('admin.login');
 
 // Route::middleware(['auth', 'admin'])->prefix('admin')->group(function () {
@@ -27,14 +27,14 @@ Route::get('/admin/login', [AdminController::class, 'login'])->name('admin.login
 Route::post('/record-session', [SessionRecordController::class, 'store']);
 
 
-Route::get('/shop', [HomeController::class,'shop'])->name('shop');
-Route::get('/category/{slug}', [HomeController::class,'categoryShow'])->name('category.show');
-Route::get('/product/{slug}', [HomeController::class,'productShow'])->name('product.show');
+Route::get('/shop', [HomeController::class, 'shop'])->name('shop');
+Route::get('/category/{slug}', [HomeController::class, 'categoryShow'])->name('category.show');
+Route::get('/product/{slug}', [HomeController::class, 'productShow'])->name('product.show');
 
-Route::get('/product/flower-silk-3-piece-dress', [HomeController::class,'ProductOne'])->name('product.one');
-Route::get('/product/safina-3-piece-dress', [HomeController::class,'ProductTwo'])->name('product.two');
-Route::get('/product/aafreen-3-piece-dress', [HomeController::class,'ProductThree'])->name('product.three');
-Route::get('/product/test', [HomeController::class,'ProductTest'])->name('product.test');
+Route::get('/product/flower-silk-3-piece-dress', [HomeController::class, 'ProductOne'])->name('product.one');
+Route::get('/product/safina-3-piece-dress', [HomeController::class, 'ProductTwo'])->name('product.two');
+Route::get('/product/aafreen-3-piece-dress', [HomeController::class, 'ProductThree'])->name('product.three');
+Route::get('/product/test', [HomeController::class, 'ProductTest'])->name('product.test');
 
 
 //cart
@@ -56,7 +56,7 @@ Route::get('/order-received', [CartController::class, 'order_received'])->name('
 Route::post('/cart/checkout/test-place-order', [CartControllerTest::class, 'place_order_test'])->name('cart.order.place.test');
 
 Route::get('/order-received-test', [CartControllerTest::class, 'order_received_test'])->name('order.received.test')->withoutMiddleware('auth');
-Route::post('/cart/autosave',[CartController::class,'orderAutosave'])->name('cart.order.autosave');
+Route::post('/cart/autosave', [CartController::class, 'orderAutosave'])->name('cart.order.autosave');
 
 // Admin
 Route::prefix('admin')->group(function () {
@@ -76,7 +76,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/categories/edit/{id}', [CategoryController::class, 'edit'])->name('admin.categories.edit');
         Route::post('/categories/update', [CategoryController::class, 'update'])->name('admin.categories.update');
         Route::delete('/categories/{id}/delete', [CategoryController::class, 'delete'])->name('admin.categories.delete');
-        Route::get('/categories/{id}/manage-products',[CategoryController::class, 'manageProducts'])->name('admin.categories.manage.products');
+        Route::get('/categories/{id}/manage-products', [CategoryController::class, 'manageProducts'])->name('admin.categories.manage.products');
         Route::post('/categories/{id}/assign-products', [CategoryController::class, 'assignProducts'])->name('admin.categories.assign.products');
         Route::delete('/categories/{id}/unassign-products', [CategoryController::class, 'unassignProducts'])->name('admin.categories.unassign.products');
         // Products
@@ -120,7 +120,7 @@ Route::prefix('admin')->group(function () {
         Route::delete('/slides/{id}/delete', [AdminController::class, 'slideDelete'])->name('admin.slides.delete');
 
         //Analytics
-        Route::get('/analytics/report',[AdminController::class, 'analytics'])->name('admin.analytics.report');
+        Route::get('/analytics/report', [AdminController::class, 'analytics'])->name('admin.analytics.report');
         Route::get('/google-analytics', [AdminController::class, 'gAnalaytics'])->name('admin.google.analytics');
         Route::put('/google-analytics/update', [AdminController::class, 'gAnalyticsUpdate'])->name('admin.google.analytics.update');
         Route::get('/facebook-pixels', [AdminController::class, 'fbPixels'])->name('admin.facebook.pixels');
@@ -128,5 +128,12 @@ Route::prefix('admin')->group(function () {
         Route::get('/session-replays', [SessionRecordController::class, 'index'])->name('admin.session.replays');
         Route::get('/session-replays/{id}', [SessionRecordController::class, 'show'])->name('admin.session.replays.show');
 
+
+        Route::get('/optimize', function () {
+            Artisan::call('optimize:clear');
+            Artisan::call('optimize');
+
+            return '<h3>✅ Application optimized successfully!</h3>';
+        });
     });
 });
