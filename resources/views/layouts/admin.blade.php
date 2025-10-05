@@ -127,8 +127,8 @@
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="order-tracking.html" class="">
-                                                <div class="text">Order tracking</div>
+                                            <a href="{{ route('admin.orders.deleted') }}" class="">
+                                                <div class="text">Deleted Orders</div>
                                             </a>
                                         </li>
                                     </ul>

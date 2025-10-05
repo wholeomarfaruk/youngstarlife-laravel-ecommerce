@@ -372,23 +372,41 @@ class AdminController extends Controller
     {
         if ($request->has('search')) {
             $search = $request->search;
-            $orders = Order::where('name', 'LIKE', '%' . $search . '%')
+            $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
-            $orders = Order::where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
+            $orders = Order::whereNot('status', 'deleted')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
-            $orders = Order::orderBy('created_at', 'desc')->paginate(20);
+            $orders = Order::whereNot('status', 'deleted')->orderBy('created_at', 'desc')->paginate(20);
 
+        }
+        $status_group = Order::whereNot('status', 'deleted')->select('status')
+            ->selectRaw('COUNT(*) as count')
+            ->groupBy('status')
+            ->get();
+        $orders_count = Order::count();
+        return view('admin.orders', compact('orders', 'status_group', 'orders_count'));
+    }
+    public function deletedOrders(Request $request)
+    {
+        if ($request->has('search')) {
+            $search = $request->search;
+            $orders = Order::where('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
+                ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+        } else {
+            $orders = Order::where('status', 'deleted')->orderBy('created_at', 'desc')->paginate(20);
         }
         $status_group = Order::select('status')
             ->selectRaw('COUNT(*) as count')
             ->groupBy('status')
             ->get();
         $orders_count = Order::count();
-        return view('admin.orders', compact('orders', 'status_group', 'orders_count'));
+        return view('admin.deleted-orders', compact('orders', 'status_group', 'orders_count'));
     }
 
     public function orderDetails($id)
@@ -445,6 +463,10 @@ class AdminController extends Controller
                 $order->status = $request->status;
                 $order->save();
             }
+            if ($request->status == 'deleted') {
+                $order->status = $request->status;
+                $order->save();
+            }
 
 
 
@@ -455,6 +477,17 @@ class AdminController extends Controller
 
 
         return redirect()->route('admin.orders.details', $order->id)->with('status', 'Order Status Updated Successfully');
+    }
+ 
+    public function ordersoftdelete($id)
+    {
+        $order = Order::find($id);
+        if ($order->status == 'deleted') {
+            return redirect()->back()->with('status', 'Order Already Deleted');
+        }
+        $order->status = 'deleted';
+        $order->save();
+        return redirect()->back()->with('status', 'Order Deleted Successfully');
     }
     public function deleteOrder($id)
     {
@@ -469,10 +502,10 @@ class AdminController extends Controller
     public function exportOrders(Request $request)
     {
         $order_status = $request->order_status ?? null;
-        if($request->has('order_status')) {
+        if ($request->has('order_status')) {
 
             $fileName = $order_status . '_orders_' . Carbon::now()->format('Y_m_d_H_i_s') . '.xlsx';
-        }else{
+        } else {
             $fileName = 'orders_' . Carbon::now()->format('Y_m_d_H_i_s') . '.xlsx';
         }
 

@@ -55,20 +55,7 @@
                             class="icon-plus"></i>Add new</a>
                     </div>
                 </div>
-                <div class="wg-box">
-                    <div class="flex items-center justify-start flex-wrap gap10">
-                        <a class="tf-button style-1 text-capitalize" href="{{ route('admin.orders') }}">All
-                            ({{ $orders_count }})</a>
-
-                        @foreach ($status_group as $sg)
-                            <a class="tf-button style-1 text-capitalize {{ request()->order_status == $sg->status ? 'bg-primary text-white' : '' }}"
-                                href="{{ route('admin.orders', ['order_status' => $sg->status]) }}">{{ $sg->status }}
-                                ({{ $sg->count }})
-                            </a>
-                        @endforeach
-                    </div>
-
-                </div>
+              
                 <div class="wg-table table-all-user">
                     <div class="divider"></div>
                     <div class="flex items-center justify-between flex-wrap gap10 wgp-pagination">
@@ -93,7 +80,6 @@
                                     <th></th>
                                 </tr>
                             </thead>
-                            
                             <tbody>
                                 @foreach ($orders as $order)
                                     <tr>
@@ -121,14 +107,16 @@
                                                         </div>
                                                     </div>
                                                 </a>
-                                                <a href="{{ route('admin.orders.delete.soft', $order->id) }}">
-                                                    <div class="list-icon-function">
-                                                        <div class="item trash">
+                                                <form action="{{ route('admin.orders.delete', $order->id) }}"
+                                                    method="POST">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <div class="list-icon-function delete">
+                                                        <button type="submit" class="item trash">
                                                             <i class="icon-trash"></i>
-                                                        </div>
+                                                        </button>
                                                     </div>
-                                                </a>
-
+                                                </form>
                                             </div>
                                         </td>
                                     </tr>

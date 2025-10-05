@@ -97,9 +97,11 @@ Route::prefix('admin')->group(function () {
 
         // Orders
         Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
+        Route::get('/orders/deleted', [AdminController::class, 'deletedOrders'])->name('admin.orders.deleted');
         Route::get('/orders/{id}/details', [AdminController::class, 'orderDetails'])->name('admin.orders.details');
         Route::put('/orders/{id}/update-status', [AdminController::class, 'orderStatusUpdate'])->name('admin.orders.update');
-                Route::delete('/orders/{id}/delete', [AdminController::class, 'deleteOrder'])->name('admin.orders.delete');
+        Route::delete('/orders/{id}/delete', [AdminController::class, 'deleteOrder'])->name('admin.orders.delete');
+        Route::get('/orders/soft-delete/{id}', [AdminController::class, 'ordersoftdelete'])->name('admin.orders.delete.soft');
         Route::get('/orders/export', [AdminController::class, 'exportOrders'])->name('admin.orders.export');
         //delivery areas
         Route::get('/delivery-areas', [AdminController::class, 'deliveryAreas'])->name('admin.deliveryareas');

@@ -98,9 +98,9 @@ class HomeController extends Controller
         if (!$product) {
             abort(404);
         }
+
         $deliveryAreas = delivery_areas::limit(5)->get();
         $products = products::where('id', '!=', $product->id)->inRandomOrder()->limit(8)->get();
-       
 
         return view('product-show', compact('product', 'deliveryAreas', 'products'));
     }
