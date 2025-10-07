@@ -132,9 +132,10 @@ Route::prefix('admin')->group(function () {
 
 
         Route::get('/optimize', function () {
-            Artisan::call('optimize:clear');
-            Artisan::call('optimize');
-
+            // Artisan::call('optimize:clear');
+            // Artisan::call('optimize');
+            exec('php artisan optimize');
+            shell_exec('php artisan optimize');
             return '<h3>✅ Application optimized successfully!</h3>';
         });
     });
