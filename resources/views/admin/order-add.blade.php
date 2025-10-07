@@ -6,7 +6,7 @@
         <!-- main-content-wrap -->
         <div class="main-content-wrap">
             <div class="flex items-center flex-wrap justify-between gap20 mb-27">
-                <h3>Add Order</h3>
+                <h3>Add New Order</h3>
                 <ul class="breadcrumbs flex items-center flex-wrap justify-start gap10">
                     <li>
                         <a href="{{ route('admin.index') }}">
@@ -25,114 +25,60 @@
                         <i class="icon-chevron-right"></i>
                     </li>
                     <li>
-                        <div class="text-tiny">Add product</div>
+                        <div class="text-tiny">Add Order</div>
                     </li>
                 </ul>
             </div>
             <!-- form-add-product -->
-            <form class="tf-section-2 form-add-product needs-validation" method="POST" enctype="multipart/form-data"
-                action="{{ route('admin.products.store') }}" novalidate>
+            <form class="tf-section-1 form-add-product needs-validation" method="POST" enctype="multipart/form-data"
+                action="{{ route('admin.orders.store') }}" novalidate>
                 @csrf
                 <div class="wg-box">
                     <fieldset class="name">
-                        <div class="body-title mb-10">Product name <span class="tf-color-1">*</span>
+                        <div class="body-title mb-10">Customer Name <span class="tf-color-1">*</span>
                         </div>
                         <input class="mb-10 @error('name') is-invalid @enderror" type="text"
-                            placeholder="Enter product name" name="name" tabindex="0" aria-required="true"
-                            value="{{ old('name') }}" required autocomplete="name" autofocus
-                            onchange="stringtoSlug(this.value)">
-                        <div class="text-tiny">Do not exceed 100 characters when entering the
-                            product name.</div>
+                            placeholder="Enter name" name="name" tabindex="0" aria-required="true"
+                            value="{{ old('phone') }}" required  autocomplete="off" autofocus
+                           >
+                        <div class="text-tiny">Do not exceed 100 characters when entering the customer name</div>
                         @error('name')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
                         @enderror
                     </fieldset>
-
-
-                    <div class="cols gap22">
-                        <fieldset class="name">
-                            <div class="body-title mb-10">Price <span class="tf-color-1">*</span></div>
-                            <input class="mb-10 @error('regular_price') is-invalid @enderror" type="text"
-                                placeholder="Enter price" name="price" tabindex="0" value="{{ old('price') }}"
-                                aria-required="true" required="required" autofocus>
-                            @error('price')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </fieldset>
-                        <fieldset class="name">
-                            <div class="body-title mb-10">Discount Price <span class="tf-color-1">*</span></div>
-                            <input class="mb-10 @error('regular_price') is-invalid @enderror" type="text"
-                                placeholder="Enter price" name="discount_price" tabindex="0" value="{{ old('discount_price') }}"
-                                aria-required="true" required="required" autofocus>
-                            @error('discount_price')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </fieldset>
-                    </div>
-                    <div class="cols gap22">
-
-                        <fieldset class="name">
-                            <div class="body-title mb-10">Quantity <span class="tf-color-1">*</span>
-                            </div>
-                            <input class="mb-10 @error('quantity') is-invalid @enderror" type="text"
-                                placeholder="Enter quantity" name="quantity" tabindex="0" value="{{ old('quantity') }}"
-                                aria-required="true" required="required">
-                            @error('quantity')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </fieldset>
-                    </div>
-
-                    <div class="cols gap22">
-                        <fieldset class="name">
-                            <div class="body-title mb-10">Stock</div>
-                            <div class="select mb-10">
-                                <select class="" name="stock_status">
-                                    <option value="in_stock">InStock</option>
-                                    <option value="out_of_stock">Out of Stock</option>
-                                </select>
-                            </div>
-                            @error('stock_status')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </fieldset>
-                        <fieldset class="name">
-                            <div class="body-title mb-10">SKU <span class="tf-color-1">*</span>
-                            </div>
-                            <input class="mb-10 @error('sku') is-invalid @enderror" type="text" placeholder="Enter SKU"
-                                name="sku" tabindex="0" value="{{ old('sku') }}" aria-required="true"
-                                required="required">
-                            @error('sku')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </fieldset>
-                    </div>
                     <fieldset class="name">
-                        <div class="body-title mb-10">Description <span class="tf-color-1">*</span></div>
-                        <textarea id="editor" class="mb-10 @error('description') is-invalid @enderror" name="description" tabindex="0"
-                            aria-required="true" required="required">{{ old('description') }}</textarea>
-                        @error('description')
+                        <div class="body-title mb-10">Phone <span class="tf-color-1">*</span>
+                        </div>
+                        <input class="mb-10 @error('phone') is-invalid @enderror" type="number" required
+                            placeholder="Enter phone number" name="phone" tabindex="0" aria-required="true"
+                            value="{{ old('phone') }}"  autocomplete="phone" autofocus
+                           >
+                        <div class="text-tiny">Do not exceed 11 when entering the phone number</div>
+                        @error('phone')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </fieldset>
+
+
+
+                    <fieldset class="name">
+                        <div class="body-title mb-10">Delivery Address <span class="tf-color-1"></span></div>
+                        <textarea  class="mb-10 @error('address') is-invalid @enderror" name="address" tabindex="0"
+                            aria-required="true" >{{ old('address') }}</textarea>
+                        @error('address')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
                         @enderror
                     </fieldset>
                     <fieldset class="name">
-                        <div class="body-title mb-10">SEO Description <span class="tf-color-1">*</span></div>
-                        <textarea class="mb-10 @error('short_description') is-invalid @enderror" name="short_description" tabindex="0"
-                            aria-required="true" required="required">{{ old('description') }}</textarea>
+                        <div class="body-title mb-10">Note <span class="tf-color-1"></span></div>
+                        <textarea class="mb-10 @error('note') is-invalid @enderror" name="note" tabindex="0"
+                            aria-required="true" >{{ old('note') }}</textarea>
                         @error('short_description')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
@@ -140,88 +86,11 @@
                         @enderror
                     </fieldset>
                     <div class="cols gap10">
-                        <button class="tf-button w-full" type="submit">Add product</button>
+                        <button class="tf-button w-full" type="submit">Add New Order</button>
                     </div>
 
                 </div>
-                <div class="wg-box">
-                    <fieldset>
-                        <div class="body-title">Featured image <span class="tf-color-1">*</span>
-                        </div>
-                        <div class="upload-image flex-grow">
-                            <div class="item" id="imgpreview" style="display:none">
-                                <img src="" class="effect8" alt="">
-                            </div>
-                            <div id="upload-file" class="item up-load">
-                                <label class="uploadfile" for="myFile">
-                                    <span class="icon">
-                                        <i class="icon-upload-cloud"></i>
-                                    </span>
-                                    <span class="body-text">Drop your images here or select <span class="tf-color">click
-                                            to
-                                            browse</span></span>
-                                    <input type="file" id="myFile" name="image" accept="image/*">
-                                </label>
-                            </div>
-                        </div>
-                        @error('image')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </fieldset>
-                    <fieldset>
-                        <div class="body-title">Upload images <span class="tf-color-1">*</span>
-                        </div>
-                        <div class="upload-image flex-grow" id="galPreview">
-                            <div class="item" style="display:none">
-                                <img src="" class="effect8" alt="">
-                            </div>
-                            <div id="upload-file" class="item up-load">
-                                <label class="uploadfile" for="gFile">
-                                    <span class="icon">
-                                        <i class="icon-upload-cloud"></i>
-                                    </span>
-                                    <span class="body-text">Drop your images here or select <span class="tf-color">click
-                                            to
-                                            browse</span></span>
-                                    <input type="file" multiple id="gFile" name="images[]" accept="image/*">
-                                </label>
-                            </div>
-                        </div>
-                        @error('image')
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </fieldset>
-                    <div class="cols gap22">
-                        <fieldset class="name">
-                            <div class="body-title mb-10">Featured</div>
-                            <div class="select mb-10">
-                                <select class="" name="featured">
-                                    <option value="0">No</option>
-                                    <option value="1">Yes</option>
-                                </select>
-                            </div>
-                            @error('featured')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
-                        </fieldset>
-                    </div>
-                    <div>
-                        <h2 class="" style="font-size: 16px;">Product Sizes</h2>
-                        <div id="sizes-container"></div>
 
-                        <button type="button" onclick="addSize()">+ Add Size</button>
-
-                    </div>
-
-
-
-                </div>
             </form>
             <!-- /form-add-product -->
         </div>

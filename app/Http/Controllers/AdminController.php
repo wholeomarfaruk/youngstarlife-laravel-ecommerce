@@ -806,6 +806,23 @@ class AdminController extends Controller
             'todaypages',
         ));
     }
+    public function orderAdd()
+    {
+        $products = products::all();
+        $delivery_areas = delivery_areas::all();
+
+        return view('admin.order-add', compact('products', 'delivery_areas'));
+    }
+    public function orderStore(Request $request)
+    {
+        $order = new Order();
+        $order->name = $request->name;
+        $order->phone = $request->phone;
+        $order->address = $request->address;
+        $order->note=$request->note;
+        $order->save();
+        return redirect()->route('admin.orders')->with('status', 'Order Created Successfully');
+    }
 
 
 }

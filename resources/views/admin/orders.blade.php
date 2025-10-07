@@ -51,7 +51,7 @@
                             </div>
 
                         </form>
-                        <a class="tf-button style-1 w208" href="{{route('admin.products.add')}}"><i
+                        <a class="tf-button style-1 w208" href="{{route('admin.orders.add')}}"><i
                             class="icon-plus"></i>Add new</a>
                     </div>
                 </div>
@@ -93,7 +93,7 @@
                                     <th></th>
                                 </tr>
                             </thead>
-                            
+
                             <tbody>
                                 @foreach ($orders as $order)
                                     <tr>

@@ -10,10 +10,10 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\AuthAdmin;
 use App\Http\Controllers\CartController;
      Route::get('/optimize', function () {
-            Artisan::call('optimize:clear');
-            Artisan::call('optimize');
-            // exec('php artisan optimize');
-            // shell_exec('php artisan optimize');
+            // Artisan::call('optimize:clear');
+            // Artisan::call('optimize');
+            exec('php artisan optimize');
+            shell_exec('php artisan optimize');
             return '<h3>✅ Application optimized successfully!</h3>';
         });
 Route::post('/cart/add/json', [CartController::class, 'add_json_to_cart'])->name('cart.add.json')->withoutMiddleware('auth');
@@ -112,6 +112,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/orders/export', [AdminController::class, 'exportOrders'])->name('admin.orders.export');
         Route::put('/orders/update/{id}', [AdminController::class, 'updateOrder'])->name('admin.orders.editupdate');
         Route::put('/orders/update/{id}/details', [AdminController::class, 'updateOrderDetails'])->name('admin.orders.update.details');
+        Route::get('/orders/add', [AdminController::class, 'orderAdd'])->name('admin.orders.add');
+        Route::post('/orders/store', [AdminController::class, 'orderStore'])->name('admin.orders.store');
         //delivery areas
         Route::get('/delivery-areas', [AdminController::class, 'deliveryAreas'])->name('admin.deliveryareas');
         Route::get('/delivery-areas/add', [AdminController::class, 'deliveryAreaAdd'])->name('admin.deliveryareas.add');
