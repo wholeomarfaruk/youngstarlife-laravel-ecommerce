@@ -201,7 +201,7 @@
 
                                         @if ($category->children->count())
                                             <div class="collapse show" id="cat-{{ $category->id }}">
-                                                @include('admin.categories.tree', [
+                                                @include('admin.category.tree', [
                                                     'categories' => $category->children,
                                                 ])
                                             </div>

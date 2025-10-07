@@ -169,6 +169,13 @@ class AdminController extends Controller
 
 
             }
+                   if($request->has('categories')){
+            $product->categories()->attach($request->categories);
+
+        }
+        if($request->has('segments')){
+            $product->segments()->attach($request->segments);
+        }
         } catch (\Throwable $th) {
             return redirect()->back()->with('error', $th->getMessage());
 
@@ -298,6 +305,13 @@ class AdminController extends Controller
 
 
         }
+        if($request->has('categories')){
+            $product->categories()->sync($request->categories);
+
+        }
+        if($request->has('segments')){
+            $product->segments()->sync($request->segments);
+        }
         return redirect()->route('admin.products')->with('status', 'Product Updated Successfully');
     }
 
@@ -413,7 +427,8 @@ class AdminController extends Controller
     {
         $order = Order::find($id);
         $orderItems = Order_Item::where('order_id', $id)->paginate(20);
-        return view('admin.order-details', compact('order', 'orderItems'));
+        $products = products::all();
+        return view('admin.order-details', compact('order', 'orderItems', 'products'))->with('title', 'Order Details');
     }
     public function orderStatusUpdate(Request $request)
     {
@@ -478,7 +493,7 @@ class AdminController extends Controller
 
         return redirect()->route('admin.orders.details', $order->id)->with('status', 'Order Status Updated Successfully');
     }
- 
+
     public function ordersoftdelete($id)
     {
         $order = Order::find($id);
@@ -510,6 +525,52 @@ class AdminController extends Controller
         }
 
         return Excel::download(new OrderExport($order_status), $fileName);
+    }
+    public function updateOrder(Request $request, $id){
+        $order = Order::find($id);
+        if(!$order){
+            return redirect()->back()->with('error', 'Order not found');
+        }
+        $order->Order_Item()->delete();
+        // $order->Order_Item()
+        $orderedProducts = products::whereIn('id', $request->products)->get();
+        foreach ($orderedProducts as $orderedProduct) {
+            $orderItem = new Order_Item();
+            $orderItem->order_id = $order->id;
+            $orderItem->product_id = $orderedProduct->id;
+            $orderItem->quantity = $request->order_items[$orderedProduct->id]['quantity'];
+            $orderItem->price = $orderedProduct->price;
+            $orderItem->options = json_encode(['size' => $request->order_items[$orderedProduct->id]['size']]);
+            $orderItem->save();
+        }
+            $subtotal = $orderedProducts ->sum(function ($product) use ($request){
+                return (float) ($product->discount_price ?? $product->price) * (float)$request->order_items[$product->id]['quantity'];
+            });
+            $order->subtotal = $subtotal;
+            $order->discount = $request->discount;
+            $order->fee = $request->delivery_charge;
+            $order->total = ($subtotal+(float)$request->delivery_charge)-(float)$request->discount;
+
+            $order->save();
+
+
+
+     $order->save();
+
+        // return $request->all();
+        return redirect()->back()->with('status', 'Order Updated Successfully');
+    }
+    public function updateOrderDetails(Request $request, $id){
+        $order = Order::find($id);
+        if(!$order){
+            return redirect()->back()->with('error', 'Order not found');
+        }
+        $order->name = $request->name;
+        $order->phone = $request->phone;
+        $order->address = $request->address;
+        $order->note = $request->note;
+        $order->save();
+        return redirect()->back()->with('status', 'Order Details Updated Successfully');
     }
     public function deliveryAreas()
     {

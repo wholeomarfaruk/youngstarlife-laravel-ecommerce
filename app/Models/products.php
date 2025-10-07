@@ -6,6 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 
 class products extends Model
 {
+    protected $fillable = [
+        'name',
+        'description',
+        'price',
+        'stock',
+        'status',
+    ];
+    protected $appends = ['featured_image'];
     use HasFactory;
     public function orderItems()
     {
