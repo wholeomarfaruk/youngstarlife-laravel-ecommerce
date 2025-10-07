@@ -9,6 +9,13 @@ use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\AuthAdmin;
 use App\Http\Controllers\CartController;
+     Route::get('/optimize', function () {
+            Artisan::call('optimize:clear');
+            Artisan::call('optimize');
+            // exec('php artisan optimize');
+            // shell_exec('php artisan optimize');
+            return '<h3>✅ Application optimized successfully!</h3>';
+        });
 Route::post('/cart/add/json', [CartController::class, 'add_json_to_cart'])->name('cart.add.json')->withoutMiddleware('auth');
 
 Auth::routes();
@@ -131,12 +138,6 @@ Route::prefix('admin')->group(function () {
         Route::get('/session-replays/{id}', [SessionRecordController::class, 'show'])->name('admin.session.replays.show');
 
 
-        Route::get('/optimize', function () {
-            // Artisan::call('optimize:clear');
-            // Artisan::call('optimize');
-            exec('php artisan optimize');
-            shell_exec('php artisan optimize');
-            return '<h3>✅ Application optimized successfully!</h3>';
-        });
+
     });
 });
