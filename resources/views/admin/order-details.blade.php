@@ -207,7 +207,7 @@
 
             <div class="wg-box mt-5">
                 <h5>Update Order Status</h5>
-                <form action="{{ route('admin.orders.editupdate', $order->id) }}" method="POST">
+                <form action="{{ route('admin.orders.update', $order->id) }}" method="POST">
                     @csrf
                     @method('PUT')
                     <input type="hidden" name="order_id" value="{{ $order->id }}">

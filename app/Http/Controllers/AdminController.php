@@ -440,7 +440,6 @@ class AdminController extends Controller
             return redirect()->route('admin.orders.details', $order->id)->with('status', 'Order Status Already Updated');
 
         } else {
-
             if ($request->status == 'pending') {
                 $order->status = $request->status;
                 $order->save();
