@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CartControllerTest;
@@ -10,8 +11,8 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\AuthAdmin;
 use App\Http\Controllers\CartController;
      Route::get('/optimize', function () {
-            // Artisan::call('optimize:clear');
-            // Artisan::call('optimize');
+            Artisan::call('optimize:clear');
+            Artisan::call('optimize');
             exec('php artisan optimize');
             shell_exec('php artisan optimize');
             return '<h3>✅ Application optimized successfully!</h3>';
@@ -139,6 +140,10 @@ Route::prefix('admin')->group(function () {
         Route::get('/session-replays', [SessionRecordController::class, 'index'])->name('admin.session.replays');
         Route::get('/session-replays/{id}', [SessionRecordController::class, 'show'])->name('admin.session.replays.show');
 
+ //User Setting / Admin Setting Start =================================================================
+    Route::get("/user-settings",[UserController::class,"index"])->name("admin.user.index");
+    Route::put("/user-settings/update",[UserController::class,"update"])->name("admin.user.update");
+    //User Setting / Admin Setting End =================================================================
 
 
     });

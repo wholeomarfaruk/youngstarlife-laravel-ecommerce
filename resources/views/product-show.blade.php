@@ -572,9 +572,7 @@
         })
     </script>
     <script>
-        $(document).ready(function() {
-
-        })
+ 
           $(window).on('beforeunload', function() {
                 var name = $("input[name='name']").val();
                 var phone = $("input[name='phone']").val();

@@ -77,7 +77,7 @@
                                         </li>
                                     </ul>
                                 </li>
-
+{{--
                                 <li class="menu-item has-children">
                                     <a href="javascript:void(0);" class="menu-item-button">
                                         <div class="icon"><i class="icon-layers"></i></div>
@@ -95,7 +95,7 @@
                                             </a>
                                         </li>
                                     </ul>
-                                </li>
+                                </li> --}}
                                 <li class="menu-item has-children">
                                     <a href="javascript:void(0);" class="menu-item-button">
                                         <div class="icon"><i class="icon-layers"></i></div>
@@ -146,7 +146,7 @@
                                         <div class="text">Delivery Areas</div>
                                     </a>
                                 </li>
-                                <li class="menu-item">
+                                {{-- <li class="menu-item">
                                     <a href="{{ route('admin.slides') }}" class="">
                                         <div class="icon"><i class="icon-image"></i></div>
                                         <div class="text">Slider</div>
@@ -157,8 +157,8 @@
                                         <div class="icon"><i class="icon-user"></i></div>
                                         <div class="text">User</div>
                                     </a>
-                                </li>
-                                <li class="menu-item has-children">
+                                </li> --}}
+                                {{-- <li class="menu-item has-children">
                                     <a href="javascript:void(0);" class="menu-item-button">
                                         <div class="icon"><i class="icon-bar-chart"></i></div>
                                         <div class="text">Analytics</div>
@@ -169,11 +169,7 @@
                                                 <div class="text">Reports</div>
                                             </a>
                                         </li>
-                                        {{-- <li class="sub-menu-item">
-                                            <a href="{{ route('admin.session.replays') }}" class="">
-                                                <div class="text">Session Replays</div>
-                                            </a>
-                                        </li> --}}
+
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.google.analytics') }}" class="">
                                                 <div class="text">Google Analytics</div>
@@ -185,11 +181,11 @@
                                             </a>
                                         </li>
                                     </ul>
-                                </li>
+                                </li> --}}
                                 <li class="menu-item">
-                                    <a href="settings.html" class="">
-                                        <div class="icon"><i class="icon-settings"></i></div>
-                                        <div class="text">Settings</div>
+                                    <a href="{{ route('admin.user.index') }}" class="">
+                                        <div class="icon"><i class="icon-user"></i></div>
+                                        <div class="text">Account Settings</div>
                                     </a>
                                 </li>
                             </ul>
@@ -432,22 +428,22 @@
                                                         alt="">
                                                 </span>
                                                 <span class="flex flex-column">
-                                                    <span class="body-title mb-2">Omar Faruk</span>
-                                                    <span class="text-tiny">Admin</span>
+                                                    <span class="body-title mb-2">{{auth()->user()->name}}</span>
+                                                    <span class="text-tiny">{{auth()->user()->role}}</span>
                                                 </span>
                                             </span>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end has-content"
                                             aria-labelledby="dropdownMenuButton3">
                                             <li>
-                                                <a href="#" class="user-item">
+                                                <a href="{{ route('admin.user.index')}}" class="user-item">
                                                     <div class="icon">
                                                         <i class="icon-user"></i>
                                                     </div>
                                                     <div class="body-title-2">Account</div>
                                                 </a>
                                             </li>
-                                            <li>
+                                            {{-- <li>
                                                 <a href="#" class="user-item">
                                                     <div class="icon">
                                                         <i class="icon-mail"></i>
@@ -471,7 +467,7 @@
                                                     </div>
                                                     <div class="body-title-2">Support</div>
                                                 </a>
-                                            </li>
+                                            </li> --}}
                                             <li>
                                                 <form id="logout-form" action="{{ route('logout') }}"
                                                     method="POST">
@@ -512,11 +508,11 @@
     <script src="{{ asset('admin-resource/js/main.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Styles -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
+{{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 <!-- Or for RTL support -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.rtl.min.css" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.rtl.min.css" /> --}}
 
 
     <script>
