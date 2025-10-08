@@ -182,12 +182,12 @@
                                         </li>
                                     </ul>
                                 </li> --}}
-                                <li class="menu-item">
-                                    <a href="{{ route('admin.user.index') }}" class="">
+                                {{-- <li class="menu-item">
+                                    <a href="#" class="">
                                         <div class="icon"><i class="icon-user"></i></div>
                                         <div class="text">Account Settings</div>
                                     </a>
-                                </li>
+                                </li> --}}
                             </ul>
                         </div>
                     </div>
