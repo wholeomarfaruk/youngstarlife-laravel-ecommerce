@@ -95,14 +95,14 @@ class SteadFastController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Order not found'
-            ], 404);
+            ], 200);
         }
         if ($order->name == null || $order->phone == null || $order->address == null) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Invalid Order Details',
                 'data' => $order
-            ], 404);
+            ], 200);
 
         }
         $item_descriptions = '';
@@ -114,7 +114,7 @@ class SteadFastController extends Controller
                 'status' => 'error',
                 'message' => 'Order Already Placed',
                 'data' => $order
-            ], 404);
+            ], 200);
         }
 
         $orderData = [
@@ -128,12 +128,12 @@ class SteadFastController extends Controller
         ];
 
         $response = SteadfastCourier::placeOrder($orderData);
-        if ($response['status'] == 404) {
+        if ($response['status'] === 'error') {
             return response()->json([
                 'status' => 'error',
                 'message' => $response['message'],
                 'data' => $order
-            ], 404);
+            ], 200);
         }
         $order->consignment_id = $response['consignment']['consignment_id'];
         $order->status = 'in_review';
