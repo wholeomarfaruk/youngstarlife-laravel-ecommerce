@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\Api\SteadFastController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\CategoryController;
@@ -145,6 +146,8 @@ Route::prefix('admin')->group(function () {
     Route::put("/user-settings/update",[UserController::class,"update"])->name("admin.user.update");
     //User Setting / Admin Setting End =================================================================
 
+    //steadfast courier api
+    Route::get('/steadfast/place-order/{id}', [SteadFastController::class, 'place_order'])->name('admin.steadfast.place_order');
 
     });
 });

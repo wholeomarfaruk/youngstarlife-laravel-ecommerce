@@ -22,7 +22,7 @@
             </div>
 
             <div class="wg-box">
-                <div class="row " >
+                <div class="row ">
                     <div class="wg-filter col-md-6 mb-3">
                         <form class="form-search">
                             <fieldset class="name">
@@ -41,7 +41,8 @@
                                     <option value="">Select Status</option>
 
                                     @foreach ($status_group as $sg)
-                                        <option value="{{ $sg->status }}">{{ $sg->status }} ({{ $sg->count }})</option>
+                                        <option value="{{ $sg->status }}">{{ $sg->status }} ({{ $sg->count }})
+                                        </option>
                                     @endforeach
 
                                 </select>
@@ -51,8 +52,8 @@
                             </div>
 
                         </form>
-                        <a class="tf-button style-1 w208" href="{{route('admin.orders.add')}}"><i
-                            class="icon-plus"></i>Add new</a>
+                        <a class="tf-button style-1 w208" href="{{ route('admin.orders.add') }}"><i
+                                class="icon-plus"></i>Add new</a>
                     </div>
                 </div>
                 <div class="wg-box">
@@ -81,6 +82,7 @@
                                     <th style="width:70px">OrderNo</th>
                                     <th class="text-center">Name</th>
                                     <th class="text-center">Phone</th>
+                                    <th class="text-center">Consigment ID</th>
                                     <th class="text-center">Subtotal</th>
                                     <th class="text-center">Discount</th>
                                     <th class="text-center">Delivery charge</th>
@@ -98,8 +100,19 @@
                                 @foreach ($orders as $order)
                                     <tr>
                                         <td class="text-center">{{ $order->id }}</td>
-                                        <td class="text-center">{{ $order->name }}</td>
+                                        <td class="text-center">{{ $order->name }}
+                                            <span data-bs-toggle="tooltip" data-bs-html="true" title="Address: {{ $order->address }}&nbsp;&nbsp;Note: {{ $order->note }}&nbsp;&nbsp;Order Items:
+                                                    @foreach ($order->Order_Item as $item)
+                                                       {{ $item?->product?->name }} x {{ $item?->quantity }}
+                                                    @endforeach
+
+                                                ">
+                                                <i class="icon-info cursor-pointer"></i>
+                                            </span>
+
+                                        </td>
                                         <td class="text-center">{{ $order->phone }}</td>
+                                        <td class="text-center">{{ $order->consignment_id }}</td>
                                         <td class="text-center">৳{{ $order->subtotal }}</td>
                                         <td class="text-center">৳{{ $order->discount }}</td>
                                         <td class="text-center">৳{{ $order->fee }}</td>
@@ -125,6 +138,14 @@
                                                     <div class="list-icon-function">
                                                         <div class="item trash">
                                                             <i class="icon-trash"></i>
+                                                        </div>
+                                                    </div>
+                                                </a>
+                                                <a class="send_courier" data-id="{{ $order->id }}"
+                                                    href="{{ route('admin.steadfast.place_order', $order->id) }}">
+                                                    <div class="list-icon-function">
+                                                        <div class="item send">
+                                                            <i class="icon-send"></i>
                                                         </div>
                                                     </div>
                                                 </a>
@@ -156,6 +177,48 @@
             if (confirm("Are you sure? You want to delete " + name)) {
                 form.submit();
             }
-        })
+        });
+        $('.send_courier').click(function(e) {
+            e.preventDefault();
+            var id = $(this).attr('data-id');
+            var href = $(this).attr('href');
+            swal.fire({
+                title: 'Are you sure?',
+                text: "You want to add parcel to this order! Order ID: " + id,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Add Parcel'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        type: "GET",
+                        url: href,
+                        dataType: "json",
+                        success: function(response) {
+                            if (response.status === 'success') {
+                                swal.fire(
+                                    'Success',
+                                    response.message,
+                                    'success'
+                                )
+                                setTimeout(function() {
+                                    location.reload();
+                                }, 1000);
+
+                            } else {
+                                swal.fire(
+                                    'Error',
+                                    response.message,
+                                    'error'
+                                )
+                            }
+                            console.log(response);
+                        }
+                    });
+                }
+            });
+        });
     </script>
 @endpush

@@ -12,6 +12,7 @@
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.6",
         "maatwebsite/excel": "^3.1",
+        "steadfast-courier/steadfast-courier-laravel-package": "^1.1",
         "stevebauman/location": "*",
         "surfsidemedia/shoppingcart": "^1.0"
     },

@@ -7,6 +7,7 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use SteadFast\SteadFastCourierLaravelPackage\Facades\SteadfastCourier;
 
 class SteadFastController extends Controller
 {
@@ -41,7 +42,7 @@ class SteadFastController extends Controller
                 'message' => 'Invalid Invoice ID'
             ], 200);
         }
-        if(!$order->consignment_id){
+        if (!$order->consignment_id) {
             $order->consignment_id = $consignmentId;
         }
 
@@ -73,7 +74,7 @@ class SteadFastController extends Controller
             } elseif (Str::lower($status) === 'cancelled') {
                 $order->status = 'cancelled';
                 $order->cancelled_date = now();
-            }elseif(Str::lower($status) === 'pending') {
+            } elseif (Str::lower($status) === 'pending') {
                 $order->status = 'in_transit';
             }
         }
@@ -85,6 +86,97 @@ class SteadFastController extends Controller
         return response()->json([
             'status' => 'success',
             'message' => 'Webhook received successfully.'
+        ], 200);
+    }
+    public function place_order($id)
+    {
+        $order = Order::find($id);
+        if (!$order) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Order not found'
+            ], 404);
+        }
+        if ($order->name == null || $order->phone == null || $order->address == null) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Invalid Order Details',
+                'data' => $order
+            ], 404);
+
+        }
+        $item_descriptions = '';
+        foreach ($order->Order_Item as $item) {
+            $item_descriptions .= $item->product->name . ' x ' . $item->quantity . ', ';
+        }
+        if ($order->consignment_id) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Order Already Placed',
+                'data' => $order
+            ], 404);
+        }
+
+        $orderData = [
+            'invoice' => $order->id,
+            'recipient_name' => $order->name,
+            'recipient_phone' => $order->phone,
+            'recipient_address' => $order->address,
+            'cod_amount' => floatval($order->total),
+            'note' => '',
+            'item_description' => $item_descriptions
+        ];
+
+        $response = SteadfastCourier::placeOrder($orderData);
+        if ($response['status'] == 404) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $response['message'],
+                'data' => $order
+            ], 404);
+        }
+        $order->consignment_id = $response['consignment']['consignment_id'];
+        $order->status = 'in_review';
+        $order->save();
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Order Placed Successfully.',
+            'response' => $response,
+            'data' => $order,
+            'item_descriptions' => $item_descriptions
+
+        ], 200);
+    }
+    public function place_bulk_order(Request $request)
+    {
+        $orders = Order::whereIn('id', $request->input('order_ids'))->get();
+        $orderData = [];
+        foreach ($orders as $order) {
+            if (!$order->consignment_id && $order->name && $order->phone && $order->address && $order->total > 0  && strlen($order->phone) == 11) {
+                $orderData[] = [
+                    'invoice' => $order->id,
+                    'recipient_name' => $order->name,
+                    'recipient_phone' => $order->phone,
+                    'recipient_address' => $order->address,
+                    'cod_amount' => floatval($order->total),
+                    'note' => '',
+                    'item_description' => $order?->Order_Item?->pluck('product.name')->implode(', ')
+                ];
+            }
+
+        }
+        $response = SteadfastCourier::placeBulkOrder($orderData);
+        if ($response['status'] == 404) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $response['message'],
+                'response' => $response
+            ], 404);
+        }
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Orders Placed Successfully.',
+            'response' => $response
         ], 200);
     }
 }

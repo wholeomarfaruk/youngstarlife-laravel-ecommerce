@@ -7,25 +7,25 @@
             --bs-table-accent-bg: #fff !important;
         }
     </style>
-      <!-- ====================== Styles ====================== -->
-        <style>
-            .product-item {
-                transition: 0.2s ease-in-out;
-            }
+    <!-- ====================== Styles ====================== -->
+    <style>
+        .product-item {
+            transition: 0.2s ease-in-out;
+        }
 
-            .product-item:hover {
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                background-color: #f8f9fa;
-            }
+        .product-item:hover {
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            background-color: #f8f9fa;
+        }
 
-            @media (max-width: 767px) {
+        @media (max-width: 767px) {
 
-                .product-item .col-md-2,
-                .product-item .col-md-3 {
-                    text-align: center;
-                }
+            .product-item .col-md-2,
+            .product-item .col-md-3 {
+                text-align: center;
             }
-        </style>
+        }
+    </style>
     <div class="main-content-inner">
         <div class="main-content-wrap">
             <div class="flex items-center flex-wrap justify-between gap20 mb-27">
@@ -113,43 +113,42 @@
                         </thead>
                         <tbody>
                             @if ($orderItems->count() > 0)
-
-
-                            @foreach ($orderItems as $item)
-                                <tr>
-                                    <td class="pname">
-                                        <div class="image">
-                                            <img src="{{ asset('storage/images/products/thumbnails/' . $item->product->image) }}"
-                                                alt="{{ $item->product->name }}" class="image">
-                                        </div>
-                                        <div class="name">
-                                            <a href="javascript:void(0)" target="_blank"
-                                                class="body-title-2">{{ $item->product->name }}</a>
-                                        </div>
-                                    </td>
-                                    <td class="text-center">৳{{ $item->product->discount_price ?? $item->product->price }}
-                                    </td>
-                                    <td class="text-center">{{ $item->quantity }}</td>
-                                    <td class="text-center">
-                                        {{ floatval($item->product->discount_price ?? $item->product->price) * (int) $item->quantity }}
-                                    </td>
-
-                                    <td class="text-center">{{ $item->options }}</td>
-                                    <td class="text-center">{{ $item->return_status ? 'Yes' : 'No' }}</td>
-                                    <td class="text-center">
-                                        <div class="list-icon-function view-icon">
-                                            <div class="item eye">
-                                                <i class="icon-eye"></i>
+                                @foreach ($orderItems as $item)
+                                    <tr>
+                                        <td class="pname">
+                                            <div class="image">
+                                                <img src="{{ asset('storage/images/products/thumbnails/' . $item->product->image) }}"
+                                                    alt="{{ $item->product->name }}" class="image">
                                             </div>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforeach
+                                            <div class="name">
+                                                <a href="javascript:void(0)" target="_blank"
+                                                    class="body-title-2">{{ $item->product->name }}</a>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            ৳{{ $item->product->discount_price ?? $item->product->price }}
+                                        </td>
+                                        <td class="text-center">{{ $item->quantity }}</td>
+                                        <td class="text-center">
+                                            {{ floatval($item->product->discount_price ?? $item->product->price) * (int) $item->quantity }}
+                                        </td>
+
+                                        <td class="text-center">{{ $item->options }}</td>
+                                        <td class="text-center">{{ $item->return_status ? 'Yes' : 'No' }}</td>
+                                        <td class="text-center">
+                                            <div class="list-icon-function view-icon">
+                                                <div class="item eye">
+                                                    <i class="icon-eye"></i>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endforeach
                             @else
                                 <tr>
                                     <td colspan="7" class="text-center">No products found</td>
                                 </tr>
-@endif
+                            @endif
                         </tbody>
                     </table>
                 </div>
@@ -164,9 +163,10 @@
                 <div class="tf-section-1 mb-30">
                     <div class="flex gap20 flex-wrap-mobile">
                         <div class="w-half">
-                            <h5>Shipping Address <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#orderDetails">
-                        Edit
-                    </button></h5>
+                            <h5>Shipping Address <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                    data-bs-target="#orderDetails">
+                                    Edit
+                                </button></h5>
                             <div class="my-account__address-item col-md-6">
 
                                 <div class="my-account__address-item__detail">
@@ -303,70 +303,74 @@
                             <!-- Dynamic Product List -->
                             <div id="editForm" class="mt-3">
                                 @if ($order->Order_Item->count() > 0)
+                                    @foreach ($order->Order_Item as $item)
+                                        <div id="product-item-{{ $item->product->id }}"
+                                            class="product-item border rounded bg-light p-3 mb-3">
+                                            <div class="row align-items-center text-center text-md-start">
 
+                                                <!-- 1️⃣ Image -->
+                                                <div class="col-12 col-md-2 mb-2 mb-md-0">
+                                                    <img src="/storage/images/products/{{ $item->product->image }}"
+                                                        alt="{{ $item->product->name }}" class="img-fluid rounded"
+                                                        style="max-height: 80px; object-fit: cover;">
+                                                </div>
 
-                                @foreach ($order->Order_Item as $item)
-                                    <div id="product-item-{{ $item->product->id }}"
-                                        class="product-item border rounded bg-light p-3 mb-3">
-                                        <div class="row align-items-center text-center text-md-start">
+                                                <!-- 2️⃣ Title & Price -->
+                                                <div class="col-12 col-md-3 mb-2 mb-md-0">
+                                                    <h6 class="mb-1">{{ $item->product->name }}</h6>
+                                                    <p class="mb-0">
+                                                        Price:
+                                                        <strong class="product-price"
+                                                            data-price="{{ $item->product->discount_price ?? $item->product->price }}">
+                                                            {{ $item->product->discount_price ?? $item->product->price }}
+                                                            Tk
+                                                        </strong>
+                                                    </p>
+                                                </div>
 
-                                            <!-- 1️⃣ Image -->
-                                            <div class="col-12 col-md-2 mb-2 mb-md-0">
-                                                <img src="/storage/images/products/{{ $item->product->image }}"
-                                                    alt="{{ $item->product->name }}" class="img-fluid rounded"
-                                                    style="max-height: 80px; object-fit: cover;">
-                                            </div>
+                                                <!-- 3️⃣ Quantity -->
+                                                <div class="col-6 col-md-2 mb-2 mb-md-0">
+                                                    <label class="form-label small">Quantity</label>
+                                                    <input type="text" class="edit_product_id" hidden
+                                                        name="order_items[{{ $item->product->id }}][id]"
+                                                        value="{{ $item->product->id }}">
+                                                    <input type="number"
+                                                        name="order_items[{{ $item->product->id }}][quantity]"
+                                                        id="quantity_{{ $item->product->id }}"
+                                                        value="{{ $item->quantity }}" min="1"
+                                                        class="form-control quantity-input"
+                                                        data-id="{{ $item->product->id }}">
+                                                </div>
 
-                                            <!-- 2️⃣ Title & Price -->
-                                            <div class="col-12 col-md-3 mb-2 mb-md-0">
-                                                <h6 class="mb-1">{{ $item->product->name }}</h6>
-                                                <p class="mb-0">
-                                                    Price:
-                                                    <strong class="product-price"
-                                                        data-price="{{ $item->product->discount_price ?? $item->product->price }}">
-                                                        {{ $item->product->discount_price ?? $item->product->price }} Tk
-                                                    </strong>
-                                                </p>
-                                            </div>
+                                                <!-- 4️⃣ Options -->
+                                                <div class="col-6 col-md-3 mb-2 mb-md-0">
+                                                    <label class="form-label small">Options</label>
+                                                    <input type="text"
+                                                        name="order_items[{{ $item->product->id }}][size]"
+                                                        id="options_{{ $item->product->id }}" class="form-control"
+                                                        placeholder="Enter size"
+                                                        value="{{ json_decode($item?->options)?->size }}">
+                                                </div>
 
-                                            <!-- 3️⃣ Quantity -->
-                                            <div class="col-6 col-md-2 mb-2 mb-md-0">
-                                                <label class="form-label small">Quantity</label>
-                                                <input type="text" class="edit_product_id" hidden name="order_items[{{ $item->product->id }}][id]" value="{{ $item->product->id }}">
-                                                <input type="number" name="order_items[{{ $item->product->id }}][quantity]"
-                                                    id="quantity_{{ $item->product->id }}" value="{{ $item->quantity }}"
-                                                    min="1" class="form-control quantity-input"
-                                                    data-id="{{ $item->product->id }}">
-                                            </div>
-
-                                            <!-- 4️⃣ Options -->
-                                            <div class="col-6 col-md-3 mb-2 mb-md-0">
-                                                <label class="form-label small">Options</label>
-                                                <input type="text" name="order_items[{{ $item->product->id }}][size]"
-                                                    id="options_{{ $item->product->id }}" class="form-control"
-                                                    placeholder="Enter size" value="{{ json_decode($item?->options)?->size }}">
-                                            </div>
-
-                                            <!-- 5️⃣ Actions -->
-                                            <div class="col-12 col-md-2">
-                                                <button type="button" class="btn btn-danger btn-sm w-100 mt-2 mt-md-0"
-                                                    onclick="removeProduct({{ $item->product->id }})">
-                                                    Remove
-                                                </button>
+                                                <!-- 5️⃣ Actions -->
+                                                <div class="col-12 col-md-2">
+                                                    <button type="button"
+                                                        class="btn btn-danger btn-sm w-100 mt-2 mt-md-0"
+                                                        onclick="removeProduct({{ $item->product->id }})">
+                                                        Remove
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                @endforeach
-
-
+                                    @endforeach
                                 @endif
                             </div>
                             <!-- delivery charge -->
                             <fieldset class="mt-3">
                                 <label for="delivery_charge" class="form-label fw-semibold">Delivery Charge</label>
                                 <input type="number" id="delivery_charge" name="delivery_charge" class="form-control"
-                                    placeholder="Enter delivery charge" value="{{ $order->fee ?? 0 }}" value="{{ $order->fee ?? 0 }}"
-                                    min="0">
+                                    placeholder="Enter delivery charge" value="{{ $order->fee ?? 0 }}"
+                                    value="{{ $order->fee ?? 0 }}" min="0">
                             </fieldset>
                             <!-- Discount -->
                             <fieldset class="mt-3">
@@ -408,7 +412,8 @@
                 </div>
             </div>
         </div>
-  <div class="modal fade" id="orderDetails" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="orderDetails" tabindex="-1" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-scrollable">
                 <div class="modal-content">
 
@@ -420,12 +425,13 @@
 
                     <!-- Body -->
                     <div class="modal-body">
-                        <form action="{{ route('admin.orders.update.details', $order->id) }}" method="POST" id="orderDetailForm">
+                        <form action="{{ route('admin.orders.update.details', $order->id) }}" method="POST"
+                            id="orderDetailForm">
                             @csrf
                             @method('PUT')
 
 
-                                <input type="hidden" name="order_id" value="{{ $order->id }}">
+                            <input type="hidden" name="order_id" value="{{ $order->id }}">
 
                             <div class="row">
                                 <div class="col-md-6">
@@ -487,37 +493,37 @@
             </div>
         </div>
         <!-- ====================== JS Section ====================== -->
-       <script>
-    var allProducts = @json($products);
+        <script>
+            var allProducts = @json($products);
 
-    const productSelect = document.getElementById('products');
-    const editForm = document.getElementById('editForm');
-    const discountInput = document.getElementById('discount');
-    const subTotalEl = document.getElementById('subTotal');
-    const discountEl = document.getElementById('discount_price');
-    const fee = document.getElementById('delivery_charge');
-    const totalEl = document.getElementById('total');
+            const productSelect = document.getElementById('products');
+            const editForm = document.getElementById('editForm');
+            const discountInput = document.getElementById('discount');
+            const subTotalEl = document.getElementById('subTotal');
+            const discountEl = document.getElementById('discount_price');
+            const fee = document.getElementById('delivery_charge');
+            const totalEl = document.getElementById('total');
 
-    // ===== Initialize when modal is shown =====
-    document.getElementById('exampleModal').addEventListener('shown.bs.modal', function () {
-        attachQuantityListeners();
-        calculateTotal();
-    });
+            // ===== Initialize when modal is shown =====
+            document.getElementById('exampleModal').addEventListener('shown.bs.modal', function() {
+                attachQuantityListeners();
+                calculateTotal();
+            });
 
-    // ===== Product Selector Change =====
-    productSelect.addEventListener('change', function () {
-        const selectedIds = Array.from(this.selectedOptions).map(opt => opt.value);
-        let addedIds = Array.from(editForm.querySelectorAll('input.edit_product_id')).map(input => input.value);
-        let filteredIds = selectedIds.filter(id => !addedIds.includes(id));
-        const selectedProducts = allProducts.filter(p => filteredIds.includes(String(p.id)));
-        console.log(selectedIds);
-        console.log(addedIds);
-        console.log(filteredIds);
-        console.log(selectedProducts);
-        console.log(allProducts);
-        selectedProducts.forEach(product => {
-            const price = product.discount_price ?? product.price;
-            const formHtml = `
+            // ===== Product Selector Change =====
+            productSelect.addEventListener('change', function() {
+                const selectedIds = Array.from(this.selectedOptions).map(opt => opt.value);
+                let addedIds = Array.from(editForm.querySelectorAll('input.edit_product_id')).map(input => input.value);
+                let filteredIds = selectedIds.filter(id => !addedIds.includes(id));
+                const selectedProducts = allProducts.filter(p => filteredIds.includes(String(p.id)));
+                console.log(selectedIds);
+                console.log(addedIds);
+                console.log(filteredIds);
+                console.log(selectedProducts);
+                console.log(allProducts);
+                selectedProducts.forEach(product => {
+                    const price = product.discount_price ?? product.price;
+                    const formHtml = `
             <div id="product-item-${product.id}" class="product-item border rounded bg-light p-3 mb-3">
                 <div class="row align-items-center text-center text-md-start">
                     <!-- 1️⃣ Image -->
@@ -559,69 +565,69 @@
             </div>`;
 
 
-            $(editForm).append(formHtml);
+                    $(editForm).append(formHtml);
 
 
-        });
+                });
 
-        // editForm.appendChild = formHtml;
+                // editForm.appendChild = formHtml;
 
-        attachQuantityListeners();
-        calculateTotal();
-    });
+                attachQuantityListeners();
+                calculateTotal();
+            });
 
-    // ===== Attach quantity input listeners =====
-    function attachQuantityListeners() {
-        document.querySelectorAll('.quantity-input').forEach(input => {
-            input.removeEventListener('input', calculateTotal); // avoid duplicates
-            input.addEventListener('input', calculateTotal);
-        });
-    }
+            // ===== Attach quantity input listeners =====
+            function attachQuantityListeners() {
+                document.querySelectorAll('.quantity-input').forEach(input => {
+                    input.removeEventListener('input', calculateTotal); // avoid duplicates
+                    input.addEventListener('input', calculateTotal);
+                });
+            }
 
-    // ===== Remove product =====
-    function removeProduct(productId) {
-        const productItem = document.getElementById(`product-item-${productId}`);
-        if (productItem) productItem.remove();
+            // ===== Remove product =====
+            function removeProduct(productId) {
+                const productItem = document.getElementById(`product-item-${productId}`);
+                if (productItem) productItem.remove();
 
-        const option = document.querySelector(`#products option[value="${productId}"]`);
-        if (option) option.selected = false;
+                const option = document.querySelector(`#products option[value="${productId}"]`);
+                if (option) option.selected = false;
 
-        if ($('.selectpicker').length) $('.selectpicker').selectpicker('refresh');
-        calculateTotal();
-    }
+                if ($('.selectpicker').length) $('.selectpicker').selectpicker('refresh');
+                calculateTotal();
+            }
 
-    // ===== Calculate totals =====
-    discountInput.addEventListener('input', calculateTotal);
-    fee.addEventListener('input', calculateTotal);
+            // ===== Calculate totals =====
+            discountInput.addEventListener('input', calculateTotal);
+            fee.addEventListener('input', calculateTotal);
 
-    function calculateTotal() {
-        let subTotal = 0;
+            function calculateTotal() {
+                let subTotal = 0;
 
-        document.querySelectorAll('.product-item').forEach(item => {
-            const priceEl = item.querySelector('.product-price');
-            const quantityInput = item.querySelector('.quantity-input');
-            if (!priceEl || !quantityInput) return;
+                document.querySelectorAll('.product-item').forEach(item => {
+                    const priceEl = item.querySelector('.product-price');
+                    const quantityInput = item.querySelector('.quantity-input');
+                    if (!priceEl || !quantityInput) return;
 
-            const price = parseFloat(priceEl.dataset.price) || 0;
-            const qty = parseInt(quantityInput.value) || 0;
-            subTotal += price * qty;
-        });
+                    const price = parseFloat(priceEl.dataset.price) || 0;
+                    const qty = parseInt(quantityInput.value) || 0;
+                    subTotal += price * qty;
+                });
 
-        const deliveryCharge = parseFloat(fee.value) || 0;
+                const deliveryCharge = parseFloat(fee.value) || 0;
 
-        const discount = parseFloat(discountInput.value) || 0;
-        const total = Math.max(subTotal - discount, 0) + deliveryCharge;
+                const discount = parseFloat(discountInput.value) || 0;
+                const total = Math.max(subTotal - discount, 0) + deliveryCharge;
 
 
-        subTotalEl.textContent = subTotal.toFixed(2);
-        discountEl.textContent = discount.toFixed(2);
-        totalEl.textContent = total.toFixed(2);
-    }
+                subTotalEl.textContent = subTotal.toFixed(2);
+                discountEl.textContent = discount.toFixed(2);
+                totalEl.textContent = total.toFixed(2);
+            }
 
-    // ===== Run once on load =====
-    attachQuantityListeners();
-    calculateTotal();
-</script>
+            // ===== Run once on load =====
+            attachQuantityListeners();
+            calculateTotal();
+        </script>
 
 
         <!-- content area end -->
