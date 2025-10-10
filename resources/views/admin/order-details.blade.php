@@ -73,8 +73,8 @@
                             <tr>
                                 <th>total Quantity</th>
                                 <td>{{ $order->Order_Item->count() }}</td>
-                                <th>Payment Mode</th>
-                                <td>Cash On Delivery</td>
+                                <th>Consigment ID</th>
+                                <td>{{ $order->consignment_id }}</td>
                                 <th>Status</th>
                                 <td>{{ $order->status }}</td>
                             </tr>
