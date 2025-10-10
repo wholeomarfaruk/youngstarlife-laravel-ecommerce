@@ -172,6 +172,31 @@
                                 <div class="my-account__address-item__detail">
                                     <p>Name : {{ $order->name }}</p>
                                     <p>Mobile : {{ $order->phone }}</p>
+                                    <strong>SteadFast Customer Check:</strong>
+                                    <p>
+                                        Total Order : {{ $order->fraud_check['total'] ?? 0 }}<br>
+                                        Received Order : {{ $order->fraud_check['success'] ?? 0 }}<br>
+                                        Returned Order : {{ $order->fraud_check['cancel'] ?? 0 }}<br>
+                                        Score:
+                                        @php
+                                            $success = $order->fraud_check['success'] ?? 0;
+                                            $total = $order->fraud_check['total'] ?? 0;
+
+                                            $score = $total > 0 ? ($success / $total) * 100 : 0;
+                                            $fraud_score = number_format($score, 2);
+                                        @endphp
+                                    </p>
+
+                                    <div class="progress">
+                                        <div class="progress-bar bg-{{ $fraud_score >= 70 ? 'success' : 'danger' }}"
+                                            role="progressbar"
+                                            style="width: {{ $fraud_score > 100 ? 100 : $fraud_score }}%;"
+                                            aria-valuenow="{{ $fraud_score > 100 ? 100 : $fraud_score }}" aria-valuemin="0"
+                                            aria-valuemax="100">
+                                            {{ $fraud_score > 100 ? 100 : $fraud_score }}%
+                                        </div>
+                                    </div>
+
 
                                     <p>Delivery Area :
                                         {{ $order?->delivery_area?->name . ' - ' . $order?->delivery_area?->charge }} TK

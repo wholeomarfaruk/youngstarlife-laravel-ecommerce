@@ -12,6 +12,7 @@
         "laravel/tinker": "^2.9",
         "laravel/ui": "^4.6",
         "maatwebsite/excel": "^3.1",
+        "shahariar-ahmad/courier-fraud-checker-bd": "^2.0",
         "steadfast-courier/steadfast-courier-laravel-package": "^1.1",
         "stevebauman/location": "*",
         "surfsidemedia/shoppingcart": "^1.0"

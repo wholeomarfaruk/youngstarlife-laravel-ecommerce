@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
-
+use ShahariarAhmad\CourierFraudCheckerBd\Services\SteadfastService;
 use App\Exports\OrderExport;
 use App\Models\Analytic;
 use App\Models\Size;
@@ -20,6 +20,7 @@ use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Facades\File;
 use Maatwebsite\Excel\Facades\Excel;
+use ShahariarAhmad\CourierFraudCheckerBd\Facade\CourierFraudCheckerBd;
 
 class AdminController extends Controller
 {
@@ -169,13 +170,13 @@ class AdminController extends Controller
 
 
             }
-                   if($request->has('categories')){
-            $product->categories()->attach($request->categories);
+            if ($request->has('categories')) {
+                $product->categories()->attach($request->categories);
 
-        }
-        if($request->has('segments')){
-            $product->segments()->attach($request->segments);
-        }
+            }
+            if ($request->has('segments')) {
+                $product->segments()->attach($request->segments);
+            }
         } catch (\Throwable $th) {
             return redirect()->back()->with('error', $th->getMessage());
 
@@ -305,11 +306,11 @@ class AdminController extends Controller
 
 
         }
-        if($request->has('categories')){
+        if ($request->has('categories')) {
             $product->categories()->sync($request->categories);
 
         }
-        if($request->has('segments')){
+        if ($request->has('segments')) {
             $product->segments()->sync($request->segments);
         }
         return redirect()->route('admin.products')->with('status', 'Product Updated Successfully');
@@ -390,6 +391,7 @@ class AdminController extends Controller
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
+
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::whereNot('status', 'deleted')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
@@ -397,11 +399,13 @@ class AdminController extends Controller
             $orders = Order::whereNot('status', 'deleted')->orderBy('created_at', 'desc')->paginate(20);
 
         }
+
         $status_group = Order::whereNot('status', 'deleted')->select('status')
             ->selectRaw('COUNT(*) as count')
             ->groupBy('status')
             ->get();
         $orders_count = Order::count();
+
         return view('admin.orders', compact('orders', 'status_group', 'orders_count'));
     }
     public function deletedOrders(Request $request)
@@ -426,6 +430,16 @@ class AdminController extends Controller
     public function orderDetails($id)
     {
         $order = Order::find($id);
+        if (!$order) {
+            abort(404);
+        }
+        if ($order) {
+
+                //fraud check steadfst
+                $phone = $order->phone;
+                $order->fraud_check = collect((new SteadfastService())->steadfast($phone));
+        }
+        // dd($order->fraud_check);
         $orderItems = Order_Item::where('order_id', $id)->paginate(20);
         $products = products::all();
         return view('admin.order-details', compact('order', 'orderItems', 'products'))->with('title', 'Order Details');
@@ -525,9 +539,10 @@ class AdminController extends Controller
 
         return Excel::download(new OrderExport($order_status), $fileName);
     }
-    public function updateOrder(Request $request, $id){
+    public function updateOrder(Request $request, $id)
+    {
         $order = Order::find($id);
-        if(!$order){
+        if (!$order) {
             return redirect()->back()->with('error', 'Order not found');
         }
         $order->Order_Item()->delete();
@@ -542,26 +557,27 @@ class AdminController extends Controller
             $orderItem->options = json_encode(['size' => $request->order_items[$orderedProduct->id]['size']]);
             $orderItem->save();
         }
-            $subtotal = $orderedProducts ->sum(function ($product) use ($request){
-                return (float) ($product->discount_price ?? $product->price) * (float)$request->order_items[$product->id]['quantity'];
-            });
-            $order->subtotal = $subtotal;
-            $order->discount = $request->discount;
-            $order->fee = $request->delivery_charge;
-            $order->total = ($subtotal+(float)$request->delivery_charge)-(float)$request->discount;
+        $subtotal = $orderedProducts->sum(function ($product) use ($request) {
+            return (float) ($product->discount_price ?? $product->price) * (float) $request->order_items[$product->id]['quantity'];
+        });
+        $order->subtotal = $subtotal;
+        $order->discount = $request->discount;
+        $order->fee = $request->delivery_charge;
+        $order->total = ($subtotal + (float) $request->delivery_charge) - (float) $request->discount;
 
-            $order->save();
+        $order->save();
 
 
 
-     $order->save();
+        $order->save();
 
         // return $request->all();
         return redirect()->back()->with('status', 'Order Updated Successfully');
     }
-    public function updateOrderDetails(Request $request, $id){
+    public function updateOrderDetails(Request $request, $id)
+    {
         $order = Order::find($id);
-        if(!$order){
+        if (!$order) {
             return redirect()->back()->with('error', 'Order not found');
         }
         $order->name = $request->name;
@@ -818,7 +834,7 @@ class AdminController extends Controller
         $order->name = $request->name;
         $order->phone = $request->phone;
         $order->address = $request->address;
-        $order->note=$request->note;
+        $order->note = $request->note;
         $order->save();
         return redirect()->route('admin.orders')->with('status', 'Order Created Successfully');
     }
