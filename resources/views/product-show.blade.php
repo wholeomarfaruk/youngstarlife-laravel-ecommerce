@@ -212,8 +212,8 @@
                                         <label class="form-label fw-bold fs-5">আপনার মোবাইল লিখুন
                                         </label>
                                         <input name="phone" id="phone" type="text" class="form-control" required
-                                            minlength="11"  inputmode="numeric"
-                                            autocomplete="tel" placeholder="Type Your Phone Number">
+                                            minlength="11" inputmode="numeric" autocomplete="tel"
+                                            placeholder="Type Your Phone Number">
 
                                     </div>
                                 </div>
@@ -251,8 +251,8 @@
                                                 <i class="fa-solid fa-circle-minus text-primary-color"></i>
                                             </button>
                                             <!-- <input type="button" value="-"
-                                                                                                            class="button-minus border rounded-circle btn-primary  icon-shape icon-sm mx-1 lh-0"
-                                                                                                            > -->
+                                                                                                                class="button-minus border rounded-circle btn-primary  icon-shape icon-sm mx-1 lh-0"
+                                                                                                                > -->
                                             <input type="number" step="1" max="10" min="1"
                                                 value="1" name="quantity"
                                                 class="quantity-field border-0 text-center w-25 form-control ">
@@ -276,7 +276,8 @@
 
                                 </div>
                                 <div class="col-12">
-                                    <button id="order-button" type="submit"  {{ $product?->stock_status == 'out_of_stock' ? 'disabled' : '' }}
+                                    <button id="order-button" type="submit"
+                                        {{ $product?->stock_status == 'out_of_stock' ? 'disabled' : '' }}
                                         class="btn btn-primary bg-primary-color mb-3 w-100 fw-bold fs-5 py-2">অর্ডার
                                         করুন {{ $product?->stock_status == 'out_of_stock' ? '(স্টক শেষ)' : '' }}</button>
                                 </div>
@@ -383,15 +384,18 @@
 @endsection
 
 @push('scripts')
-@if (session('status') == 'error')
-    <script>
-        Swal.fire({
-            icon: 'error',
-            title: 'Oops...',
-            text: "{{ session('message') }}",
-        });
-    </script>
-@endif
+    @if (session('status'))
+        <script>
+            Swal.fire({
+                icon: "{{ session('status') == 'error' ? 'error' : 'success' }}",
+                title: "{{ session('status') == 'error' ? 'দুঃখিত!' : 'সফল!' }}",
+                text: "{{ session('message') }}",
+                confirmButtonText: 'ঠিক আছে',
+                timer: 4000, // Auto close after 4 seconds
+                timerProgressBar: true,
+            });
+        </script>
+    @endif
 
     <script>
         console.log("Session: " + "{{ session('status') ? session('message') : 'null' }}");
@@ -584,40 +588,39 @@
         })
     </script>
     <script>
+        $(window).on('beforeunload', function() {
+            var name = $("input[name='name']").val();
+            var phone = $("input[name='phone']").val();
+            var address = $("input[name='address']").val();
+            var size = $("select[name='size").val();
+            var product_id = $("input[name='product_id").val();
+            var quantity = $("input[name='quantity").val();
+            var delivery_area = $("select[name='delivery_area").val();
+            var token = "{{ csrf_token() }}";
+            console.log("token: " + token);
+            var order_data = {
+                name: name,
+                phone: phone,
+                address: address,
+                size: size,
+                product_id: product_id,
+                quantity: quantity,
+                delivery_area: delivery_area,
+                XSRF_TOKEN: token,
 
-          $(window).on('beforeunload', function() {
-                var name = $("input[name='name']").val();
-                var phone = $("input[name='phone']").val();
-                var address = $("input[name='address']").val();
-                var size = $("select[name='size").val();
-                var product_id = $("input[name='product_id").val();
-                var quantity = $("input[name='quantity").val();
-                var delivery_area = $("select[name='delivery_area").val();
-                var token= "{{ csrf_token() }}";
-                console.log("token: "+token);
-                var order_data = {
-                    name: name,
-                    phone: phone,
-                    address: address,
-                    size: size,
-                    product_id: product_id,
-                    quantity: quantity,
-                    delivery_area: delivery_area,
-                    XSRF_TOKEN: token,
+            }
+            fetch('/cart/autosave', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': token
+                },
 
-                }
-                fetch('/cart/autosave', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': token
-                    },
-
-                    body: JSON.stringify(order_data)
-                })
-
-                // event.preventDefault();
-
+                body: JSON.stringify(order_data)
             })
+
+            // event.preventDefault();
+
+        })
     </script>
 @endpush

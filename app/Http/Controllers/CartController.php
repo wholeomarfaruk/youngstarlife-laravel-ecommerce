@@ -282,13 +282,13 @@ class CartController extends Controller
         $extra_data = [];
         $extra_data['order_data'] = $request->all();
         $check_recent_order = Order::where('phone', $phone)
-        ->where('status','pending')
+            ->where('status', 'pending')
             ->latest('created_at') // Get most recent order
             ->first();
 
         $diffInMinutes = 0;
 
-        if ($check_recent_order ) {
+        if ($check_recent_order) {
             // Find if that order has the same product
             $product_found = $check_recent_order->Order_Item()
                 ->where('product_id', $request->product_id)
@@ -304,8 +304,9 @@ class CartController extends Controller
                 if ($diffInMinutes < 2) {
                     return redirect()->back()->with([
                         'status' => 'error',
-                        'message' => 'You have already ordered this product recently. Please try again after 3 minutes.' 
+                        'message' => 'আপনি এই প্রডাক্টি অলরেডি অর্ডার করেছেন। দয়া করে ২ মিনিট পর পুনরায় করুন।'
                     ]);
+
                 }
             }
         }
