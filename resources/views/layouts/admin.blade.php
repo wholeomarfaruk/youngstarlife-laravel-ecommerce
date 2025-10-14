@@ -127,6 +127,16 @@
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.pending') }}" class="">
+                                                <div class="text">Pending Orders</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.confirmed') }}" class="">
+                                                <div class="text">Confirmed Orders</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.deleted') }}" class="">
                                                 <div class="text">Deleted Orders</div>
                                             </a>

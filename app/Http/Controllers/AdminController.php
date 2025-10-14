@@ -408,6 +408,58 @@ class AdminController extends Controller
 
         return view('admin.orders', compact('orders', 'status_group', 'orders_count'));
     }
+    public function ordersPending(Request $request)
+    {
+        if ($request->has('search')) {
+            $search = $request->search;
+            $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
+                ->orWhere('status','pending')
+                ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+
+        } elseif ($request->has('order_status')) {
+            $status = $request->order_status;
+            $orders = Order::where('status', 'pending')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
+        } else {
+            $orders = Order::where('status', 'pending')->orderBy('created_at', 'desc')->paginate(20);
+
+        }
+
+        $status_group = Order::whereNot('status', 'deleted')->select('status')
+            ->selectRaw('COUNT(*) as count')
+            ->groupBy('status')
+            ->get();
+        $orders_count = Order::count();
+
+        return view('admin.orders-pending', compact('orders', 'status_group', 'orders_count'));
+    }
+    public function ordersConfirmed(Request $request)
+    {
+        if ($request->has('search')) {
+            $search = $request->search;
+            $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
+                ->orWhere('status','confirmed')
+                ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+
+        } elseif ($request->has('order_status')) {
+            $status = $request->order_status;
+            $orders = Order::where('status', 'confirmed')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
+        } else {
+            $orders = Order::where('status', 'confirmed')->orderBy('created_at', 'desc')->paginate(20);
+
+        }
+
+        $status_group = Order::whereNot('status', 'deleted')->select('status')
+            ->selectRaw('COUNT(*) as count')
+            ->groupBy('status')
+            ->get();
+        $orders_count = Order::count();
+
+        return view('admin.orders-confirmed', compact('orders', 'status_group', 'orders_count'));
+    }
     public function deletedOrders(Request $request)
     {
         if ($request->has('search')) {

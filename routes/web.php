@@ -11,6 +11,8 @@ use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\AuthAdmin;
 use App\Http\Controllers\CartController;
+use Spatie\LaravelPackageTools\Package;
+
      Route::get('/optimize', function () {
             Artisan::call('optimize:clear');
             Artisan::call('optimize');
@@ -106,6 +108,18 @@ Route::prefix('admin')->group(function () {
 
         // Orders
         Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
+        Route::get('/orders/pending', [AdminController::class, 'ordersPending'])->name('admin.orders.pending');
+        Route::get('/orders/confirmed', [AdminController::class, 'ordersConfirmed'])->name('admin.orders.confirmed');
+        Route::get('/orders/processing', [AdminController::class, 'ordersProcessing'])->name('admin.orders.processing');
+        Route::get('/orders/ready', [AdminController::class, 'ordersReady'])->name('admin.orders.ready');
+        Route::get('/orders/Packaging-complete', [AdminController::class, 'ordersPackaging'])->name('admin.orders.packaging_complete');
+        Route::get('/orders/in-transit', [AdminController::class, 'ordersInTransit'])->name('admin.orders.in_transit');
+        Route::get('/orders/delivered', [AdminController::class, 'ordersDelivered'])->name('admin.orders.delivered');
+        Route::get('/orders/delivery-in-review', [AdminController::class, 'ordersDeliveryInReview'])->name('admin.orders.delivery_in_review');
+        Route::get('/orders/on-hold', [AdminController::class, 'ordersOnHold'])->name('admin.orders.on_hold');
+        Route::get('/orders/cancelled', [AdminController::class, 'ordersCancelled'])->name('admin.orders.cancelled');
+        Route::get('/orders/returned', [AdminController::class, 'ordersReturned'])->name('admin.orders.returned');
+
         Route::get('/orders/deleted', [AdminController::class, 'deletedOrders'])->name('admin.orders.deleted');
         Route::get('/orders/{id}/details', [AdminController::class, 'orderDetails'])->name('admin.orders.details');
         Route::put('/orders/{id}/update-status', [AdminController::class, 'orderStatusUpdate'])->name('admin.orders.update');
