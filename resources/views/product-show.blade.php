@@ -384,7 +384,7 @@
 @endsection
 
 @push('scripts')
-    @if (session('status'))
+    @if (session('status') =='error')
         <script>
             Swal.fire({
                 icon: "{{ session('status') == 'error' ? 'error' : 'success' }}",
