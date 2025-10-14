@@ -19,6 +19,7 @@
     <!-- Fancy Box css -->
     <link rel="stylesheet" href="{{ asset('frontend/library/fancybox/fancybox.css') }}">
     <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.1/dist/dotlottie-wc.js" type="module"></script>
+   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom Css  -->
     <style>
         @font-face {

@@ -98,9 +98,11 @@
 
         </div>
     </div>
-@endsection
+
 @push('scripts')
+
     <script>
+       
         dataLayer = window.dataLayer || [];
         dataLayer.push({
             event: 'purchase',

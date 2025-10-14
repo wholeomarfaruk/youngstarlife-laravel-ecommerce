@@ -381,8 +381,20 @@
         </div>
     </section>
 @endsection
+
 @push('scripts')
+@if (session('status') == 'error')
     <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: "{{ session('message') }}",
+        });
+    </script>
+@endif
+
+    <script>
+        console.log("Session: " + "{{ session('status') ? session('message') : 'null' }}");
         $(document).ready(function() {
 
             function calculateTotal() {
@@ -572,7 +584,7 @@
         })
     </script>
     <script>
- 
+
           $(window).on('beforeunload', function() {
                 var name = $("input[name='name']").val();
                 var phone = $("input[name='phone']").val();

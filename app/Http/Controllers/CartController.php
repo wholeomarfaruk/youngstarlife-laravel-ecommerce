@@ -281,7 +281,34 @@ class CartController extends Controller
 
         $extra_data = [];
         $extra_data['order_data'] = $request->all();
+        $check_recent_order = Order::where('phone', $phone)
+        ->where('status','pending')
+            ->latest('created_at') // Get most recent order
+            ->first();
 
+        $diffInMinutes = 0;
+
+        if ($check_recent_order ) {
+            // Find if that order has the same product
+            $product_found = $check_recent_order->Order_Item()
+                ->where('product_id', $request->product_id)
+                ->latest('created_at')
+                ->first();
+
+            if ($product_found) {
+                $createdAt = Carbon::parse($product_found->created_at);
+                $now = Carbon::now();
+
+                $diffInMinutes = $createdAt->diffInMinutes($now);
+
+                if ($diffInMinutes < 2) {
+                    return redirect()->back()->with([
+                        'status' => 'error',
+                        'message' => 'You have already ordered this product recently. Please try again after 3 minutes.' 
+                    ]);
+                }
+            }
+        }
 
         try {
             //code...
@@ -299,7 +326,7 @@ class CartController extends Controller
             $total = ($price * $quantity) + $delivery;
             $order = new Order();
             $order->name = $request->name;
-            $order->phone =$phone ?? $request->phone;
+            $order->phone = $phone ?? $request->phone;
             $order->address = $request->address;
             $order->delivery_area_id = $deliveryArea->id ?? null;
             $order->cod_percentage = '0';
@@ -338,7 +365,7 @@ class CartController extends Controller
             return redirect()->route('order.received', ['order' => $order->id]);
         } catch (\Throwable $th) {
             //throw $th;
-            return $th->getMessage();
+            return redirect()->back()->with(['status' => 'error', 'message' => $th->getMessage()]);
         }
     }
     public function orderAutosave(Request $request)
