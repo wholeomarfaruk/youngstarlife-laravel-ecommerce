@@ -115,7 +115,7 @@
                                     </ul>
                                 </li>
 
-                                <li class="menu-item has-children">
+                                <li class="menu-item has-children {{  }}">
                                     <a href="javascript:void(0);" class="menu-item-button">
                                         <div class="icon"><i class="icon-file-plus"></i></div>
                                         <div class="text">Order</div>
@@ -132,8 +132,53 @@
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.on_hold') }}" class="">
+                                                <div class="text">On Hold Orders</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.confirmed') }}" class="">
                                                 <div class="text">Confirmed Orders</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.processing') }}" class="">
+                                                <div class="text">Processing Orders</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.ready') }}" class="">
+                                                <div class="text">Ready Orders</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.in_review') }}" class="">
+                                                <div class="text">In Review Orders</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.in_transit') }}" class="">
+                                                <div class="text">In Transit Orders</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.delivered') }}" class="">
+                                                <div class="text">Delivered Orders</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.delivery_in_review') }}" class="">
+                                                <div class="text">Delivery In Review Orders</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.returned') }}" class="">
+                                                <div class="text">Returned In Review Orders</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.cancelled') }}" class="">
+                                                <div class="text">Cancelled In Review Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">

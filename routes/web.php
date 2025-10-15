@@ -111,8 +111,8 @@ Route::prefix('admin')->group(function () {
         Route::get('/orders/pending', [AdminController::class, 'ordersPending'])->name('admin.orders.pending');
         Route::get('/orders/confirmed', [AdminController::class, 'ordersConfirmed'])->name('admin.orders.confirmed');
         Route::get('/orders/processing', [AdminController::class, 'ordersProcessing'])->name('admin.orders.processing');
-        Route::get('/orders/ready', [AdminController::class, 'ordersReady'])->name('admin.orders.ready');
-        Route::get('/orders/Packaging-complete', [AdminController::class, 'ordersPackaging'])->name('admin.orders.packaging_complete');
+        Route::get('/orders/ready', [AdminController::class, 'ordersInReview'])->name('admin.orders.ready');
+        Route::get('/orders/in-review', [AdminController::class, 'ordersInReview'])->name('admin.orders.in_review');
         Route::get('/orders/in-transit', [AdminController::class, 'ordersInTransit'])->name('admin.orders.in_transit');
         Route::get('/orders/delivered', [AdminController::class, 'ordersDelivered'])->name('admin.orders.delivered');
         Route::get('/orders/delivery-in-review', [AdminController::class, 'ordersDeliveryInReview'])->name('admin.orders.delivery_in_review');
