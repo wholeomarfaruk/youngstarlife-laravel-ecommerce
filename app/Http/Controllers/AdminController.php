@@ -460,6 +460,32 @@ class AdminController extends Controller
 
         return view('admin.orders-confirmed', compact('orders', 'status_group', 'orders_count'));
     }
+    public function ordersProcessing(Request $request)
+    {
+        if ($request->has('search')) {
+            $search = $request->search;
+            $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
+                ->orWhere('status','processing')
+                ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+
+        } elseif ($request->has('order_status')) {
+            $status = $request->order_status;
+            $orders = Order::where('status', 'processing')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
+        } else {
+            $orders = Order::where('status', 'processing')->orderBy('created_at', 'desc')->paginate(20);
+
+        }
+
+        $status_group = Order::whereNot('status', 'deleted')->select('status')
+            ->selectRaw('COUNT(*) as count')
+            ->groupBy('status')
+            ->get();
+        $orders_count = Order::count();
+
+        return view('admin.orders-processing', compact('orders', 'status_group', 'orders_count'));
+    }
     public function ordersReady(Request $request)
     {
         if ($request->has('search')) {

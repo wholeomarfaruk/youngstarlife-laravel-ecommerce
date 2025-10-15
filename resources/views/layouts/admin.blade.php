@@ -115,74 +115,74 @@
                                     </ul>
                                 </li>
 
-                                <li class="menu-item has-children">
+                                <li class="menu-item has-children {{ Request::is('admin/orders*') ? 'active' : '' }}">
                                     <a href="javascript:void(0);" class="menu-item-button">
                                         <div class="icon"><i class="icon-file-plus"></i></div>
                                         <div class="text">Order</div>
                                     </a>
-                                    <ul class="sub-menu">
+                                    <ul class="sub-menu ">
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders') }}" class="">
+                                            <a href="{{ route('admin.orders') }}" class=" {{ Request::is('admin/orders') ? 'active' : '' }}">
                                                 <div class="text">Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.pending') }}" class="">
+                                            <a href="{{ route('admin.orders.pending') }}" class=" {{ Request::is('admin/orders/pending') ? 'active' : '' }}">
                                                 <div class="text">Pending Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.on_hold') }}" class="">
+                                            <a href="{{ route('admin.orders.on_hold') }}" class=" {{ Request::is('admin/orders/on-hold') ? 'active' : '' }}">
                                                 <div class="text">On Hold Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.confirmed') }}" class="">
+                                            <a href="{{ route('admin.orders.confirmed') }}" class=" {{ Request::is('admin/orders/confirmed') ? 'active' : '' }}">
                                                 <div class="text">Confirmed Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.processing') }}" class="">
+                                            <a href="{{ route('admin.orders.processing') }}" class=" {{ Request::is('admin/orders/processing') ? 'active' : '' }}">
                                                 <div class="text">Processing Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.ready') }}" class="">
+                                            <a href="{{ route('admin.orders.ready') }}" class=" {{ Request::is('admin/orders/ready') ? 'active' : '' }}">
                                                 <div class="text">Ready Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.in_review') }}" class="">
+                                            <a href="{{ route('admin.orders.in_review') }}" class=" {{ Request::is('admin/orders/in-review') ? 'active' : '' }}">
                                                 <div class="text">In Review Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.in_transit') }}" class="">
+                                            <a href="{{ route('admin.orders.in_transit') }}" class=" {{ Request::is('admin/orders/in-transit') ? 'active' : '' }}">
                                                 <div class="text">In Transit Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.delivered') }}" class="">
+                                            <a href="{{ route('admin.orders.delivered') }}" class=" {{ Request::is('admin/orders/delivered') ? 'active' : '' }}">
                                                 <div class="text">Delivered Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.delivery_in_review') }}" class="">
+                                            <a href="{{ route('admin.orders.delivery_in_review') }}" class=" {{ Request::is('admin/orders/delivery-in-review') ? 'active' : '' }}">
                                                 <div class="text">Delivery In Review Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.returned') }}" class="">
-                                                <div class="text">Returned In Review Orders</div>
+                                            <a href="{{ route('admin.orders.returned') }}" class=" {{ Request::is('admin/orders/returned') ? 'active' : '' }}">
+                                                <div class="text">Returned Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.cancelled') }}" class="">
-                                                <div class="text">Cancelled In Review Orders</div>
+                                            <a href="{{ route('admin.orders.cancelled') }}" class=" {{ Request::is('admin/orders/cancelled') ? 'active' : '' }}">
+                                                <div class="text">Cancelled Orders</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.deleted') }}" class="">
+                                            <a href="{{ route('admin.orders.deleted') }}" class=" {{ Request::is('admin/orders/deleted') ? 'active' : '' }}">
                                                 <div class="text">Deleted Orders</div>
                                             </a>
                                         </li>
