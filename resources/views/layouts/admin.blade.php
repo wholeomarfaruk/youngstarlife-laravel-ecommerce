@@ -19,7 +19,10 @@
     <link rel="shortcut icon" href="{{ asset('admin-resource/images/favicon.ico') }}">
     <link rel="apple-touch-icon-precomposed" href="{{ asset('admin-resource/images/favicon.ico') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/sweetalert.min.css') }}">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.css" integrity="sha512-A81ejcgve91dAWmCGseS60zjrAdohm7PTcAjjiDWtw3Tcj91PNMa1gJ/ImrhG+DbT5V+JQ5r26KT5+kgdVTb5w==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.css"
+        integrity="sha512-A81ejcgve91dAWmCGseS60zjrAdohm7PTcAjjiDWtw3Tcj91PNMa1gJ/ImrhG+DbT5V+JQ5r26KT5+kgdVTb5w=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/custom.css') }}">
     @stack('styles')
 </head>
@@ -77,7 +80,7 @@
                                         </li>
                                     </ul>
                                 </li>
-{{--
+                                {{--
                                 <li class="menu-item has-children">
                                     <a href="javascript:void(0);" class="menu-item-button">
                                         <div class="icon"><i class="icon-layers"></i></div>
@@ -103,18 +106,24 @@
                                     </a>
                                     <ul class="sub-menu">
                                         <li class="sub-menu-item">
-                                            <a href="{{route('admin.categories.add')}}" class="">
+                                            <a href="{{ route('admin.categories.add') }}" class="">
                                                 <div class="text">New Category</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{route('admin.categories')}}" class="">
+                                            <a href="{{ route('admin.categories') }}" class="">
                                                 <div class="text">Categories</div>
                                             </a>
                                         </li>
                                     </ul>
                                 </li>
-
+                                @php
+                                    $orderStatus = App\Models\Order::select('status')
+                                        ->selectRaw('COUNT(*) as count')
+                                        ->groupBy('status')
+                                        ->get();
+                                    $orderCount = App\Models\Order::count();
+                                @endphp
                                 <li class="menu-item has-children {{ Request::is('admin/orders*') ? 'active' : '' }}">
                                     <a href="javascript:void(0);" class="menu-item-button">
                                         <div class="icon"><i class="icon-file-plus"></i></div>
@@ -122,68 +131,81 @@
                                     </a>
                                     <ul class="sub-menu ">
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders') }}" class=" {{ Request::is('admin/orders') ? 'active' : '' }}">
-                                                <div class="text">Orders</div>
+                                            <a href="{{ route('admin.orders') }}"
+                                                class=" {{ Request::is('admin/orders') ? 'active' : '' }}">
+                                                <div class="text">Orders ({{ $orderCount ?? 0 }})</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.pending') }}" class=" {{ Request::is('admin/orders/pending') ? 'active' : '' }}">
-                                                <div class="text">Pending Orders</div>
+                                            <a href="{{ route('admin.orders.pending') }}"
+                                                class=" {{ Request::is('admin/orders/pending') ? 'active' : '' }}">
+                                                <div class="text">Pending Orders ({{ $orderStatus->where('status', 'pending')->first()->count ?? 0 }})</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.on_hold') }}" class=" {{ Request::is('admin/orders/on-hold') ? 'active' : '' }}">
-                                                <div class="text">On Hold Orders</div>
+                                            <a href="{{ route('admin.orders.on_hold') }}"
+                                                class=" {{ Request::is('admin/orders/on-hold') ? 'active' : '' }}">
+                                                <div class="text">On Hold Orders ({{ $orderStatus->where('status', 'on_hold')->first()->count ?? 0 }})</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.confirmed') }}" class=" {{ Request::is('admin/orders/confirmed') ? 'active' : '' }}">
-                                                <div class="text">Confirmed Orders</div>
+                                            <a href="{{ route('admin.orders.confirmed') }}"
+                                                class=" {{ Request::is('admin/orders/confirmed') ? 'active' : '' }}">
+                                                <div class="text">Confirmed Orders ({{ $orderStatus->where('status', 'confirmed')->first()->count ?? 0 }})</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.processing') }}" class=" {{ Request::is('admin/orders/processing') ? 'active' : '' }}">
-                                                <div class="text">Processing Orders</div>
+                                            <a href="{{ route('admin.orders.processing') }}"
+                                                class=" {{ Request::is('admin/orders/processing') ? 'active' : '' }}">
+                                                <div class="text">Processing Orders ({{ $orderStatus->where('status', 'processing')->first()->count ?? 0 }})</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.ready') }}" class=" {{ Request::is('admin/orders/ready') ? 'active' : '' }}">
-                                                <div class="text">Ready Orders</div>
+                                            <a href="{{ route('admin.orders.ready') }}"
+                                                class=" {{ Request::is('admin/orders/ready') ? 'active' : '' }}">
+                                                <div class="text">Ready Orders ({{ $orderStatus->where('status', 'ready')->first()->count ?? 0 }})</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.in_review') }}" class=" {{ Request::is('admin/orders/in-review') ? 'active' : '' }}">
-                                                <div class="text">In Review Orders</div>
+                                            <a href="{{ route('admin.orders.in_review') }}"
+                                                class=" {{ Request::is('admin/orders/in-review') ? 'active' : '' }}">
+                                                <div class="text">In Review Orders ({{ $orderStatus->where('status', 'in_review')->first()->count ?? 0 }})</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.in_transit') }}" class=" {{ Request::is('admin/orders/in-transit') ? 'active' : '' }}">
-                                                <div class="text">In Transit Orders</div>
+                                            <a href="{{ route('admin.orders.in_transit') }}"
+                                                class=" {{ Request::is('admin/orders/in-transit') ? 'active' : '' }}">
+                                                <div class="text">In Transit Orders ({{ $orderStatus->where('status', 'in_transit')->first()->count ?? 0 }})</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.delivered') }}" class=" {{ Request::is('admin/orders/delivered') ? 'active' : '' }}">
-                                                <div class="text">Delivered Orders</div>
+                                            <a href="{{ route('admin.orders.delivered') }}"
+                                                class=" {{ Request::is('admin/orders/delivered') ? 'active' : '' }}">
+                                                <div class="text">Delivered Orders ({{ $orderStatus->where('status', 'delivered')->first()->count ?? 0 }})</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.delivery_in_review') }}" class=" {{ Request::is('admin/orders/delivery-in-review') ? 'active' : '' }}">
-                                                <div class="text">Delivery In Review Orders</div>
+                                            <a href="{{ route('admin.orders.delivery_in_review') }}"
+                                                class=" {{ Request::is('admin/orders/delivery-in-review') ? 'active' : '' }}">
+                                                <div class="text">Delivery In Review Orders ({{ $orderStatus->where('status', 'delivery_in_review')->first()->count ?? 0 }})</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.returned') }}" class=" {{ Request::is('admin/orders/returned') ? 'active' : '' }}">
-                                                <div class="text">Returned Orders</div>
+                                            <a href="{{ route('admin.orders.returned') }}"
+                                                class=" {{ Request::is('admin/orders/returned') ? 'active' : '' }}">
+                                                <div class="text">Returned Orders ({{ $orderStatus->where('status', 'returned')->first()->count ?? 0 }})</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.cancelled') }}" class=" {{ Request::is('admin/orders/cancelled') ? 'active' : '' }}">
-                                                <div class="text">Cancelled Orders</div>
+                                            <a href="{{ route('admin.orders.cancelled') }}"
+                                                class=" {{ Request::is('admin/orders/cancelled') ? 'active' : '' }}">
+                                                <div class="text">Cancelled Orders ({{ $orderStatus->where('status', 'cacelled')->first()->count ?? 0 }})</div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
-                                            <a href="{{ route('admin.orders.deleted') }}" class=" {{ Request::is('admin/orders/deleted') ? 'active' : '' }}">
-                                                <div class="text">Deleted Orders</div>
+                                            <a href="{{ route('admin.orders.deleted') }}"
+                                                class=" {{ Request::is('admin/orders/deleted') ? 'active' : '' }}">
+                                                <div class="text">Deleted Orders ({{ $orderStatus->where('status', 'deleted')->first()->count ?? 0 }})</div>
                                             </a>
                                         </li>
                                     </ul>
@@ -483,15 +505,15 @@
                                                         alt="">
                                                 </span>
                                                 <span class="flex flex-column">
-                                                    <span class="body-title mb-2">{{auth()->user()->name}}</span>
-                                                    <span class="text-tiny">{{auth()->user()->role}}</span>
+                                                    <span class="body-title mb-2">{{ auth()->user()->name }}</span>
+                                                    <span class="text-tiny">{{ auth()->user()->role }}</span>
                                                 </span>
                                             </span>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end has-content"
                                             aria-labelledby="dropdownMenuButton3">
                                             <li>
-                                                <a href="{{ route('admin.user.index')}}" class="user-item">
+                                                <a href="{{ route('admin.user.index') }}" class="user-item">
                                                     <div class="icon">
                                                         <i class="icon-user"></i>
                                                     </div>
@@ -563,7 +585,7 @@
     <script src="{{ asset('admin-resource/js/main.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Styles -->
-{{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
+    {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 <!-- Or for RTL support -->
