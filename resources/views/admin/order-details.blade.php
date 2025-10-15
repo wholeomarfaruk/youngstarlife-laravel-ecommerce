@@ -246,17 +246,25 @@
                                     </option>
                                     <option value="confirmed" @if ($order->status == 'confirmed') selected @endif>Confirmed
                                     </option>
+                                    <option value="ready" @if ($order->status == 'ready') selected @endif>Ready
+                                    </option>
                                     <option value="delivered" @if ($order->status == 'delivered') selected @endif>Delivered
                                     </option>
-                                    <option value="on_hold" @if ($order->status == 'on_hold') selected @endif>on_hold
+                                    <option value="on_hold" @if ($order->status == 'on_hold') selected @endif>On Hold
+                                    </option>
+                                    <option value="in_review" @if ($order->status == 'in_review') selected @endif>In Review
                                     </option>
                                     <option value="in_transit" @if ($order->status == 'in_transit') selected @endif>in_transit
                                     </option>
                                     <option value="processing" @if ($order->status == 'processing') selected @endif>Processing
                                     </option>
+                                    <option value="delivery_in_review" @if ($order->status == 'delivery_in_review') selected @endif>Delivery in Review
+                                    </option>
                                     <option value="cancelled" @if ($order->status == 'cancelled') selected @endif>Cancelled
                                     </option>
                                     <option value="returned" @if ($order->status == 'returned') selected @endif>Returned
+                                    </option>
+                                    <option value="deleted" @if ($order->status == 'deleted') selected @endif>Deleted
                                     </option>
                                 </select>
 
