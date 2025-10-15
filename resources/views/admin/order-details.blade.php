@@ -172,6 +172,7 @@
                                 <div class="my-account__address-item__detail">
                                     <p>Name : {{ $order->name }}</p>
                                     <p>Mobile : {{ $order->phone }}</p>
+                                    @if($order->fraud_check)
                                     <strong>SteadFast Customer Check:</strong>
                                     <p>
                                         Total Order : {{ $order->fraud_check['total'] ?? 0 }}<br>
@@ -186,7 +187,7 @@
                                             $fraud_score = number_format($score, 2);
                                         @endphp
                                     </p>
-
+                                    @endif
                                     <div class="progress">
                                         <div class="progress-bar bg-{{ $fraud_score >= 70 ? 'success' : 'danger' }}"
                                             role="progressbar"

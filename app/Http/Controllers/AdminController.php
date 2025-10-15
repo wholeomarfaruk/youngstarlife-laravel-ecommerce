@@ -489,7 +489,10 @@ class AdminController extends Controller
 
                 //fraud check steadfst
                 $phone = $order->phone;
-                $order->fraud_check = collect((new SteadfastService())->steadfast($phone));
+                if(strlen($phone) ==11){
+
+                    $order->fraud_check = collect((new SteadfastService())->steadfast($phone));
+                }
         }
         // dd($order->fraud_check);
         $orderItems = Order_Item::where('order_id', $id)->paginate(20);
