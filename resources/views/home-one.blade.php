@@ -187,69 +187,71 @@
 
     @foreach ($categories as $category)
         @if ($category->products->count() > 0)
-        <section class="sec-style-1 my-3">
-            <div class="container">
-                <div class="sec-header">
-                    <div class="d-flex justify-content-between">
-                        <div class="flex-grow">
-                            <h2 class="sec-title text-primary-color">{{ $category->name }}</h2>
-                        </div>
-                        <div class="text-right">
-                        <a href="{{ route('category.show', $category->slug) }}" class="sec-title text-primary-color">সব পণ্য দেখুন</a>
-                        </div>
-                    </div>
-
-                    <hr class="divider mt-0 text-primary-color bg-primary-color " style="height: 2px;">
-                </div>
-                <div class="sec-body">
-                    <div class="sec-grid-box">
-                        @foreach ($category?->products->take(6) as $product)
-                            <div class="sec-grid-item p-card-1">
-
-                                <div class="p-img-box">
-                                    <a href="{{ route('product.show', $product->slug) }}">
-                                        <img src="{{ asset('storage/images/products/' . $product->image) }}"
-                                            alt="">
-                                    </a>
-                                </div>
-                                <div class="p-info">
-                                    <div class="prices">
-                                        @if ($product->discount_price > 0)
-                                            <del class="old-price">৳ {{ $product->price }}</del>
-                                            <span class="price">৳ {{ $product->discount_price }}</span>
-                                        @else
-                                            <span class="old-price">Price : </span> <span class="price"> ৳
-                                                {{ $product->price }}</span>
-                                        @endif
-
-                                    </div>
-                                    <a href="{{ route('product.show', $product->slug) }}">
-
-                                        <h1 class="p-title">{{ $product->name }}</h1>
-                                    </a>
-                                    <a href="#">
-                                        <p class="p-description">
-                                            বিস্তারিত দেখুন
-                                        </p>
-                                    </a>
-                                </div>
-                                <div class="p-btn-group">
-                                    <a class="btn btn-primary w-100 d-block"
-                                        href="{{ route('product.show', $product->slug) }}">Buy Now</a>
-                                </div>
-
-
+            <section class="sec-style-1 my-3">
+                <div class="container">
+                    <div class="sec-header">
+                        <div class="d-flex justify-content-between">
+                            <div class="flex-grow">
+                                <h2 class="sec-title text-primary-color">{{ $category->name }}</h2>
                             </div>
-                        @endforeach
-                    </div>
-                    <div class="d-flex justify-content-center mt-3">
-                        <a href="{{ route('category.show', $category->slug) }}" class="btn btn-primary "> See More - {{ $category->name }}</a>
+                            <div class="text-right">
+                                <a href="{{ route('category.show', $category->slug) }}"
+                                    class="sec-title text-primary-color">সব পণ্য দেখুন</a>
+                            </div>
+                        </div>
 
-                        {{-- {{ $products->links('pagination::bootstrap-5') }} --}}
+                        <hr class="divider mt-0 text-primary-color bg-primary-color " style="height: 2px;">
+                    </div>
+                    <div class="sec-body">
+                        <div class="sec-grid-box">
+                            @foreach ($category?->products->take(6) as $product)
+                                <div class="sec-grid-item p-card-1">
+
+                                    <div class="p-img-box">
+                                        <a href="{{ route('product.show', $product->slug) }}">
+                                            <img src="{{ asset('storage/images/products/' . $product->image) }}"
+                                                alt="">
+                                        </a>
+                                    </div>
+                                    <div class="p-info">
+                                        <div class="prices">
+                                            @if ($product->discount_price > 0)
+                                                <del class="old-price">৳ {{ $product->price }}</del>
+                                                <span class="price">৳ {{ $product->discount_price }}</span>
+                                            @else
+                                                <span class="old-price">Price : </span> <span class="price"> ৳
+                                                    {{ $product->price }}</span>
+                                            @endif
+
+                                        </div>
+                                        <a href="{{ route('product.show', $product->slug) }}">
+
+                                            <h1 class="p-title">{{ $product->name }}</h1>
+                                        </a>
+                                        <a href="#">
+                                            <p class="p-description">
+                                                বিস্তারিত দেখুন
+                                            </p>
+                                        </a>
+                                    </div>
+                                    <div class="p-btn-group">
+                                        <a class="btn btn-primary w-100 d-block"
+                                            href="{{ route('product.show', $product->slug) }}">Buy Now</a>
+                                    </div>
+
+
+                                </div>
+                            @endforeach
+                        </div>
+                        <div class="d-flex justify-content-center mt-3">
+                            <a href="{{ route('category.show', $category->slug) }}" class="btn btn-primary "> See More -
+                                {{ $category->name }}</a>
+
+                            {{-- {{ $products->links('pagination::bootstrap-5') }} --}}
+                        </div>
                     </div>
                 </div>
-            </div>
-        </section>
+            </section>
         @endif
     @endforeach
 
@@ -261,14 +263,14 @@
             <ul class="list-inline fs-6 fw-medium">
                 <li><i class="fa-solid fa-angles-right text-primary-color"></i> সারা বাংলাদেশে ক্যাশ অন ডেলিভারি
                     এভেইলেবল </li>
+
                 <li><i class="fa-solid fa-angles-right  text-primary-color"></i> আপনি যদি আপনার ক্রয়কৃত ড্রেসটি
                     নিয়ে সন্তুষ্ট না হন, তবে শুধু ডেলিভারি চার্জ প্রদান করে ডেলিভারি ম্যানের কাছে সহজেই ফেরত দিতে
                     পারবেন। </li>
-                <li><i class="fa-solid fa-angles-right text-primary-color"></i>সমস্ত এক্সচেঞ্জে উপভোগ করুন সম্পূর্ণ
-                    ফ্রি ডেলিভারি — কোন অতিরিক্ত চার্জ নেই, কোন ঝামেলা নেই।
+
                 <li><i class="fa-solid fa-angles-right text-primary-color"></i>আমাদের আছে ডেলিভারির পর ৩ দিন
-                    পর্যন্ত
-                    এক্সচেঞ্জ সুবিধা।
+                    পর্যন্ত এক্সচেঞ্জ সুবিধা।
+                </li>
             </ul>
         </div>
     </section>
