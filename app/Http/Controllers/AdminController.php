@@ -205,6 +205,7 @@ class AdminController extends Controller
     }
     public function productUpdate(Request $request)
     {
+        // return $request->all();
         $request->validate([
             'name' => 'required',
             'price' => 'required|numeric',
@@ -254,7 +255,9 @@ class AdminController extends Controller
             $product->short_description = $request->short_description;
         }
         if ($request->has('status')) {
-            $product->status = $request->status ? true : false;
+            $product->status = true;
+        }else{
+            $product->status = false;
         }
 
         $product->save();
