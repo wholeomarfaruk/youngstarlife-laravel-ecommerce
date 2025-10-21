@@ -94,13 +94,13 @@ class HomeController extends Controller
     }
     public function productShow(Request $request, $slug)
     {
-        $product = products::where('status', 1)->where('slug', $slug)->first();
+        $product = products::where('slug', $slug)->first();
         if (!$product) {
             abort(404);
         }
 
         $deliveryAreas = delivery_areas::limit(5)->get();
-        $products = products::where('id', '!=', $product->id)->inRandomOrder()->limit(8)->get();
+        $products = products::where('status', 1)->where('id', '!=', $product->id)->inRandomOrder()->limit(8)->get();
 
         return view('product-show', compact('product', 'deliveryAreas', 'products'));
     }
