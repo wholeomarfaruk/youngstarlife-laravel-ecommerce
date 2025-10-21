@@ -220,6 +220,19 @@
                     </fieldset>
                     <div class="cols gap22">
                         <fieldset class="name">
+                            <div class="body-title mb-10">Is Active</div>
+                            <div class="checkbox mb-10">
+                                <input type="checkbox" name="status" id="" {{ $product->status == 1 ? 'checked' : '' }}>
+                            </div>
+                            @error('featured')
+                                <span class="invalid-feedback" role="alert">
+                                    <strong>{{ $message }}</strong>
+                                </span>
+                            @enderror
+                        </fieldset>
+                    </div>
+                    <div class="cols gap22">
+                        <fieldset class="name">
                             <div class="body-title mb-10">Featured</div>
                             <div class="select mb-10">
                                 <select class="" name="featured">
@@ -233,7 +246,9 @@
                                 </span>
                             @enderror
                         </fieldset>
+
                     </div>
+
 
                     <h6>Product Sizes</h6>
                     <div id="sizes-container">

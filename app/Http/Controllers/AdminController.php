@@ -123,6 +123,9 @@ class AdminController extends Controller
             if ($request->short_description) {
                 $product->short_description = $request->short_description;
             }
+            if ($request->has('status')) {
+                $product->status = $request->status ? true : false;
+            }
 
             $product->save();
             if ($request->has('sizes')) {
@@ -250,6 +253,9 @@ class AdminController extends Controller
         if ($request->short_description) {
             $product->short_description = $request->short_description;
         }
+        if ($request->has('status')) {
+            $product->status = $request->status ? true : false;
+        }
 
         $product->save();
         $product->sizes()->delete();
@@ -313,6 +319,7 @@ class AdminController extends Controller
         if ($request->has('segments')) {
             $product->segments()->sync($request->segments);
         }
+
         return redirect()->route('admin.products')->with('status', 'Product Updated Successfully');
     }
 
@@ -413,7 +420,7 @@ class AdminController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('status','pending')
+                ->orWhere('status', 'pending')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -439,7 +446,7 @@ class AdminController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('status','confirmed')
+                ->orWhere('status', 'confirmed')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -465,7 +472,7 @@ class AdminController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('status','processing')
+                ->orWhere('status', 'processing')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -491,7 +498,7 @@ class AdminController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('status','ready')
+                ->orWhere('status', 'ready')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -517,7 +524,7 @@ class AdminController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('status','in_review')
+                ->orWhere('status', 'in_review')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -543,7 +550,7 @@ class AdminController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('status','in_transit')
+                ->orWhere('status', 'in_transit')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -569,7 +576,7 @@ class AdminController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('status','delivered')
+                ->orWhere('status', 'delivered')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -595,7 +602,7 @@ class AdminController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('status','delivery_in_review')
+                ->orWhere('status', 'delivery_in_review')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -621,7 +628,7 @@ class AdminController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('status','on_hold')
+                ->orWhere('status', 'on_hold')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -647,7 +654,7 @@ class AdminController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('status','cancelled')
+                ->orWhere('status', 'cancelled')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -673,7 +680,7 @@ class AdminController extends Controller
         if ($request->has('search')) {
             $search = $request->search;
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('status','returned')
+                ->orWhere('status', 'returned')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -721,12 +728,12 @@ class AdminController extends Controller
         }
         if ($order) {
 
-                //fraud check steadfst
-                $phone = $order->phone;
-                if(strlen($phone) ==11){
+            //fraud check steadfst
+            $phone = $order->phone;
+            if (strlen($phone) == 11) {
 
-                    $order->fraud_check = collect((new SteadfastService())->steadfast($phone));
-                }
+                $order->fraud_check = collect((new SteadfastService())->steadfast($phone));
+            }
         }
         // dd($order->fraud_check);
         $orderItems = Order_Item::where('order_id', $id)->paginate(20);
