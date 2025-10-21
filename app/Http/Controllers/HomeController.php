@@ -15,7 +15,7 @@ class HomeController extends Controller
     public function index()
     {
 
-        $products = Products::orderByDesc('featured') // featured first
+        $products = Products::where('status', 1)->orderByDesc('featured') // featured first
             ->orderByDesc('created_at')               // newest first
             ->paginate(12);
         $deliveryAreas = delivery_areas::all();
@@ -94,7 +94,7 @@ class HomeController extends Controller
     }
     public function productShow(Request $request, $slug)
     {
-        $product = products::where('slug', $slug)->first();
+        $product = products::where('status', 1)->where('slug', $slug)->first();
         if (!$product) {
             abort(404);
         }
@@ -106,7 +106,7 @@ class HomeController extends Controller
     }
     public function categoryShow(Request $request, $slug)
     {
-        $category = Category::where('slug', $slug)->first();
+        $category = Category::where('status', 1)->where('slug', $slug)->first();
         if (!$category) {
             abort(404);
         }
