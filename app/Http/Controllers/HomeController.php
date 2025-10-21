@@ -106,12 +106,12 @@ class HomeController extends Controller
     }
     public function categoryShow(Request $request, $slug)
     {
-        $category = Category::where('status', 1)->where('slug', $slug)->first();
+        $category = Category::where('slug', $slug)->first();
         if (!$category) {
             abort(404);
         }
 
-         $products = $category->products()->orderByDesc('featured') // featured first
+         $products = $category->products()->where('status', 1)->orderByDesc('featured') // featured first
             ->orderByDesc('created_at')               // newest first
             ->paginate(12);
         return view('category-products', compact('category', 'products'));
