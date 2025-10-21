@@ -27,7 +27,7 @@ class HomeController extends Controller
     public function shop()
     {
 
-        $products = Products::where('status', '=', true)->orderByDesc('featured') // featured first
+        $products = Products::where('status', true)->orderByDesc('featured') // featured first
             ->orderByDesc('created_at')               // newest first
             ->paginate(12);
         $deliveryAreas = delivery_areas::all();
