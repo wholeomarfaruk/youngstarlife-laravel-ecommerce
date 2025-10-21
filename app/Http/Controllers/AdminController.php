@@ -49,16 +49,6 @@ class AdminController extends Controller
     }
 
 
-
-
-
-
-
-
-
-
-
-
     //Products
     public function products()
     {
