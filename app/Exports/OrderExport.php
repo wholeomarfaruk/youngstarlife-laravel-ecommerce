@@ -21,7 +21,7 @@ class OrderExport implements FromCollection, WithHeadings, WithMapping
      */
     public function collection()
     {
-        if($this->status && ($this->status == 'courier_entered' || $this->status == 'courier_not_entered')){
+        if($this->status && ($this->status == 'courier_entered')){
 
             return Order::with('Order_Item')
                 ->where('consignment_id', '!=', null)
