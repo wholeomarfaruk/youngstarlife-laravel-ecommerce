@@ -44,6 +44,8 @@
                                         <option value="{{ $sg->status }}">{{ $sg->status }} ({{ $sg->count }})
                                         </option>
                                     @endforeach
+                                    <option value="courier_not_entered">Courier Not Entered</option>
+                                    <option value="courier_entered">Courier Entered</option>
 
                                 </select>
                             </fieldset>
