@@ -24,14 +24,14 @@ class OrderExport implements FromCollection, WithHeadings, WithMapping
         if($this->status && ($this->status == 'courier_entered' || $this->status == 'courier_not_entered')){
 
             return Order::with('Order_Item')
-                ->where('tracking_number', '!=', null)
+                ->where('consignment_id', '!=', null)
                 ->select('id', 'name', 'address','phone', 'total', 'updated_at')
                 ->get();
 
         }elseif($this->status &&  $this->status == 'courier_not_entered'){
 
             return Order::with('Order_Item')
-                ->where('tracking_number', null)
+                ->where('consignment_id', null)
                 ->select('id', 'name', 'address','phone', 'total', 'updated_at')
                 ->get();
         }
