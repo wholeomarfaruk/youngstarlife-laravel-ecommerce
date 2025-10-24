@@ -490,6 +490,7 @@
                                                                 <a href="{{ route('admin.notifications.read', $notify->id) }}" class="btn btn-sm btn-secondary">Mark as read</a>
                                                             </div>
                                                         </div>
+                                                        <hr>
                                                 </li>
                                             @endforeach
                                             {{-- - <li>
