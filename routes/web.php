@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Api\SteadFastController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Artisan;
@@ -119,6 +120,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/orders/on-hold', [AdminController::class, 'ordersOnHold'])->name('admin.orders.on_hold');
         Route::get('/orders/cancelled', [AdminController::class, 'ordersCancelled'])->name('admin.orders.cancelled');
         Route::get('/orders/returned', [AdminController::class, 'ordersReturned'])->name('admin.orders.returned');
+        Route::get('/pending-orders-notifications', [OrderController::class, 'fetchPendingOrders'])->name('admin.orders.pending.notifications');
 
         Route::get('/orders/deleted', [AdminController::class, 'deletedOrders'])->name('admin.orders.deleted');
         Route::get('/orders/{id}/details', [AdminController::class, 'orderDetails'])->name('admin.orders.details');

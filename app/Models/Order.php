@@ -5,9 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\Order_Item;
 use App\Models\delivery_areas;
+use Illuminate\Notifications\Notifiable;
 
 class Order extends Model
 {
+      use Notifiable;
       protected $casts = [
         'json_data' => 'array', // automatically converts to/from JSON
     ];

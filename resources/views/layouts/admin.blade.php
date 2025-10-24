@@ -28,6 +28,7 @@
 </head>
 
 <body class="body">
+
     <div id="wrapper">
         <div id="page" class="">
             <div class="layout-wrap">
@@ -139,73 +140,97 @@
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.pending') }}"
                                                 class=" {{ Request::is('admin/orders/pending') ? 'active' : '' }}">
-                                                <div class="text">Pending Orders ({{ $orderStatus->where('status', 'pending')->first()->count ?? 0 }})</div>
+                                                <div class="text">Pending Orders
+                                                    ({{ $orderStatus->where('status', 'pending')->first()->count ?? 0 }})
+                                                </div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.on_hold') }}"
                                                 class=" {{ Request::is('admin/orders/on-hold') ? 'active' : '' }}">
-                                                <div class="text">On Hold Orders ({{ $orderStatus->where('status', 'on_hold')->first()->count ?? 0 }})</div>
+                                                <div class="text">On Hold Orders
+                                                    ({{ $orderStatus->where('status', 'on_hold')->first()->count ?? 0 }})
+                                                </div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.confirmed') }}"
                                                 class=" {{ Request::is('admin/orders/confirmed') ? 'active' : '' }}">
-                                                <div class="text">Confirmed Orders ({{ $orderStatus->where('status', 'confirmed')->first()->count ?? 0 }})</div>
+                                                <div class="text">Confirmed Orders
+                                                    ({{ $orderStatus->where('status', 'confirmed')->first()->count ?? 0 }})
+                                                </div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.processing') }}"
                                                 class=" {{ Request::is('admin/orders/processing') ? 'active' : '' }}">
-                                                <div class="text">Processing Orders ({{ $orderStatus->where('status', 'processing')->first()->count ?? 0 }})</div>
+                                                <div class="text">Processing Orders
+                                                    ({{ $orderStatus->where('status', 'processing')->first()->count ?? 0 }})
+                                                </div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.ready') }}"
                                                 class=" {{ Request::is('admin/orders/ready') ? 'active' : '' }}">
-                                                <div class="text">Ready Orders ({{ $orderStatus->where('status', 'ready')->first()->count ?? 0 }})</div>
+                                                <div class="text">Ready Orders
+                                                    ({{ $orderStatus->where('status', 'ready')->first()->count ?? 0 }})
+                                                </div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.in_review') }}"
                                                 class=" {{ Request::is('admin/orders/in-review') ? 'active' : '' }}">
-                                                <div class="text">In Review Orders ({{ $orderStatus->where('status', 'in_review')->first()->count ?? 0 }})</div>
+                                                <div class="text">In Review Orders
+                                                    ({{ $orderStatus->where('status', 'in_review')->first()->count ?? 0 }})
+                                                </div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.in_transit') }}"
                                                 class=" {{ Request::is('admin/orders/in-transit') ? 'active' : '' }}">
-                                                <div class="text">In Transit Orders ({{ $orderStatus->where('status', 'in_transit')->first()->count ?? 0 }})</div>
+                                                <div class="text">In Transit Orders
+                                                    ({{ $orderStatus->where('status', 'in_transit')->first()->count ?? 0 }})
+                                                </div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.delivered') }}"
                                                 class=" {{ Request::is('admin/orders/delivered') ? 'active' : '' }}">
-                                                <div class="text">Delivered Orders ({{ $orderStatus->where('status', 'delivered')->first()->count ?? 0 }})</div>
+                                                <div class="text">Delivered Orders
+                                                    ({{ $orderStatus->where('status', 'delivered')->first()->count ?? 0 }})
+                                                </div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.delivery_in_review') }}"
                                                 class=" {{ Request::is('admin/orders/delivery-in-review') ? 'active' : '' }}">
-                                                <div class="text">Delivery In Review Orders ({{ $orderStatus->where('status', 'delivery_in_review')->first()->count ?? 0 }})</div>
+                                                <div class="text">Delivery In Review Orders
+                                                    ({{ $orderStatus->where('status', 'delivery_in_review')->first()->count ?? 0 }})
+                                                </div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.returned') }}"
                                                 class=" {{ Request::is('admin/orders/returned') ? 'active' : '' }}">
-                                                <div class="text">Returned Orders ({{ $orderStatus->where('status', 'returned')->first()->count ?? 0 }})</div>
+                                                <div class="text">Returned Orders
+                                                    ({{ $orderStatus->where('status', 'returned')->first()->count ?? 0 }})
+                                                </div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.cancelled') }}"
                                                 class=" {{ Request::is('admin/orders/cancelled') ? 'active' : '' }}">
-                                                <div class="text">Cancelled Orders ({{ $orderStatus->where('status', 'cacelled')->first()->count ?? 0 }})</div>
+                                                <div class="text">Cancelled Orders
+                                                    ({{ $orderStatus->where('status', 'cacelled')->first()->count ?? 0 }})
+                                                </div>
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.deleted') }}"
                                                 class=" {{ Request::is('admin/orders/deleted') ? 'active' : '' }}">
-                                                <div class="text">Deleted Orders ({{ $orderStatus->where('status', 'deleted')->first()->count ?? 0 }})</div>
+                                                <div class="text">Deleted Orders
+                                                    ({{ $orderStatus->where('status', 'deleted')->first()->count ?? 0 }})
+                                                </div>
                                             </a>
                                         </li>
                                     </ul>
@@ -425,20 +450,40 @@
                             <div class="header-grid">
 
                                 <div class="popup-wrap message type-header">
+                                    @php
+                                        $orderpendings = auth()->user()->unreadNotifications;
+                                    @endphp
                                     <div class="dropdown">
                                         <button class="btn btn-secondary dropdown-toggle" type="button"
                                             id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
                                             <span class="header-item">
-                                                <span class="text-tiny">1</span>
+                                                <span class="text-tiny">{{ $orderpendings->count() }}</span>
                                                 <i class="icon-bell"></i>
                                             </span>
                                         </button>
                                         <ul class="dropdown-menu dropdown-menu-end has-content"
-                                            aria-labelledby="dropdownMenuButton2">
+                                            aria-labelledby="dropdownMenuButton2"
+                                            style="max-height: 70vh; overflow: scroll;">
                                             <li>
                                                 <h6>Notifications</h6>
                                             </li>
-                                            <li>
+
+                                            @foreach ($orderpendings as $notify)
+                                                <li class="{{ $notify->read_at ? '' : 'unread' }}">
+                                                    <div class="message-item item-4">
+                                                        <div class="image">
+                                                            <i class="icon-noti-4"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="body-title-2">{{ $notify->data['title'] }}
+                                                            </div>
+                                                            <div class="text-tiny">{!! html_entity_decode($notify->data['message'], ENT_QUOTES, 'UTF-8') !!}</</div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            @endforeach
+                                            {{-- - <li>
                                                 <div class="message-item item-1">
                                                     <div class="image">
                                                         <i class="icon-noti-1"></i>
@@ -450,7 +495,7 @@
                                                     </div>
                                                 </div>
                                             </li>
-                                            <li>
+                                           <li>
                                                 <div class="message-item item-2">
                                                     <div class="image">
                                                         <i class="icon-noti-2"></i>
@@ -486,7 +531,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                            </li>
+                                            </li> --}}
                                             <li><a href="#" class="tf-button w-full">View all</a></li>
                                         </ul>
                                     </div>
@@ -703,6 +748,64 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.js"></script>
 
+    {{-- pending orders notifications in sweetalert2 --}}
+    <script>
+        const unreadNotifications = @json(auth()->user()->unreadNotifications);
+
+        console.log(unreadNotifications);
+
+        if (unreadNotifications.length > 0) {
+            // ... your sequential SweetAlert logic ...
+        }
+        fetch("{{ route('admin.orders.pending.notifications') }}", {
+                method: 'GET',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            }).then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    const Toast = Swal.mixin({
+                        toast: true,
+                        position: 'top-end',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true,
+                        didOpen: (toast) => {
+                            toast.addEventListener('mouseenter', Swal.stopTimer)
+                            toast.addEventListener('mouseleave', Swal.resumeTimer)
+                        }
+                    })
+
+                    Toast.fire({
+                        icon: 'warning',
+                        title: 'You have ' + data.length + ' pending orders'
+                    })
+                }
+                if (data.length > 0) {
+                    // Start with a resolved promise to kick off the chain
+                    data.reduce(async (previousPromise, element) => {
+                        // Await the previous notification/delay to complete
+                        await previousPromise;
+
+                        // Await the delay
+                        await new Promise(resolve => setTimeout(resolve, 500));
+
+                        // Return a promise for the current notification/interaction
+                        return Swal.fire({
+                            title: 'Pending Order',
+                            // *** FIX HERE: Changed 'text' to 'html' ***
+                            html: `Order ID: <a href='/orders/${element.id}/details' target='_blank'>View Details - ${element.id}</a>`,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#3085d6',
+                            cancelButtonColor: '#d33',
+                            confirmButtonText: 'Yes, We will deliver it',
+                        });
+                    }, Promise.resolve()); // Initial value: a resolved Promise
+                }
+            })
+    </script>
 
     @stack('scripts')
 </body>
