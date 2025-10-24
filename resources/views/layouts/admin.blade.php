@@ -465,7 +465,7 @@
                                             aria-labelledby="dropdownMenuButton2"
                                             style="max-height: 70vh; overflow: scroll;">
                                             <li>
-                                                <h6>Notifications</h6>
+                                                <h6>Notifications ({{ $orderpendings->count() }}) - <a  href="{{ route('admin.notifications.clear.all') }}" class="notify-clear-all fs-6 text-danger"><i class="icon-trash-2"></i> Clear all</a></h6>
                                             </li>
 
                                             @foreach ($orderpendings as $notify)
@@ -750,12 +750,14 @@
 
     {{-- pending orders notifications in sweetalert2 --}}
     <script>
-        const unreadNotifications = @json(auth()->user()->unreadNotifications);
-
-        console.log(unreadNotifications);
-
-        if (unreadNotifications.length > 0) {
-            // ... your sequential SweetAlert logic ...
+        function viewNotifications($notiy) {
+            $.ajax({
+                url: "{{ route('admin.orders.pending.notifications') }}",
+                method: 'GET',
+                success: function(data) {
+                    $notiy.html(data);
+                }
+            });
         }
         fetch("{{ route('admin.orders.pending.notifications') }}", {
                 method: 'GET',
@@ -806,7 +808,20 @@
                 }
             })
     </script>
-
+<script>
+        $('.notify-clear-all').click(function(e) {
+            e.preventDefault();
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, Clear all!'
+            })
+        })
+    </script>
     @stack('scripts')
 </body>
 

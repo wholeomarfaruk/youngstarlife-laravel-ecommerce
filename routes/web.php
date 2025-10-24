@@ -1,4 +1,5 @@
 <?php
+use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Api\SteadFastController;
 use App\Http\Controllers\UserController;
@@ -165,5 +166,8 @@ Route::prefix('admin')->group(function () {
     //steadfast courier api
     Route::get('/steadfast/place-order/{id}', [SteadFastController::class, 'place_order'])->name('admin.steadfast.place_order');
 
+
+    //notifications
+    Route::get('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('admin.notifications.clear.all');
     });
 });
