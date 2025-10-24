@@ -480,7 +480,9 @@
                                                             <div class="text-tiny">{!! html_entity_decode($notify->data['message'], ENT_QUOTES, 'UTF-8') !!}</</div>
                                                             </div>
                                                         </div>
-                                                        <div class="footer w-100">
+
+                                                    </div>
+                                                     <div class="footer w-100">
                                                             <div class="date">
                                                                 <div class="text-tiny">{{ $notify->created_at->diffForHumans() }}</div>
                                                             </div>
@@ -488,7 +490,6 @@
                                                                 <a href="{{ route('admin.notifications.read', $notify->id) }}" class="btn btn-sm btn-secondary">Mark as read</a>
                                                             </div>
                                                         </div>
-                                                    </div>
                                                 </li>
                                             @endforeach
                                             {{-- - <li>
