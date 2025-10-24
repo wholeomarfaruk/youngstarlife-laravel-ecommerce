@@ -45,7 +45,7 @@ class PendingOrderNotification extends Notification
         $diff = number_format($this->order->created_at->diffInDays(now()), 2);
         return [
             'title' => $diff.' days ago ordered',
-            'message' =>  $this->order->name . 's order has been pending for ' . $diff . ' days. Please check the order. <a target="_blank" href="' . route('admin.orders.details', $this->order->id) . '">Order Details - ID: ' . $this->order->id . '</a>',
+            'message' =>  $this->order->name . '`s order has been pending for ' . $diff . ' days. Please check the order. <a target="_blank" href="' . route('admin.orders.details', $this->order->id) . '">Order Details - ID: ' . $this->order->id . '</a>',
             'user_id' => $this->order->id,
         ];
     }
