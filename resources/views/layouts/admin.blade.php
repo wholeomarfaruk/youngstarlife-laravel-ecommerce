@@ -482,7 +482,7 @@
                                                         </div>
 
                                                     </div>
-                                                     <div class="footer w-100">
+                                                     <div class="footer w-100 d-flex justify-content-between align-items-center">
                                                             <div class="date">
                                                                 <div class="text-tiny">{{ $notify->created_at->diffForHumans() }}</div>
                                                             </div>
