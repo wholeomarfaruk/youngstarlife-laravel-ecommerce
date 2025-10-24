@@ -12,4 +12,16 @@ class NotificationController extends Controller
         auth()->user()->notifications()->delete();
         return redirect()->back();
     }
+    public function clear($id)
+    {
+        auth()->user()->notifications()->where('id', $id)->delete();
+        return response()->json(['status' => 'success']);
+    }
+    public function read($id)
+    {
+        $notification = auth()->user()->notifications()->where('id', $id)->first();
+        $notification->markAsRead();
+        return redirect()->back();
+    }
+
 }
