@@ -125,7 +125,6 @@ class SteadFastController extends Controller
             'cod_amount' => floatval($order->total),
             'note' => 'Delivery charge must nite hobe. Inside Dhaka-70tk, outside dhaka-130, size problem hole marchent er sathe must kotha bolte hobe customer er samne.',
             'item_description' => $item_descriptions
-
         ];
 
         $response = SteadfastCourier::placeOrder($orderData);

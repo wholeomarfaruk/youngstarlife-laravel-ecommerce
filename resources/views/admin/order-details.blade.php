@@ -172,29 +172,60 @@
                                 <div class="my-account__address-item__detail">
                                     <p>Name : {{ $order->name }}</p>
                                     <p>Mobile : {{ $order->phone }}</p>
-                                    @if($order->fraud_check)
-                                    <strong>SteadFast Customer Check:</strong>
-                                    <p>
-                                        Total Order : {{ $order->fraud_check['total'] ?? 0 }}<br>
-                                        Received Order : {{ $order->fraud_check['success'] ?? 0 }}<br>
-                                        Returned Order : {{ $order->fraud_check['cancel'] ?? 0 }}<br>
-                                        Score:
-                                        @php
-                                            $success = $order->fraud_check['success'] ?? 0;
-                                            $total = $order->fraud_check['total'] ?? 0;
+                                    @if ($order->fraud_check_steadfast)
+                                        <strong>SteadFast Customer Check:</strong>
+                                        <p>
+                                            Total Order : {{ $order->fraud_check_steadfast['total'] ?? 0 }}<br>
+                                            Received Order : {{ $order->fraud_check_steadfast['success'] ?? 0 }}<br>
+                                            Returned Order : {{ $order->fraud_check_steadfast['cancel'] ?? 0 }}<br>
+                                            Score:
+                                            @php
+                                                $success_steadfast = $order->fraud_check_steadfast['success'] ?? 0;
+                                                $total_steadfast = $order->fraud_check_steadfast['total'] ?? 0;
 
-                                            $score = $total > 0 ? ($success / $total) * 100 : 0;
-                                            $fraud_score = number_format($score, 2);
-                                        @endphp
-                                    </p>
+                                                $score_steadfast =
+                                                    $total_steadfast > 0
+                                                        ? ($success_steadfast / $total_steadfast) * 100
+                                                        : 0;
+                                                $fraud_score_steadfast = number_format($score_steadfast, 2);
+                                            @endphp
+                                        </p>
                                     @endif
                                     <div class="progress">
-                                        <div class="progress-bar bg-{{ $fraud_score >= 70 ? 'success' : 'danger' }}"
+                                        <div class="progress-bar bg-{{ $fraud_score_steadfast >= 70 ? 'success' : 'danger' }}"
                                             role="progressbar"
-                                            style="width: {{ $fraud_score > 100 ? 100 : $fraud_score }}%;"
-                                            aria-valuenow="{{ $fraud_score > 100 ? 100 : $fraud_score }}" aria-valuemin="0"
-                                            aria-valuemax="100">
-                                            {{ $fraud_score > 100 ? 100 : $fraud_score }}%
+                                            style="width: {{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}%;"
+                                            aria-valuenow="{{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}"
+                                            aria-valuemin="0" aria-valuemax="100">
+                                            {{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}%
+                                        </div>
+                                    </div>
+                                    @if ($order->fraud_check_pathao)
+                                        <strong>Pathao Customer Check:</strong>
+                                        <p>
+                                            Total Order : {{ $order->fraud_check_pathao['total'] ?? 0 }}<br>
+                                            Received Order : {{ $order->fraud_check_pathao['success'] ?? 0 }}<br>
+                                            Returned Order : {{ $order->fraud_check_pathao['cancel'] ?? 0 }}<br>
+                                            Score:
+                                            @php
+                                                $success_pathao = $order->fraud_check_pathao['success'] ?? 0;
+                                                $total_pathao = $order->fraud_check_pathao['total'] ?? 0;
+
+                                                $score_pathao =
+                                                    $total_pathao > 0
+                                                        ? ($success_pathao / $total_pathao) * 100
+                                                        : 0;
+                                                $fraud_score_pathao = number_format($score_pathao, 2);
+                                            @endphp
+                                        </p>
+                                    @endif
+                                    <div class="progress">
+                                        <div class="progress-bar bg-{{ $fraud_score_pathao >= 70 ? 'success' : 'danger' }}"
+                                            role="progressbar"
+                                            style="width: {{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}%;"
+                                            aria-valuenow="{{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}"
+                                            aria-valuemin="0" aria-valuemax="100">
+                                            {{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}%
                                         </div>
                                     </div>
 
@@ -258,7 +289,8 @@
                                     </option>
                                     <option value="processing" @if ($order->status == 'processing') selected @endif>Processing
                                     </option>
-                                    <option value="delivery_in_review" @if ($order->status == 'delivery_in_review') selected @endif>Delivery in Review
+                                    <option value="delivery_in_review" @if ($order->status == 'delivery_in_review') selected @endif>
+                                        Delivery in Review
                                     </option>
                                     <option value="cancelled" @if ($order->status == 'cancelled') selected @endif>Cancelled
                                     </option>
@@ -294,7 +326,8 @@
         </div>
         <!-- Modal -->
         <!-- Edit Order Modal -->
-        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+            aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-scrollable">
                 <div class="modal-content">
 

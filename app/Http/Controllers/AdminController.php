@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+use ShahariarAhmad\CourierFraudCheckerBd\Services\PathaoService;
 use ShahariarAhmad\CourierFraudCheckerBd\Services\SteadfastService;
 use App\Exports\OrderExport;
 use App\Models\Analytic;
@@ -725,8 +726,10 @@ class AdminController extends Controller
             $phone = $order->phone;
             if (strlen($phone) == 11) {
 
-                $order->fraud_check = collect((new SteadfastService())->steadfast($phone));
+                $order->fraud_check_steadfast = collect((new SteadfastService())->steadfast($phone));
+                $order->fraud_check_pathao = collect((new PathaoService())->pathao($phone));
             }
+
         }
         // dd($order->fraud_check);
         $orderItems = Order_Item::where('order_id', $id)->paginate(20);
