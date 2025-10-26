@@ -129,7 +129,7 @@
                         @endif
                     </div>
                     <hr>
-                    <p class="fs-6 fw-bold">
+                    <p class="fs-4 fw-bold">
                         <strong class="text-danger ">বিদ্রঃ</strong> <a href="https://wa.me/8801613046803?text=আমি%20যে%20কোন%20কালার%20দিয়ে%20কম্বো%20করতে%20চাই" target="_blank"
                             class="text-decoration-none text-primary-color text-primary-hover"> যে কোন কালার দিয়ে কম্বো করতে  <i class="fa-brands fa-whatsapp"></i> WhatsApp  ওয়াটসেপ করুন</a>
                     </p>
