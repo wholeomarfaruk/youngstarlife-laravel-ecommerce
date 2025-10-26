@@ -130,9 +130,8 @@
                     </div>
                     <hr>
                     <p class="fs-6 fw-bold">
-                        <strong class="text-danger ">বিদ্রঃ</strong> আপনার অর্ডার নিশ্চিত করতে ফর্মটি পূরণ করে
-                        অর্ডার
-                        বাটন ক্লিক করুন।
+                        <strong class="text-danger ">বিদ্রঃ</strong> <a href="https://wa.me/8801613046803?text=আমি%20যে%20কোন%20কালার%20দিয়ে%20কম্বো%20করতে%20চাই" target="_blank"
+                            class="text-decoration-none text-primary-color text-primary-hover"> যে কোন কালার দিয়ে কম্বো করতে  <i class="fa-brands fa-whatsapp"></i> WhatsApp  ওয়াটসেপ করুন</a>
                     </p>
                     <hr>
                     <div class="order-form-box">
@@ -373,7 +372,7 @@
                 <li><i class="fa-solid fa-angles-right  text-primary-color"></i> আপনি যদি আপনার ক্রয়কৃত ড্রেসটি
                     নিয়ে সন্তুষ্ট না হন, তবে শুধু ডেলিভারি চার্জ প্রদান করে ডেলিভারি ম্যানের কাছে সহজেই ফেরত দিতে
                     পারবেন। </li>
-                
+
                 <li><i class="fa-solid fa-angles-right text-primary-color"></i>আমাদের আছে ডেলিভারির পর ৩ দিন
                     পর্যন্ত
                     এক্সচেঞ্জ সুবিধা।
