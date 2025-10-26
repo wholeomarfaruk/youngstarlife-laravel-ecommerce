@@ -728,7 +728,7 @@ class AdminController extends Controller
 
                 $order->fraud_check_steadfast = collect((new SteadfastService())->steadfast($phone));
                 $order->fraud_check_pathao = collect((new PathaoService())->pathao($phone));
-                dd($order->fraud_check_pathao);
+                // dd($order->fraud_check_pathao);
             }
 
         }
