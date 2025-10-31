@@ -12,18 +12,19 @@ class OrderController extends Controller
     public function fetchPendingOrders()
     {
         $pendingOrders = Order::whereIn('status', [
-            'pending',
+            // 'pending',
             'confirmed',
             'on_hold',
             'processing',
             'ready',
         ])
-        ->where('created_at', '<=', now()->subDays(3)) // older than 3 days
+        ->where('created_at', '<=', now()->subDays(2)) // older than 3 days
         ->whereDate('updated_at', '<', now()->toDateString())
         ->get();
 
         foreach ($pendingOrders as $order) {
             $order->updated_at = now();
+            $order->status = 'cancelled';
             $order->save();
             auth()->user()->notify(new PendingOrderNotification($order));
 
