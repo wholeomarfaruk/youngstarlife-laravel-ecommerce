@@ -845,40 +845,10 @@
                     // Get the URL from the link's 'href' attribute
                     var url = $(this).attr('href');
 
-                    // 4. If confirmed, perform the AJAX request
-                    $.ajax({
-                        url: url, // The URL to load from the link
-                        type: 'GET', // Or 'POST', depending on your backend
-                        dataType: 'json', // Expecting a JSON response (adjust as needed)
-                        success: function(response) {
-                            // 5. Handle success (e.g., show success message, refresh UI)
-                            if (response
-                                .success) { // Assuming your server sends a 'success' flag
-                                Swal.fire(
-                                    'Cleared!',
-                                    'All notifications have been cleared.',
-                                    'success'
-                                );
-                                // *** Add code here to update the UI, e.g., reload notifications list ***
-                            } else {
-                                Swal.fire(
-                                    'Error!',
-                                    response.message ||
-                                    'Something went wrong on the server.',
-                                    'error'
-                                );
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            // 6. Handle AJAX failure
-                            Swal.fire(
-                                'Error!',
-                                'Failed to clear notifications. Please try again.',
-                                'error'
-                            );
-                            console.error("AJAX Error: ", status, error);
-                        }
-                    });
+                    // Redirect to the URL using JavaScript's location.href
+                    window.location.href = url;
+
+
                 }
             })
         });

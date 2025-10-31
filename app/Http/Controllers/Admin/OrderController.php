@@ -35,6 +35,6 @@ class OrderController extends Controller
         $order = Order::find($request->id);
         $order->updated_at = now();
         $order->save();
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true,'message' => 'Notification Updated Successfully']);
     }
 }
