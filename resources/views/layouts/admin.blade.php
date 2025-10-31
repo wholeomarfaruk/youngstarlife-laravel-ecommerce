@@ -465,7 +465,10 @@
                                             aria-labelledby="dropdownMenuButton2"
                                             style="max-height: 70vh; overflow: scroll;">
                                             <li>
-                                                <h6>Notifications ({{ $orderpendings->count() }}) - <a  href="{{ route('admin.notifications.clear.all') }}" class="notify-clear-all fs-6 text-danger"><i class="icon-trash-2"></i> Clear all</a></h6>
+                                                <h6>Notifications ({{ $orderpendings->count() }}) - <a
+                                                        href="{{ route('admin.notifications.clear.all') }}"
+                                                        class="notify-clear-all fs-6 text-danger"><i
+                                                            class="icon-trash-2"></i> Clear all</a></h6>
                                             </li>
 
                                             @foreach ($orderpendings as $notify)
@@ -477,20 +480,23 @@
                                                         <div>
                                                             <div class="body-title-2">{{ $notify->data['title'] }}
                                                             </div>
-                                                            <div class="text-tiny">{!! html_entity_decode($notify->data['message'], ENT_QUOTES, 'UTF-8') !!}</</div>
+                                                            <div class="text-tiny">{!! html_entity_decode($notify->data['message'], ENT_QUOTES, 'UTF-8') !!}</< /div>
                                                             </div>
                                                         </div>
 
                                                     </div>
-                                                     <div class="footer w-100 d-flex justify-content-end align-items-center gap-3">
-                                                            <div class="date">
-                                                                <div class="text-tiny">{{ $notify->created_at->diffForHumans() }}</div>
-                                                            </div>
-                                                            <div class="action">
-                                                                <a href="{{ route('admin.notifications.read', $notify->id) }}" class="btn btn-sm btn-secondary">Mark as read</a>
-                                                            </div>
+                                                    <div
+                                                        class="footer w-100 d-flex justify-content-end align-items-center gap-3">
+                                                        <div class="date">
+                                                            <div class="text-tiny">
+                                                                {{ $notify->created_at->diffForHumans() }}</div>
                                                         </div>
-                                                        <hr>
+                                                        <div class="action">
+                                                            <a href="{{ route('admin.notifications.read', $notify->id) }}"
+                                                                class="btn btn-sm btn-secondary">Mark as read</a>
+                                                        </div>
+                                                    </div>
+                                                    <hr>
                                                 </li>
                                             @endforeach
                                             {{-- - <li>
@@ -818,9 +824,12 @@
                 }
             })
     </script>
-<script>
+    <script>
         $('.notify-clear-all').click(function(e) {
+            // 1. Prevent the default link behavior immediately
             e.preventDefault();
+
+            // 2. Show the SweetAlert confirmation dialog
             Swal.fire({
                 title: 'Are you sure?',
                 text: "You won't be able to revert this!",
@@ -829,8 +838,50 @@
                 confirmButtonColor: '#3085d6',
                 cancelButtonColor: '#d33',
                 confirmButtonText: 'Yes, Clear all!'
+            }).then((result) => { // 3. Handle the result of the SweetAlert dialog
+                // Check if the user clicked the 'Confirm' button
+                if (result.isConfirmed) {
+
+                    // Get the URL from the link's 'href' attribute
+                    var url = $(this).attr('href');
+
+                    // 4. If confirmed, perform the AJAX request
+                    $.ajax({
+                        url: url, // The URL to load from the link
+                        type: 'GET', // Or 'POST', depending on your backend
+                        dataType: 'json', // Expecting a JSON response (adjust as needed)
+                        success: function(response) {
+                            // 5. Handle success (e.g., show success message, refresh UI)
+                            if (response
+                                .success) { // Assuming your server sends a 'success' flag
+                                Swal.fire(
+                                    'Cleared!',
+                                    'All notifications have been cleared.',
+                                    'success'
+                                );
+                                // *** Add code here to update the UI, e.g., reload notifications list ***
+                            } else {
+                                Swal.fire(
+                                    'Error!',
+                                    response.message ||
+                                    'Something went wrong on the server.',
+                                    'error'
+                                );
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            // 6. Handle AJAX failure
+                            Swal.fire(
+                                'Error!',
+                                'Failed to clear notifications. Please try again.',
+                                'error'
+                            );
+                            console.error("AJAX Error: ", status, error);
+                        }
+                    });
+                }
             })
-        })
+        });
     </script>
     @stack('scripts')
 </body>
