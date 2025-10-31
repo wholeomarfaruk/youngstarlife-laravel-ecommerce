@@ -221,7 +221,7 @@
                                             <a href="{{ route('admin.orders.cancelled') }}"
                                                 class=" {{ Request::is('admin/orders/cancelled') ? 'active' : '' }}">
                                                 <div class="text">Cancelled Orders
-                                                    ({{ $orderStatus->where('status', 'cacelled')->first()->count ?? 0 }})
+                                                    ({{ $orderStatus->where('status', 'cancelled')->first()->count ?? 0 }})
                                                 </div>
                                             </a>
                                         </li>

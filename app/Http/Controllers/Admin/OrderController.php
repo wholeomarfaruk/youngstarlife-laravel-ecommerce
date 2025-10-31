@@ -12,7 +12,7 @@ class OrderController extends Controller
     public function fetchPendingOrders()
     {
         $pendingOrders = Order::whereIn('status', [
-            // 'pending',
+            'pending',
             'confirmed',
             'on_hold',
             'processing',
@@ -24,7 +24,6 @@ class OrderController extends Controller
 
         foreach ($pendingOrders as $order) {
             $order->updated_at = now();
-            $order->status = 'cancelled';
             $order->save();
             auth()->user()->notify(new PendingOrderNotification($order));
 
