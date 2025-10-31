@@ -841,14 +841,10 @@
             }).then((result) => { // 3. Handle the result of the SweetAlert dialog
                 // Check if the user clicked the 'Confirm' button
                 if (result.isConfirmed) {
-
                     // Get the URL from the link's 'href' attribute
                     var url = $(this).attr('href');
-
                     // Redirect to the URL using JavaScript's location.href
                     window.location.href = url;
-
-
                 }
             })
         });

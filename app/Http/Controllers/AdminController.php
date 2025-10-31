@@ -316,6 +316,7 @@ class AdminController extends Controller
 
         return redirect()->route('admin.products')->with('status', 'Product Updated Successfully');
     }
+    
 
     public function productDelete($id)
     {
