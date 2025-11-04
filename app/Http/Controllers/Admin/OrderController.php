@@ -18,7 +18,7 @@ class OrderController extends Controller
             'processing',
             'ready',
         ])
-        ->where('created_at', '<=', now()->subDays(2)) // older than 3 days
+        ->where('created_at', '<=', now()->subDays(3)) // older than 3 days
         ->whereDate('updated_at', '<', now()->toDateString())
         ->get();
 

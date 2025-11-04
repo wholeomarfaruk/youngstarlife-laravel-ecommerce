@@ -70,7 +70,11 @@
                     </div>
 
                 </div>
-                <div class="wg-table table-all-user">
+                <div class="wg-box">
+                    
+
+                </div>
+                {{-- <div class="wg-table table-all-user">
                     <div class="divider"></div>
                     <div class="flex items-center justify-between flex-wrap gap10 wgp-pagination">
                         {{ $orders->links('pagination::bootstrap-5') }}
@@ -160,7 +164,7 @@
                             </tbody>
                         </table>
                     </div>
-                </div>
+                </div> --}}
                 <div class="divider"></div>
                 <div class="flex items-center justify-between flex-wrap gap10 wgp-pagination">
                     {{ $orders->links('pagination::bootstrap-5') }}

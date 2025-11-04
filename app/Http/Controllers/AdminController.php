@@ -247,7 +247,7 @@ class AdminController extends Controller
         }
         if ($request->has('status')) {
             $product->status = true;
-        }else{
+        } else {
             $product->status = false;
         }
 
@@ -316,7 +316,7 @@ class AdminController extends Controller
 
         return redirect()->route('admin.products')->with('status', 'Product Updated Successfully');
     }
-    
+
 
     public function productDelete($id)
     {
@@ -727,11 +727,15 @@ class AdminController extends Controller
             $phone = $order->phone;
             if (strlen($phone) == 11) {
 
-                $order->fraud_check_steadfast = collect((new SteadfastService())->steadfast($phone));
+                try {
+                    $order->fraud_check_steadfast = collect((new SteadfastService())->steadfast($phone));
+                } catch (\Throwable $e) {
+                    $order->fraud_check_steadfast = collect(['error' => 'Steadfast check failed']);
+                }
+
                 $order->fraud_check_pathao = collect((new PathaoService())->pathao($phone));
                 // dd($order->fraud_check_pathao);
             }
-
         }
         // dd($order->fraud_check);
         $orderItems = Order_Item::where('order_id', $id)->paginate(20);
