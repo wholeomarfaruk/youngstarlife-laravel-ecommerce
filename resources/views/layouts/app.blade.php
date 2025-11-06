@@ -19,7 +19,7 @@
     <!-- Fancy Box css -->
     <link rel="stylesheet" href="{{ asset('frontend/library/fancybox/fancybox.css') }}">
     <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.1/dist/dotlottie-wc.js" type="module"></script>
-   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom Css  -->
     <style>
         @font-face {
@@ -36,24 +36,24 @@
 
     @stack('styles')
 
-    @if(app()->environment('production'))
-    <!-- Google Tag Manager -->
-    <script>
-        (function(w, d, s, l, i) {
-            w[l] = w[l] || [];
-            w[l].push({
-                'gtm.start': new Date().getTime(),
-                event: 'gtm.js'
-            });
-            var f = d.getElementsByTagName(s)[0],
-                j = d.createElement(s),
-                dl = l != 'dataLayer' ? '&l=' + l : '';
-            j.async = true;
-            j.src =
-                'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
-            f.parentNode.insertBefore(j, f);
-        })(window, document, 'script', 'dataLayer', 'GTM-TVMLT6DT');
-    </script>
+    @if (app()->environment('production'))
+        <!-- Google Tag Manager -->
+        <script>
+            (function(w, d, s, l, i) {
+                w[l] = w[l] || [];
+                w[l].push({
+                    'gtm.start': new Date().getTime(),
+                    event: 'gtm.js'
+                });
+                var f = d.getElementsByTagName(s)[0],
+                    j = d.createElement(s),
+                    dl = l != 'dataLayer' ? '&l=' + l : '';
+                j.async = true;
+                j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+                f.parentNode.insertBefore(j, f);
+            })(window, document, 'script', 'dataLayer', 'GTM-TVMLT6DT');
+        </script>
     @endif
 
     <!-- End Google Tag Manager -->
@@ -61,12 +61,12 @@
 </head>
 
 <body class="bg-white bg-opacity-50">
-        @if(app()->environment('production'))
-            <!-- Google Tag Manager (noscript) -->
-            <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TVMLT6DT" height="0" width="0"
-                    style="display:none;visibility:hidden"></iframe></noscript>
-            <!-- End Google Tag Manager (noscript) -->
-        @endif
+    @if (app()->environment('production'))
+        <!-- Google Tag Manager (noscript) -->
+        <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TVMLT6DT" height="0" width="0"
+                style="display:none;visibility:hidden"></iframe></noscript>
+        <!-- End Google Tag Manager (noscript) -->
+    @endif
     <header id="header-area" class="shadow bg-white">
         <div class="container">
             <div class="topbar d-flex justify-content-center">
@@ -98,7 +98,8 @@
                 <div class="collapse navbar-collapse justify-content-end" id="navbarNavDropdown">
                     <ul class="navbar-nav ">
                         <li class="nav-item fs-5">
-                            <a class="nav-link {{ Request::is('/') ? 'active' : '' }}" aria-current="page" href="/">Home</a>
+                            <a class="nav-link {{ Request::is('/') ? 'active' : '' }}" aria-current="page"
+                                href="/">Home</a>
                         </li>
 
 
@@ -114,16 +115,20 @@
                             </ul>
                         </li> --}}
                         <li class="nav-item fs-5">
-                            <a class="nav-link {{ Request::is('shop') ? 'active' : '' }}" href="/shop">All Products</a>
+                            <a class="nav-link {{ Request::is('shop') ? 'active' : '' }}" href="/shop">All
+                                Products</a>
                         </li>
                         <li class="nav-item fs-5">
-                            <a class="nav-link {{ Request::is('category/combo-offer') ? 'active' : '' }}" href="/category/combo-offer">Combo Offer</a>
+                            <a class="nav-link {{ Request::is('category/combo-offer') ? 'active' : '' }}"
+                                href="/category/combo-offer">Combo Offer</a>
                         </li>
                         <li class="nav-item fs-5">
-                            <a class="nav-link {{ Request::is('category/joggers-pant') ? 'active' : '' }}" href="/category/joggers-pant">Joggers</a>
+                            <a class="nav-link {{ Request::is('category/joggers-pant') ? 'active' : '' }}"
+                                href="/category/joggers-pant">Joggers</a>
                         </li>
                         <li class="nav-item fs-5">
-                            <a class="nav-link {{ Request::is('category/cargo-pants') ? 'active' : '' }}" href="/category/cargo-pants">Cargo</a>
+                            <a class="nav-link {{ Request::is('category/cargo-pants') ? 'active' : '' }}"
+                                href="/category/cargo-pants">Cargo</a>
                         </li>
                     </ul>
                 </div>
@@ -258,7 +263,21 @@
 
 
     @stack('scripts')
-
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+        var Tawk_API = Tawk_API || {},
+            Tawk_LoadStart = new Date();
+        (function() {
+            var s1 = document.createElement("script"),
+                s0 = document.getElementsByTagName("script")[0];
+            s1.async = true;
+            s1.src = 'https://embed.tawk.to/690c8bfbc7778b19591c13ad/1j9cg5jom';
+            s1.charset = 'UTF-8';
+            s1.setAttribute('crossorigin', '*');
+            s0.parentNode.insertBefore(s1, s0);
+        })();
+    </script>
+    <!--End of Tawk.to Script-->
 </body>
 
 </html>
