@@ -89,7 +89,7 @@
                     <p style="text-align: center; margin: 0;"><strong>YOUNGSTAR Life</strong></p>
                 </div>
                 <div class="barcode">
-                    {!! DNS1D::getBarcodeHTML($item['phone'], 'C128', 1.2, 40) !!}
+                    {!! DNS1D::getBarcodeHTML($item['consignment_id'], 'C128', 1.2, 40) !!}
                 </div>
                 <p style="text-align: center; margin: 0; letter-spacing: 2px;"><strong>{{ $item['phone'] }}</strong></p>
                 <div class="info">
