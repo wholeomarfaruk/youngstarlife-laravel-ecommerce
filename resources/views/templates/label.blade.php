@@ -37,14 +37,15 @@
         }
 
         .label {
-            width: 100%;
-            height: 73mm;
-            border: 1px solid #000;
+            width: 43mm;
+            height: 67mm;
+            /* border: 1px solid #000; */
             border-radius: 8px;
             margin-bottom: 5px;
             padding: 8px;
 
             page-break-inside: avoid;
+
             /* Prevent label splitting */
         }
 
