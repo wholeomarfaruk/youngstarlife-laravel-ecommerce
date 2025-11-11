@@ -91,7 +91,7 @@
                 <div class="barcode">
                     {!! DNS1D::getBarcodeHTML($item['consignment_id'], 'C128', 1.2, 40) !!}
                 </div>
-                <p style="text-align: center; margin: 0; letter-spacing: 2px;"><strong>{{ $item['phone'] }}</strong></p>
+                <p style="text-align: center; margin: 0; letter-spacing: 2px;"><strong>{{ $item['consignment_id'] }}</strong></p>
                 <div class="info">
                     <p><strong>ID:</strong> {{ $item['id'] }}</p>
                     <p><strong>Name:</strong> {{ $item['name'] }}</p>
