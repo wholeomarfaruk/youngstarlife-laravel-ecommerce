@@ -85,7 +85,7 @@
         @foreach ($stickers as $item)
             <div class="label">
                 <div class="logo">
-                    <img src="{{ public_path('frontend/img/youngstar logo-circle.png') }}" alt="Logo">
+                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('frontend/img/youngstar_logo_transparent.png'))) }}" alt="Logo">
                     <p style="text-align: center; margin: 0;"><strong>YOUNGSTAR Life</strong></p>
                 </div>
                 <div class="barcode">

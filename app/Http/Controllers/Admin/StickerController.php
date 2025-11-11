@@ -18,7 +18,7 @@ class StickerController extends Controller
         $stickers = [];
 
         foreach ($ids as $id) {
-            $order = \App\Models\Order::find($id);
+            $order = \App\Models\Order::where('id', $id)->where('consignment_id', '!=', null)->first();
             if ($order) {
                 $items = '';
                 $size = '';
@@ -49,7 +49,8 @@ class StickerController extends Controller
                     'name' => $order->name,
                     'phone' => $order->phone,
                     'price' => $order->total,
-                    'items' => $items
+                    'items' => $items,
+                    'consignment_id'=>$order->consignment_id
                 ];
             }
         }
