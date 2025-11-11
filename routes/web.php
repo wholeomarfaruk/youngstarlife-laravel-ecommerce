@@ -1,6 +1,7 @@
 <?php
 use App\Http\Controllers\Admin\NotificationController;
 use App\Http\Controllers\Admin\OrderController;
+use App\Http\Controllers\Admin\StickerController;
 use App\Http\Controllers\Api\SteadFastController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Artisan;
@@ -122,6 +123,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/orders/cancelled', [AdminController::class, 'ordersCancelled'])->name('admin.orders.cancelled');
         Route::get('/orders/returned', [AdminController::class, 'ordersReturned'])->name('admin.orders.returned');
         Route::get('/pending-orders-notifications', [OrderController::class, 'fetchPendingOrders'])->name('admin.orders.pending.notifications');
+        Route::put('/orders/update-bulk-order-status', [AdminController::class, 'bulkOrderStatusUpdate'])->name('admin.orders.status.update.bulk');
 
         Route::get('/orders/deleted', [AdminController::class, 'deletedOrders'])->name('admin.orders.deleted');
         Route::get('/orders/{id}/details', [AdminController::class, 'orderDetails'])->name('admin.orders.details');
@@ -170,5 +172,9 @@ Route::prefix('admin')->group(function () {
     //notifications
     Route::get('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('admin.notifications.clear.all');
     Route::get('/notifications/mark-as-read/{id}', [NotificationController::class, 'read'])->name('admin.notifications.read');
+
+            //sticker
+        Route::post('/generate-sticker', [StickerController::class, 'generate'])->name('admin.generate.sticker');
+
 });
 });

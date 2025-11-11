@@ -71,10 +71,10 @@
 
                 </div>
                 <div class="wg-box">
-                    
+
 
                 </div>
-                {{-- <div class="wg-table table-all-user">
+                <div class="wg-table table-all-user">
                     <div class="divider"></div>
                     <div class="flex items-center justify-between flex-wrap gap10 wgp-pagination">
                         {{ $orders->links('pagination::bootstrap-5') }}
@@ -87,7 +87,7 @@
                                     <th class="text-center">Name</th>
                                     <th class="text-center">Phone</th>
                                     <th class="text-center">Consigment ID</th>
-                                    <th class="text-center">SteadFast Fraud Check</th>
+
                                     <th class="text-center">Subtotal</th>
                                     <th class="text-center">Discount</th>
                                     <th class="text-center">Delivery charge</th>
@@ -118,7 +118,7 @@
                                         </td>
                                         <td class="text-center">{{ $order->phone }}</td>
                                         <td class="text-center">{{ $order->consignment_id }}</td>
-                                        <td class="text-center">{{ $order->fraud_check }}</td>
+
                                         <td class="text-center">৳{{ $order->subtotal }}</td>
                                         <td class="text-center">৳{{ $order->discount }}</td>
                                         <td class="text-center">৳{{ $order->fee }}</td>
@@ -164,7 +164,7 @@
                             </tbody>
                         </table>
                     </div>
-                </div> --}}
+                </div>
                 <div class="divider"></div>
                 <div class="flex items-center justify-between flex-wrap gap10 wgp-pagination">
                     {{ $orders->links('pagination::bootstrap-5') }}

@@ -83,7 +83,7 @@
                                     <th class="text-center">Name</th>
                                     <th class="text-center">Phone</th>
                                     <th class="text-center">Consigment ID</th>
-                                    <th class="text-center">SteadFast Fraud Check</th>
+
                                     <th class="text-center">Subtotal</th>
                                     <th class="text-center">Discount</th>
                                     <th class="text-center">Delivery charge</th>
@@ -114,7 +114,7 @@
                                         </td>
                                         <td class="text-center">{{ $order->phone }}</td>
                                         <td class="text-center">{{ $order->consignment_id }}</td>
-                                        <td class="text-center">{{ $order->fraud_check }}</td>
+
                                         <td class="text-center">৳{{ $order->subtotal }}</td>
                                         <td class="text-center">৳{{ $order->discount }}</td>
                                         <td class="text-center">৳{{ $order->fee }}</td>

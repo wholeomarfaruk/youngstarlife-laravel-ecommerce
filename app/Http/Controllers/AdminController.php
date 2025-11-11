@@ -479,7 +479,7 @@ class AdminController extends Controller
             $orders = Order::where('status', 'processing')->orderBy('created_at', 'desc')->paginate(20);
 
         }
-
+        
         $status_group = Order::whereNot('status', 'deleted')->select('status')
             ->selectRaw('COUNT(*) as count')
             ->groupBy('status')
@@ -1137,5 +1137,59 @@ class AdminController extends Controller
         return redirect()->route('admin.orders')->with('status', 'Order Created Successfully');
     }
 
+   public function bulkOrderStatusUpdate(Request $request)
+    {
 
+
+
+
+        foreach ($request->ids as $id) {
+            $order = Order::find($id);
+
+            if ($request->status == 'pending') {
+                $order->status = $request->status;
+                $order->save();
+            }
+            if ($request->status == 'on_hold') {
+                $order->status = $request->status;
+                $order->save();
+            }
+            if ($request->status == 'confirmed') {
+                $order->status = $request->status;
+                $order->save();
+            }
+            if ($request->status == 'processing') {
+                $order->status = $request->status;
+                $order->save();
+            }
+            if ($request->status == 'in_transit') {
+                $order->status = $request->status;
+                $order->save();
+            }
+            if ($request->status == 'delivered') {
+                $order->status = $request->status;
+                $order->delivery_date = Carbon::now();
+                $order->save();
+            }
+
+            if ($request->status == 'cancelled') {
+                $order->status = $request->status;
+                $order->cancelled_date = Carbon::now();
+                $order->save();
+            }
+
+            if ($request->status == 'returned') {
+                $order->status = $request->status;
+                $order->save();
+            }
+            if ($request->status == 'deleted') {
+                $order->status = $request->status;
+                $order->save();
+            }
+
+
+
+        }
+        return response()->json(['success' => 'Order Status Updated Successfully']);
+    }
 }
