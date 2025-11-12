@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BlackList;
+use App\Models\Device;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Surfsidemedia\Shoppingcart\Facades\Cart;
@@ -10,6 +12,7 @@ use App\Models\delivery_areas;
 use App\Models\Order;
 use App\Models\Order_Item;
 use App\Models\Coupon;
+use App\Models\Customer;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -265,6 +268,7 @@ class CartController extends Controller
     {
         // return $request->all();
 
+
         $validated = $request->validate([
             'name' => 'required',
             'phone' => 'required',
@@ -277,6 +281,14 @@ class CartController extends Controller
         }
         if (str_starts_with($phone, '0') && strlen($phone) == 10) {
             $phone = '0' . $phone;
+        }
+        $customer_check = Customer::where('phone', $phone)->first();
+        $device_check = Device::where('user_agent', $request->userAgent())->first();
+        if($customer_check && $customer_check->is_blocked){
+            return redirect()->back()->with('error', 'You are blacklisted from ordering');
+        }
+        if($device_check && $device_check->is_blocked){
+            return redirect()->back()->with('error', 'You are blacklisted from ordering');
         }
 
         $extra_data = [];
@@ -362,6 +374,19 @@ class CartController extends Controller
                 $orderItem->options = json_encode(['size' => $request->size ?? '']);
             }
             $orderItem->save();
+
+            if (!$order->customer && strlen($phone) == 11) {
+                $customer = $order->customer()->create([
+                    'name' => $request->name,
+                    'phone' => $phone
+                ]);
+
+                $customer->devices()->create([
+                    'user_agent' => $request->server('HTTP_USER_AGENT'),
+                    'ip_address' => $request->server('REMOTE_ADDR'),
+                ]);
+
+            }
 
             return redirect()->route('order.received', ['order' => $order->id]);
         } catch (\Throwable $th) {

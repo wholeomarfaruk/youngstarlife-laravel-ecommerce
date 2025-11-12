@@ -176,5 +176,8 @@ Route::prefix('admin')->group(function () {
             //sticker
         Route::post('/generate-sticker', [StickerController::class, 'generate'])->name('admin.generate.sticker');
 
+
+        //Blacklist
+        Route::get('/orders/{id}/customer/block', [AdminController::class, 'orderBlacklistUpdate'])->name('admin.orders.customer.block');
 });
 });

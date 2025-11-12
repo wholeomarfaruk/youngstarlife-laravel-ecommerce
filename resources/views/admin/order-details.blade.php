@@ -171,7 +171,17 @@
 
                                 <div class="my-account__address-item__detail">
                                     <p>Name : {{ $order->name }}</p>
-                                    <p>Mobile : {{ $order->phone }}</p>
+
+                                    <p class="{{ $order?->customer?->isBlocked ? 'text-danger' : '' }}">Mobile :
+                                        {{ $order->phone }}
+                                        @if (!$order->customer || !$order->customer->isBlocked)
+                                            <a id="blockcustomer" href="javascript:void(0)" onclick="blockcustomer({{$order->id}})"
+                                                class="btn btn-danger btn-sm small">Block</a>
+                                        @else
+                                            {{-- <a href="javascript:void(0)" class="btn btn-success btn-sm small">Unblock</a> --}}
+                                        @endif
+
+                                    </p>
                                     @if ($order->fraud_check_steadfast)
                                         <strong>SteadFast Customer Check:</strong>
                                         <p>
@@ -212,9 +222,7 @@
                                                 $total_pathao = $order->fraud_check_pathao['total'] ?? 0;
 
                                                 $score_pathao =
-                                                    $total_pathao > 0
-                                                        ? ($success_pathao / $total_pathao) * 100
-                                                        : 0;
+                                                    $total_pathao > 0 ? ($success_pathao / $total_pathao) * 100 : 0;
                                                 $fraud_score_pathao = number_format($score_pathao, 2);
                                             @endphp
                                         </p>
@@ -285,9 +293,11 @@
                                     </option>
                                     <option value="in_review" @if ($order->status == 'in_review') selected @endif>In Review
                                     </option>
-                                    <option value="in_transit" @if ($order->status == 'in_transit') selected @endif>in_transit
+                                    <option value="in_transit" @if ($order->status == 'in_transit') selected @endif>
+                                        in_transit
                                     </option>
-                                    <option value="processing" @if ($order->status == 'processing') selected @endif>Processing
+                                    <option value="processing" @if ($order->status == 'processing') selected @endif>
+                                        Processing
                                     </option>
                                     <option value="delivery_in_review" @if ($order->status == 'delivery_in_review') selected @endif>
                                         Delivery in Review
@@ -697,5 +707,42 @@
         </script>
 
 
-        <!-- content area end -->
+        <script>
+            function blockcustomer(id) {
+                console.log(id);
+                if (id) {
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, Block!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                           fetch(`/admin/orders/${id}/customer/block`, {
+                               method: 'GET',
+                               headers: {
+                                   'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                               },
+                               contentType: 'application/json'
+                           }).then(response => {
+                               if (response.success) {
+                                   location.reload();
+                               }
+                           })
+                        }
+
+
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'No selection',
+                        text: 'Please select at least one enquiry to generate sticker.'
+                    });
+                }
+            }
+        </script>
     @endsection

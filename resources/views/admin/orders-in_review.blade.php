@@ -397,6 +397,7 @@
                 });
             }
         });
+
         document.getElementById('bulk-action-button').addEventListener('click', () => {
             console.log('clicked');
 

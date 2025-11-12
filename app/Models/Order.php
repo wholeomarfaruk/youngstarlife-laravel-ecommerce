@@ -22,4 +22,15 @@ class Order extends Model
     {
         return $this->belongsTo(delivery_areas::class, 'delivery_area_id');
     }
+
+     public function customer()
+    {
+        return $this->hasOne(Customer::class, 'phone', 'phone');
+        // matches customer.phone = order.phone
+    }
+     public function device()
+    {
+        return $this->hasOne(Device::class, 'user_agent', 'user_agent');
+        // matches device.user_agent = order.user_agent
+    }
 }

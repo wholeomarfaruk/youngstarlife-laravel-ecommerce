@@ -16,6 +16,8 @@ use App\Models\Order_Item;
 use App\Models\User;
 use App\Models\Slide;
 use App\Models\Coupon;
+use App\Models\Customer;
+use App\Models\Device;
 use App\Models\Media;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
@@ -479,7 +481,7 @@ class AdminController extends Controller
             $orders = Order::where('status', 'processing')->orderBy('created_at', 'desc')->paginate(20);
 
         }
-        
+
         $status_group = Order::whereNot('status', 'deleted')->select('status')
             ->selectRaw('COUNT(*) as count')
             ->groupBy('status')
@@ -1186,10 +1188,33 @@ class AdminController extends Controller
                 $order->status = $request->status;
                 $order->save();
             }
-
-
-
         }
         return response()->json(['success' => 'Order Status Updated Successfully']);
+    }
+    public function orderBlacklistUpdate($id)
+    {
+        $order = Order::find($id);
+        $customer = Customer::find($order->phone);
+        $device = Device::find($order->user_agent);
+        if(!$customer){
+            $customer = new Customer();
+            $customer->name = $order->name;
+            $customer->phone = $order->phone;
+            $customer->save();
+
+        }
+        if(!$device){
+            $device = new Device();
+            $device->user_agent = $order->user_agent;
+            $device->customer_id = $customer->id;
+            $device->save();
+        }
+        $device->blackLists()->create([
+            'reason' => 'Blacklisted from Order by'.auth()->user()->name,
+        ]);
+        $customer->blackLists()->create([
+            'reason' => 'Blacklist from Order by '. auth()->user()->name,
+        ]);
+        return response()->json(['success' => true,'message' => 'Order Blacklisted Successfully']);
     }
 }
