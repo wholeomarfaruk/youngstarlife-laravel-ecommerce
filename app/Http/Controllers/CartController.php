@@ -387,7 +387,10 @@ class CartController extends Controller
                 ]);
 
             }
-
+            $order_check = Order::where('phone', $order->phone)->where('status', 'autosave')->get();
+            if ($order_check->count() > 0) {
+                $order_check->each->delete();
+            }
 
             return redirect()->route('order.received', ['order' => $order->id]);
         } catch (\Throwable $th) {
