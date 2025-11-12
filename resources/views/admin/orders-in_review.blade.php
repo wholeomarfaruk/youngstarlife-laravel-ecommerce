@@ -70,6 +70,58 @@
                     </div>
 
                 </div>
+                   <div class="wg-box d-flex flex-row">
+                    <form id="bulk-action-form" action="" class="d-inline" style="width:fit-content;">
+
+                        <div class="flex items-center flex-wrap justify-start gap20 mb-27">
+
+
+                            <button type="button" class="btn btn-outline-secondary" id="bulk-select-button">Select</button>
+                            <button type="button" class="btn btn-outline-secondary" id="all-select-button">All
+                                Select</button>
+
+                            <select class="form-control btn-outline-success" style="width: inherit;" name="status"
+                                id="bulk-action-status" required>
+                                <option selected>Select Status</option>
+                                <option value="confirmed">Confirmed</option>
+                                <option value="processing">Processing</option>
+                                <option value="in_transit">In Transit</option>
+                                <option value="delivered">Delivered</option>
+                                <option value="on_hold">On Hold</option>
+                                <option value="cancelled">Cancelled</option>
+                                <option value="returned">Returned</option>
+                                <option value="pending">Pending</option>
+                                <option value="deleted">Delete</option>
+                            </select>
+                            <button id="bulk-action-button" type="submit" class="btn btn-outline-secondary">
+                                Update Status
+                            </button>
+
+                        </div>
+                    </form>
+                    <form  class="d-inline" style="width:fit-content;" id="sticker-print-form" action="{{ route('admin.generate.sticker') }}" method="POST">
+                        @csrf
+                         <button id="bulk-sticker-print" type="button" class="btn btn-outline-secondary">
+                                Print Stickers
+                            </button>
+                            <input type="text" name="ids" hidden>
+                    </form>
+                    <script>
+                        var toggle = false;
+                        document.getElementById('all-select-button').addEventListener('click', () => {
+
+                            toggle = !toggle;
+                            if (toggle) {
+                                $('input.select-item').show();
+                                document.querySelectorAll('input.select-item').forEach(el => el.checked = true);
+                            } else {
+                                $('input.select-item').hide();
+                                document.querySelectorAll('input.select-item').forEach(el => el.checked = false);
+                            }
+
+                        });
+                    </script>
+                </div>
                 <div class="wg-table table-all-user">
                     <div class="divider"></div>
                     <div class="flex items-center justify-between flex-wrap gap10 wgp-pagination">
@@ -100,7 +152,11 @@
                             <tbody>
                                 @foreach ($orders as $order)
                                     <tr>
-                                        <td class="text-center">{{ $order->id }}</td>
+                                        <td class="text-center" data-id="{{ $order->id }}"> <input type="checkbox"
+                                                class="form-check-input select-item p-2" name="ids[] "
+                                                value="{{ $order->id }}"
+                                                style="display: none; z-index: 1; top:10px;left:10px; ">
+                                            {{ $order->id }}</td>
                                         <td class="text-center">{{ $order->name }}
                                             <span data-bs-toggle="tooltip" data-bs-html="true" title="Address: {{ $order->address }}&nbsp;&nbsp;Note: {{ $order->note }}&nbsp;&nbsp;Order Items:
                                                     @foreach ($order->Order_Item as $item)
@@ -221,6 +277,153 @@
                     });
                 }
             });
+        });
+    </script>
+     <script>
+        $("#bulk-select-button").click(function() {
+            $(".select-item").toggle();
+
+            $(".select-item").prop('checked', false);
+
+        })
+
+        document.getElementById('bulk-action-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const status = document.getElementById('bulk-action-status').value;
+            console.log(status);
+            if (status == '' || status == 'Select Status' || status == null) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No action status selected',
+                    text: 'Please select a valid action status to perform.'
+                });
+                return;
+            }
+            var selected = document.querySelectorAll('input.select-item:checked');
+            const ids = selected ? [...selected].map(el => el.value) : [];
+
+
+            if (ids.length > 0) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, Update'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                        fetch("{{ route('admin.orders.status.update.bulk') }}", {
+                                method: 'put',
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                        .content,
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    ids: ids,
+                                    status: status,
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.success) {
+                                    Swal.fire({
+                                        icon: 'success',
+                                        title: 'Order Status Updated Successfully',
+                                        showConfirmButton: false,
+                                        timer: 1500
+                                    });
+                                    setTimeout(() => location.reload(), 1500);
+                                } else {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Error',
+                                        text: data.message || 'Something went wrong'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error("Error:", error);
+                                Swal.fire({
+                                    icon: 'error',
+                                    title: 'Error',
+                                    text: 'An error occurred while updating order statuses'
+                                });
+                            });
+                    }
+                });
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No selection',
+                    text: 'Please select at least one enquiry to perform this action.'
+                });
+            }
+        });
+
+        document.getElementById('bulk-sticker-print').addEventListener('click', () => {
+            console.log('clicked');
+            const form = document.getElementById('sticker-print-form');
+            const input = form.querySelector('input[name="ids"]');
+
+            var selected = document.querySelectorAll('input.select-item:checked');
+            const ids = selected ? [...selected].map(el => el.value) : [];
+
+            if (ids.length > 0) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, generate sticker!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        input.value = ids;
+                        form.submit();
+                    }
+
+
+                });
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No selection',
+                    text: 'Please select at least one enquiry to generate sticker.'
+                });
+            }
+        });
+        document.getElementById('bulk-action-button').addEventListener('click', () => {
+            console.log('clicked');
+
+            var selected = document.querySelectorAll('input.select-item:checked');
+            const ids = selected ? [...selected].map(el => el.value) : [];
+
+            if (ids.length > 0) {
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete them!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+
+                    }
+                });
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No selection',
+                    text: 'Please select at least one enquiry to delete.'
+                });
+            }
         });
     </script>
 @endpush
