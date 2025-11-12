@@ -313,10 +313,10 @@ class CartController extends Controller
 
                 $diffInMinutes = $createdAt->diffInMinutes($now);
 
-                if ($diffInMinutes < 2) {
+                if ($diffInMinutes < 5) {
                     return redirect()->back()->with([
                         'status' => 'error',
-                        'message' => 'আপনি এই প্রডাক্টি অলরেডি অর্ডার করেছেন। দয়া করে ২ মিনিট পর পুনরায় করুন।'
+                        'message' => 'আপনি এই প্রডাক্টি অলরেডি অর্ডার করেছেন। দয়া করে 5 মিনিট পর পুনরায় করুন।'
                     ]);
 
                 }
@@ -387,6 +387,7 @@ class CartController extends Controller
                 ]);
 
             }
+
 
             return redirect()->route('order.received', ['order' => $order->id]);
         } catch (\Throwable $th) {
