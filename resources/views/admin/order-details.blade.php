@@ -327,7 +327,7 @@
                 <div class="my-account__address-item col-md-12">
                     <div class="my-account__address-item__detail">
                         <p>IP Address: {{ $order->ip_address }}</p>
-                        <p class="{{ $order?->device?->isBlocked ? 'text-danger' : 'text-success' }}">User Agent: {{ $order->user_agent }}</p>
+                        <p class="{{ $order?->device?->isBlocked ? 'text-danger' : '' }}">User Agent: {{ $order->user_agent }}</p>
 
                         <pre style="font-size: 14px; line-height: 20px; "> {{ json_encode($order->json_data, JSON_PRETTY_PRINT) }}</pre>
                         <br>

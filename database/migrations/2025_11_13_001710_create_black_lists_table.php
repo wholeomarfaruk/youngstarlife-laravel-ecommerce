@@ -16,6 +16,9 @@ return new class extends Migration
             $table->morphs('black_listable');
             $table->string('reason')->nullable();
             $table->timestamps();
+            //relation morph cascade
+
+
         });
     }
 

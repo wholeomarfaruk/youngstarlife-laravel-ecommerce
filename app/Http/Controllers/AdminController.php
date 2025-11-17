@@ -1203,6 +1203,9 @@ class AdminController extends Controller
             $customer->name = $order->name;
             $customer->phone = $order->phone;
             $customer->save();
+             $customer->blackLists()->create([
+                'reason' => 'Blacklist from Order by ' . auth()->user()->name,
+            ]);
 
         } elseif($customer->isBlocked == 0){
             $customer->blackLists()->create([
@@ -1215,7 +1218,10 @@ class AdminController extends Controller
             $device->user_agent = $order->user_agent;
             $device->customer_id = $customer->id;
             $device->save();
-        } elseif($device->isBlocked == 0){ 
+             $device->blackLists()->create([
+                'reason' => 'Blacklist from Order by ' . auth()->user()->name,
+            ]);
+        } elseif($device->isBlocked == 0){
             $device->blackLists()->create([
                 'reason' => 'Blacklist from Order by ' . auth()->user()->name,
             ]);
@@ -1227,6 +1233,8 @@ class AdminController extends Controller
             'message' => 'Order Blacklisted Successfully',
             'customer' => $customer,
             'device' => $device,
+            'DeviceisBlocked' => $device->isBlocked,
+            'CustomerisBlocked' => $customer->isBlocked,
         ]);
     }
 }
