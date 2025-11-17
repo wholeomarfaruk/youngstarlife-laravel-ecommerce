@@ -1139,7 +1139,7 @@ class AdminController extends Controller
         return redirect()->route('admin.orders')->with('status', 'Order Created Successfully');
     }
 
-   public function bulkOrderStatusUpdate(Request $request)
+    public function bulkOrderStatusUpdate(Request $request)
     {
 
 
@@ -1194,27 +1194,39 @@ class AdminController extends Controller
     public function orderBlacklistUpdate($id)
     {
         $order = Order::find($id);
-        $customer = Customer::find($order->phone);
-        $device = Device::find($order->user_agent);
-        if(!$customer){
+        $customer = Customer::where('phone', $order->phone)->first();
+        $device = Device::where('user_agent', $order->user_agent)->first();
+
+
+        if (!$customer) {
             $customer = new Customer();
             $customer->name = $order->name;
             $customer->phone = $order->phone;
             $customer->save();
 
+        } elseif($customer->isBlocked == 0){
+            $customer->blackLists()->create([
+                'reason' => 'Blacklist from Order by ' . auth()->user()->name,
+            ]);
         }
-        if(!$device){
+
+        if (!$device) {
             $device = new Device();
             $device->user_agent = $order->user_agent;
             $device->customer_id = $customer->id;
             $device->save();
+        } elseif($device->isBlocked == 0){ 
+            $device->blackLists()->create([
+                'reason' => 'Blacklist from Order by ' . auth()->user()->name,
+            ]);
         }
-        $device->blackLists()->create([
-            'reason' => 'Blacklisted from Order by'.auth()->user()->name,
+
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Order Blacklisted Successfully',
+            'customer' => $customer,
+            'device' => $device,
         ]);
-        $customer->blackLists()->create([
-            'reason' => 'Blacklist from Order by '. auth()->user()->name,
-        ]);
-        return response()->json(['success' => true,'message' => 'Order Blacklisted Successfully']);
     }
 }

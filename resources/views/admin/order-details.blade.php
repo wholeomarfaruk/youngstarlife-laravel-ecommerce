@@ -175,7 +175,8 @@
                                     <p class="{{ $order?->customer?->isBlocked ? 'text-danger' : '' }}">Mobile :
                                         {{ $order->phone }}
                                         @if (!$order->customer || !$order->customer->isBlocked)
-                                            <a id="blockcustomer" href="javascript:void(0)" onclick="blockcustomer({{$order->id}})"
+                                            <a id="blockcustomer" href="javascript:void(0)"
+                                                onclick="blockcustomer({{ $order->id }})"
                                                 class="btn btn-danger btn-sm small">Block</a>
                                         @else
                                             {{-- <a href="javascript:void(0)" class="btn btn-success btn-sm small">Unblock</a> --}}
@@ -326,7 +327,7 @@
                 <div class="my-account__address-item col-md-12">
                     <div class="my-account__address-item__detail">
                         <p>IP Address: {{ $order->ip_address }}</p>
-                        <p>User Agent: {{ $order->user_agent }}</p>
+                        <p class="{{ $order?->device?->isBlocked ? 'text-danger' : 'text-success' }}">User Agent: {{ $order->user_agent }}</p>
 
                         <pre style="font-size: 14px; line-height: 20px; "> {{ json_encode($order->json_data, JSON_PRETTY_PRINT) }}</pre>
                         <br>
@@ -708,9 +709,15 @@
 
 
         <script>
+            /**
+             * Blocks a customer associated with a given order ID after confirmation.
+             * @param {number} id - The ID of the order whose customer should be blocked.
+             */
             function blockcustomer(id) {
                 console.log(id);
+
                 if (id) {
+                    // 1. Show confirmation dialog using SweetAlert (Swal)
                     Swal.fire({
                         title: 'Are you sure?',
                         text: "You won't be able to revert this!",
@@ -721,26 +728,53 @@
                         confirmButtonText: 'Yes, Block!'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                           fetch(`/admin/orders/${id}/customer/block`, {
-                               method: 'GET',
-                               headers: {
-                                   'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                               },
-                               contentType: 'application/json'
-                           }).then(response => {
-                               if (response.success) {
-                                   location.reload();
-                               }
-                           })
+                            // 2. Execute fetch request to the backend
+                            fetch(`/admin/orders/${id}/customer/block`, {
+                                    // NOTE: For blocking/mutating data, a POST method is generally recommended,
+                                    // but sticking to your original GET method here.
+                                    method: 'GET',
+                                    headers: {
+                                        // Assuming you are using jQuery for CSRF token retrieval
+                                        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                                    }
+                                })
+                                // 3. First .then(): Get the Response object and check status
+                                .then(response => {
+                                    if (!response.ok) {
+                                        // Throw an error if the HTTP status code is 4xx or 5xx
+                                        throw new Error(`HTTP error! Status: ${response.status}`);
+                                    }
+                                    // IMPORTANT FIX: Return the promise from response.json()
+                                    return response.json();
+                                })
+                                // 4. Second .then(): Process the parsed JSON data (responseJson)
+                                .then(responseJson => {
+                                    console.log(responseJson);
+                                    if (responseJson.success) {
+                                        // Successfully blocked, reload the page
+                                        // location.reload();
+                                        Swal.fire('Success!', responseJson.message || 'Customer blocked successfully.', 'success');
+                                    } else {
+                                        // Block was unsuccessful according to the server's logic/message
+                                        console.error("Block failed:", responseJson.message);
+                                        Swal.fire('Failed!', responseJson.message ||
+                                            'Customer block action failed.', 'error');
+                                    }
+                                })
+                                // 5. .catch(): Handle any errors (network, HTTP status, or JSON parsing)
+                                .catch(error => {
+                                    console.error('Fetch operation error:', error);
+                                    Swal.fire('Error!', 'An unexpected error occurred during the request.',
+                                    'error');
+                                });
                         }
-
-
                     });
                 } else {
+                    // Show warning if ID is missing
                     Swal.fire({
                         icon: 'warning',
-                        title: 'No selection',
-                        text: 'Please select at least one enquiry to generate sticker.'
+                        title: 'No ID provided',
+                        text: 'Cannot block customer without an ID.'
                     });
                 }
             }

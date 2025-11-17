@@ -173,7 +173,7 @@
                                             </span>
 
                                         </td>
-                                        <td class="text-center">{{ $order->phone }}</td>
+                                        <td class="text-center {{ $order?->customer?->isBlocked ? 'text-danger' : '' }}">{{ $order->phone }}</td>
                                         <td class="text-center">{{ $order->consignment_id }}</td>
                                         <td class="text-center">৳{{ $order->subtotal }}</td>
                                         <td class="text-center">৳{{ $order->discount }}</td>
