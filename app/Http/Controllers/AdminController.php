@@ -393,6 +393,8 @@ class AdminController extends Controller
             $search = $request->search;
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
@@ -419,6 +421,9 @@ class AdminController extends Controller
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('status', 'pending')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
@@ -445,6 +450,9 @@ class AdminController extends Controller
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('status', 'confirmed')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
@@ -471,6 +479,9 @@ class AdminController extends Controller
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('status', 'processing')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+
+                  ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
@@ -497,6 +508,9 @@ class AdminController extends Controller
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('status', 'ready')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+
+                 ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
@@ -523,6 +537,9 @@ class AdminController extends Controller
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('status', 'in_review')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+
+                    ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
@@ -549,6 +566,9 @@ class AdminController extends Controller
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('status', 'in_transit')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+
+                 ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
@@ -575,6 +595,9 @@ class AdminController extends Controller
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('status', 'delivered')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+
+                  ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
@@ -601,6 +624,9 @@ class AdminController extends Controller
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('status', 'delivery_in_review')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+
+                 ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
@@ -627,6 +653,9 @@ class AdminController extends Controller
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('status', 'on_hold')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+
+                   ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
@@ -653,6 +682,9 @@ class AdminController extends Controller
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('status', 'cancelled')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+
+                   ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
@@ -679,6 +711,9 @@ class AdminController extends Controller
             $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('status', 'returned')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
@@ -704,6 +739,9 @@ class AdminController extends Controller
             $search = $request->search;
             $orders = Order::where('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
+
+                  ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
         } else {
@@ -1203,11 +1241,11 @@ class AdminController extends Controller
             $customer->name = $order->name;
             $customer->phone = $order->phone;
             $customer->save();
-             $customer->blackLists()->create([
+            $customer->blackLists()->create([
                 'reason' => 'Blacklist from Order by ' . auth()->user()->name,
             ]);
 
-        } elseif($customer->isBlocked == 0){
+        } elseif ($customer->isBlocked == 0) {
             $customer->blackLists()->create([
                 'reason' => 'Blacklist from Order by ' . auth()->user()->name,
             ]);
@@ -1218,10 +1256,10 @@ class AdminController extends Controller
             $device->user_agent = $order->user_agent;
             $device->customer_id = $customer->id;
             $device->save();
-             $device->blackLists()->create([
+            $device->blackLists()->create([
                 'reason' => 'Blacklist from Order by ' . auth()->user()->name,
             ]);
-        } elseif($device->isBlocked == 0){
+        } elseif ($device->isBlocked == 0) {
             $device->blackLists()->create([
                 'reason' => 'Blacklist from Order by ' . auth()->user()->name,
             ]);
