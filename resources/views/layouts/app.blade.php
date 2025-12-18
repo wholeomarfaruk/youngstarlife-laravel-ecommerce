@@ -130,6 +130,10 @@
                             <a class="nav-link {{ Request::is('category/cargo-pants') ? 'active' : '' }}"
                                 href="/category/cargo-pants">Cargo</a>
                         </li>
+                        <li class="nav-item fs-5">
+                            <a class="nav-link {{ Request::is('category/kids') ? 'active' : '' }}"
+                                href="/category/kids">Kids</a>
+                        </li>
                     </ul>
                 </div>
             </div>
