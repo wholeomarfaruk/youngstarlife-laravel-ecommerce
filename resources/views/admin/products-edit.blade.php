@@ -218,6 +218,32 @@
                             </span>
                         @enderror
                     </fieldset>
+                    <fieldset>
+                        <div class="body-title">Size images <span class="tf-color-1">*</span>
+                        </div>
+                        <div class="upload-image flex-grow">
+                            <div class="item" id="sizechartpreview">
+                                <img src="{{ asset($product->SizeChart) }}"
+                                    class="effect8" alt="">
+                            </div>
+                            <div id="upload-file" class="item up-load">
+                                <label class="uploadfile" for="sizechart">
+                                    <span class="icon">
+                                        <i class="icon-upload-cloud"></i>
+                                    </span>
+                                    <span class="body-text">Drop your images here or select <span class="tf-color">click
+                                            to
+                                            browse</span></span>
+                                    <input type="file" id="sizechart" name="sizechart" accept="image/*">
+                                </label>
+                            </div>
+                        </div>
+                        @error('image')
+                            <span class="invalid-feedback" role="alert">
+                                <strong>{{ $message }}</strong>
+                            </span>
+                        @enderror
+                    </fieldset>
                     <div class="cols gap22">
                         <fieldset class="name">
                             <div class="body-title mb-10">Is Active</div>
@@ -284,6 +310,14 @@
                 reader.onload = function(e) {
                     $('#imgpreview').show();
                     $('#imgpreview img').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(this.files[0]);
+            });
+            $('#sizechart').on('change', function() {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#sizechartpreview').show();
+                    $('#sizechartpreview img').attr('src', e.target.result);
                 }
                 reader.readAsDataURL(this.files[0]);
             });

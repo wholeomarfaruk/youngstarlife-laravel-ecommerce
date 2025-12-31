@@ -132,6 +132,7 @@ class AdminController extends Controller
             }
 
             $product->save();
+
             if ($request->has('sizes')) {
 
                 foreach ($request->sizes as $key => $size) {
@@ -174,6 +175,39 @@ class AdminController extends Controller
                     $file->move(public_path($path), $file->getClientOriginalName());
 
                 }
+
+
+            }
+            if ($request->hasFile('sizechart')) {
+
+                // Store file in 'public/media'
+                $images = $request->file('images');
+                $path = 'storage/images/products/' . $product->id . '/';
+                if (!file_exists(public_path($path))) {
+                    mkdir(public_path($path), 0777, true);
+                }
+
+                    // Save in media table
+                    $media = new Media();
+                    $media->filename = basename($file->getClientOriginalName());
+                    $media->original_name = $file->getClientOriginalName();
+                    $media->mime_type = $file->getMimeType();
+                    $media->extension = $file->getClientOriginalExtension();
+                    $media->size = $file->getSize();
+                    $media->type = 'image';
+                    $media->category = 'sizechart';
+                    $media->disk = 'public';
+                    $media->path = $path . $file->getClientOriginalName();
+                    $media->mediable_id = $product->id;
+                    $media->mediable_type = products::class;
+                    if ($request->has('caption')) {
+                        $media->caption = $request->input('caption');
+                    }
+
+                    $media->user_id = auth()->id();
+                    $media->save();
+                    $file->move(public_path($path), $file->getClientOriginalName());
+
 
 
             }
@@ -319,9 +353,49 @@ class AdminController extends Controller
 
 
         }
+        if ($request->hasFile('sizechart')) {
+
+            // Store file in 'public/media'
+            $images = $request->file('sizechart');
+            $path = 'storage/images/products/' . $product->id . '/';
+            if (!file_exists(public_path($path))) {
+                mkdir(public_path($path), 0777, true);
+            }
+            $old_media = $product->sizeChart;
+            if ($old_media) {
+                $media = $old_media;
+
+                if (file_exists(public_path($media->path))) {
+                    unlink(public_path($media->path));
+                }
+                $media->delete();
+            }
+
+
+                $file = $images;
+                // Save in media table
+                $media = new Media();
+                $media->filename = basename($file->getClientOriginalName());
+                $media->original_name = $file->getClientOriginalName();
+                $media->mime_type = $file->getMimeType();
+                $media->extension = $file->getClientOriginalExtension();
+                $media->size = $file->getSize();
+                $media->type = 'image';
+                $media->category = 'sizechart';
+                $media->disk = 'public';
+                $media->path = $path . $file->getClientOriginalName();
+                $media->mediable_id = $product->id;
+                $media->mediable_type = products::class;
+                if ($request->has('caption')) {
+                    $media->caption = $request->input('caption');
+                }
+
+                $media->user_id = auth()->id();
+                $media->save();
+                $file->move(public_path($path), $file->getClientOriginalName());
+        }
         if ($request->has('categories')) {
             $product->categories()->sync($request->categories);
-
         }
         if ($request->has('segments')) {
             $product->segments()->sync($request->segments);

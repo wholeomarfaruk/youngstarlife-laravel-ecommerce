@@ -70,6 +70,15 @@
                                         </div>
                                     @endforeach
                                 @endif
+                                 @if ($product?->sizechart)
+
+                                 <div class="swiper-slide">
+                                     <a href="{{ asset($product?->sizechart) }}"
+                                         data-fancybox="gallery">
+                                         <img src="{{ asset($product?->sizechart) }}" />
+                                        </a>
+                                    </div>
+                                    @endif
                             </div>
                             <div class="swiper-button-next"></div>
                             <div class="swiper-button-prev"></div>
@@ -94,6 +103,14 @@
 
                                         </div>
                                     @endforeach
+                                @endif
+                                @if ($product?->sizechart)
+
+                                <div class="swiper-slide">
+
+                                    <img src="{{ asset($product?->sizechart) }}" />
+
+                                </div>
                                 @endif
 
                             </div>
