@@ -70,15 +70,13 @@
                                         </div>
                                     @endforeach
                                 @endif
-                                 @if ($product?->sizechart)
-
-                                 <div class="swiper-slide">
-                                     <a href="{{ asset($product?->sizechart) }}"
-                                         data-fancybox="gallery">
-                                         <img src="{{ asset($product?->sizechart) }}" />
+                                @if ($product?->sizechart)
+                                    <div class="swiper-slide">
+                                        <a href="{{ asset($product?->sizechart) }}" data-fancybox="gallery">
+                                            <img src="{{ asset($product?->sizechart) }}" />
                                         </a>
                                     </div>
-                                    @endif
+                                @endif
                             </div>
                             <div class="swiper-button-next"></div>
                             <div class="swiper-button-prev"></div>
@@ -105,12 +103,11 @@
                                     @endforeach
                                 @endif
                                 @if ($product?->sizechart)
+                                    <div class="swiper-slide">
 
-                                <div class="swiper-slide">
+                                        <img src="{{ asset($product?->sizechart) }}" />
 
-                                    <img src="{{ asset($product?->sizechart) }}" />
-
-                                </div>
+                                    </div>
                                 @endif
 
                             </div>
@@ -147,8 +144,10 @@
                     </div>
                     <hr>
                     <p class="fs-4 fw-bold">
-                        <strong class="text-danger ">বিদ্রঃ</strong> <a href="https://wa.me/8801613046803?text=আমি%20যে%20কোন%20কালার%20দিয়ে%20কম্বো%20করতে%20চাই" target="_blank"
-                            class="text-decoration-none text-primary-color text-primary-hover"> যে কোন কালার দিয়ে কম্বো করতে  <i class="fa-brands fa-whatsapp"></i> WhatsApp  ওয়াটসেপ করুন</a>
+                        <strong class="text-danger ">বিদ্রঃ</strong> <a
+                            href="https://wa.me/8801613046803?text=আমি%20যে%20কোন%20কালার%20দিয়ে%20কম্বো%20করতে%20চাই"
+                            target="_blank" class="text-decoration-none text-primary-color text-primary-hover"> যে কোন কালার
+                            দিয়ে কম্বো করতে <i class="fa-brands fa-whatsapp"></i> WhatsApp ওয়াটসেপ করুন</a>
                     </p>
                     <hr>
                     <div class="order-form-box">
@@ -227,8 +226,8 @@
                                     <div class="mb-3">
                                         <label class="form-label fw-bold fs-5">আপনার মোবাইল লিখুন
                                         </label>
-                                        <input name="phone" id="phone" type="text" class="form-control" required
-                                            minlength="11" inputmode="numeric" autocomplete="tel"
+                                        <input name="phone" id="phone" type="text" class="form-control"
+                                            required minlength="11" inputmode="numeric" autocomplete="tel"
                                             placeholder="Type Your Phone Number">
 
                                     </div>
@@ -267,8 +266,8 @@
                                                 <i class="fa-solid fa-circle-minus text-primary-color"></i>
                                             </button>
                                             <!-- <input type="button" value="-"
-                                                                                                                class="button-minus border rounded-circle btn-primary  icon-shape icon-sm mx-1 lh-0"
-                                                                                                                > -->
+                                                                                                                    class="button-minus border rounded-circle btn-primary  icon-shape icon-sm mx-1 lh-0"
+                                                                                                                    > -->
                                             <input type="number" step="1" max="10" min="1"
                                                 value="1" name="quantity"
                                                 class="quantity-field border-0 text-center w-25 form-control ">
@@ -400,7 +399,7 @@
 @endsection
 
 @push('scripts')
-    @if (session('status') =='error')
+    @if (session('status') == 'error')
         <script>
             Swal.fire({
                 icon: "{{ session('status') == 'error' ? 'error' : 'success' }}",

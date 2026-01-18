@@ -271,7 +271,7 @@ class CartController extends Controller
 
         $validated = $request->validate([
             'name' => 'required',
-            'phone' => 'required',
+            'phone' => 'required|min:11',
             'address' => 'required',
             'delivery_area' => 'required',
         ]);
