@@ -229,7 +229,11 @@
                                         <input name="phone" id="phone" type="text" class="form-control"
                                             required minlength="11" inputmode="numeric" autocomplete="tel"
                                             placeholder="Type Your Phone Number">
-
+                                        @error('phone')
+                                            <span class="invalid-feedback" role="alert">
+                                                <strong>{{ $message }}</strong>
+                                            </span>
+                                        @enderror
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -266,8 +270,8 @@
                                                 <i class="fa-solid fa-circle-minus text-primary-color"></i>
                                             </button>
                                             <!-- <input type="button" value="-"
-                                                                                                                    class="button-minus border rounded-circle btn-primary  icon-shape icon-sm mx-1 lh-0"
-                                                                                                                    > -->
+                                                                                                                        class="button-minus border rounded-circle btn-primary  icon-shape icon-sm mx-1 lh-0"
+                                                                                                                        > -->
                                             <input type="number" step="1" max="10" min="1"
                                                 value="1" name="quantity"
                                                 class="quantity-field border-0 text-center w-25 form-control ">
