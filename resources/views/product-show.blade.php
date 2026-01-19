@@ -544,10 +544,10 @@
                 let quantity = parseFloat($(".quantity-field").val());
                 let name = $("input[name='name").val();
                 let phone = $("input[name='phone").val();
-                let address = $("input[name='address").val();
+                let address = $("textarea[name='address").val();
                 let size = $("select[name='size").val();
 
-                console.log(value);
+                // console.log(value);
 
                 dataLayer.push({
                     event: 'begin_checkout',

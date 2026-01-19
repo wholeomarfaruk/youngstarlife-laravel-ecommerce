@@ -121,8 +121,6 @@
 
     <section class="sec-style-1 my-3">
         <div class="container">
-
-
             <div class="sec-header">
                 <div class="d-flex justify-content-between">
                     <div class="">
@@ -182,9 +180,6 @@
             </div>
         </div>
     </section>
-
-
-
     @foreach ($categories as $category)
         @if ($category->products->count() > 0)
             <section class="sec-style-1 my-3">
