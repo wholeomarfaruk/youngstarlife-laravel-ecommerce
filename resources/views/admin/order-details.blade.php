@@ -711,7 +711,7 @@
         <script>
 
             function blockcustomer(id) {
-                
+
 
                 if (id) {
                     // 1. Show confirmation dialog using SweetAlert (Swal)
@@ -789,7 +789,7 @@
                         showCancelButton: true,
                         confirmButtonColor: '#3085d6',
                         cancelButtonColor: '#d33',
-                        confirmButtonText: 'Yes, Block!'
+                        confirmButtonText: 'Yes, Unblock!'
                     }).then((result) => {
                         if (result.isConfirmed) {
                             // 2. Execute fetch request to the backend
