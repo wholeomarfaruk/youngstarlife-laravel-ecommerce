@@ -75,6 +75,12 @@ Route::post('/cart/autosave', [CartController::class, 'orderAutosave'])->name('c
 // Admin
 Route::prefix('admin')->group(function () {
     Route::middleware(['auth', AuthAdmin::class])->group(function () {
+          Route::get('/migrate', function () {
+            Artisan::call('migrate');
+            exec('php artisan migrate');
+            shell_exec('php artisan optimize');
+            return '<h3>✅ Application migrated successfully!</h3>';
+        });
         Route::get('/dashboard', [AdminController::class, 'index'])->name('admin.index');
         // Brands
         Route::get('/brands', [AdminController::class, 'brands'])->name('admin.brands');

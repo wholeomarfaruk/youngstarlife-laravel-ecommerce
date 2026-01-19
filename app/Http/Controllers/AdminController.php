@@ -1367,8 +1367,7 @@ class AdminController extends Controller
         $device = Device::where('user_agent', $order->user_agent)->first();
         $customer->blackLists()->delete();
         $device->blackLists()->delete();
-        $customer->save();
-        $device->save();
+    
         return response()->json([
             'success' => true,
             'message' => 'Order Unblocked Successfully',
