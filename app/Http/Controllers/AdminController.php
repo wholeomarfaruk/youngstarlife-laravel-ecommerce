@@ -1365,8 +1365,18 @@ class AdminController extends Controller
         $order = Order::find($id);
         $customer = Customer::where('phone', $order->phone)->first();
         $device = Device::where('user_agent', $order->user_agent)->first();
+        if($customer && $device){
+
         $customer->blackLists()->delete();
         $device->blackLists()->delete();
+        }else{
+            return response()->json([
+                'success' => false,
+                'message' => 'Customer or Device is not Blacklisted',
+            ]);
+        }
+
+
 
         return response()->json([
             'success' => true,
