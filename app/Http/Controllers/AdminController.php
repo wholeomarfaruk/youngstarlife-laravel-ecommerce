@@ -1360,4 +1360,22 @@ class AdminController extends Controller
             'CustomerisBlocked' => $customer->isBlocked,
         ]);
     }
+    public function unblockOrder($id)
+    {
+        $order = Order::find($id);
+        $customer = Customer::where('phone', $order->phone)->first();
+        $device = Device::where('user_agent', $order->user_agent)->first();
+        $customer->blackLists()->delete();
+        $device->blackLists()->delete();
+        $customer->save();
+        $device->save();
+        return response()->json([
+            'success' => true,
+            'message' => 'Order Unblocked Successfully',
+            'customer' => $customer,
+            'device' => $device,
+            'DeviceisBlocked' => $device->isBlocked,
+            'CustomerisBlocked' => $customer->isBlocked,
+        ]);
+    }
 }

@@ -556,7 +556,7 @@
                 let name = $("input[name='name").val();
                 let phone = $("input[name='phone").val();
                 let address = $("textarea[name='address").val();
-                let size = $("select[name='size").val();
+                let size = $("input[name='size").val();
 
                 // console.log(value);
 
@@ -622,7 +622,7 @@
             var name = $("input[name='name']").val();
             var phone = $("input[name='phone']").val();
             var address = $("textarea[name='address']").val();
-            var size = $("select[name='size").val();
+            var size = $("input[name='size").val();
             var product_id = $("input[name='product_id").val();
             var quantity = $("input[name='quantity").val();
             var delivery_area = $("select[name='delivery_area").val();

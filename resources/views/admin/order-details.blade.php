@@ -179,7 +179,7 @@
                                                 onclick="blockcustomer({{ $order->id }})"
                                                 class="btn btn-danger btn-sm small">Block</a>
                                         @else
-                                            {{-- <a href="javascript:void(0)" class="btn btn-success btn-sm small">Unblock</a> --}}
+                                            <a href="javascript:void(0)" class="btn btn-success btn-sm small" onclick="unblockCustomer({{ $order->id }})">Unblock</a>
                                         @endif
 
                                     </p>
