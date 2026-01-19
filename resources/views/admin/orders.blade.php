@@ -156,7 +156,7 @@
                                     <th class="text-center">Order Date</th>
                                     <th class="text-center">Total Items</th>
                                     <th class="text-center">Delivered On</th>
-                                    <th></th>
+                                    <th>Actions</th>
                                 </tr>
                             </thead>
 
