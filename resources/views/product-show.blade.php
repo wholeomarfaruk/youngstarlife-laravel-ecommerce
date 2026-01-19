@@ -592,7 +592,7 @@
                 let quantity = parseFloat($(".quantity-field").val());
                 let name = $("input[name='name']").val();
                 let phone = $("input[name='phone']").val();
-                let address = $("input[name='address']").val();
+                let address = $("textarea[name='address']").val();
 
                 // Run your custom logic
                 sentInitialCheckout();
@@ -610,7 +610,7 @@
         $(window).on('beforeunload', function() {
             var name = $("input[name='name']").val();
             var phone = $("input[name='phone']").val();
-            var address = $("input[name='address']").val();
+            var address = $("textarea[name='address']").val();
             var size = $("select[name='size").val();
             var product_id = $("input[name='product_id").val();
             var quantity = $("input[name='quantity").val();
