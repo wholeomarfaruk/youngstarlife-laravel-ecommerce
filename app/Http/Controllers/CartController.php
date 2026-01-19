@@ -302,21 +302,21 @@ class CartController extends Controller
 
         if ($check_recent_order) {
             // Find if that order has the same product
-            $product_found = $check_recent_order->Order_Item()
-                ->where('product_id', $request->product_id)
-                ->latest('created_at')
-                ->first();
+            // $product_found = $check_recent_order->Order_Item()
+            //     ->where('product_id', $request->product_id)
+            //     ->latest('created_at')
+            //     ->first();
 
-            if ($product_found) {
-                $createdAt = Carbon::parse($product_found->created_at);
+            if ($check_recent_order) {
+                $createdAt = Carbon::parse($check_recent_order->created_at);
                 $now = Carbon::now();
 
                 $diffInMinutes = $createdAt->diffInMinutes($now);
 
-                if ($diffInMinutes < 5) {
+                if ($diffInMinutes < 30) {
                     return redirect()->back()->with([
-                        'status' => 'error',
-                        'message' => 'আপনি এই প্রডাক্টি অলরেডি অর্ডার করেছেন। দয়া করে 5 মিনিট পর পুনরায় করুন।'
+                        'status' => 'success',
+                        'message' => 'আপনার ইতি মধ্যে একটি অর্ডার গ্রহন সফল হয়েছে। অনুগ্রহ করে কোন কিছু পরিবর্তন করতে চাইলে 01613046803 নাম্বারে ওয়াটসএপ যোগাযোগ করুন। নতুন কোন প্রোডাক্ট এই মুহুর্তে অর্ডার করতে চাইলে ওয়াটসএপ যোগাযোগ করুন অথবা ৩০ মিনিট পর চেষ্টা করুন',
                     ]);
 
                 }

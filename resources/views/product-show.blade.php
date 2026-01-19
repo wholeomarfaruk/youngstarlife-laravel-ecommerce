@@ -414,6 +414,17 @@
                 timerProgressBar: true,
             });
         </script>
+        @elseif(session('status') == 'success')
+        <script>
+            Swal.fire({
+                icon: "{{ session('status') == 'error' ? 'error' : 'success' }}",
+                title: "{{ session('status') == 'error' ? 'দুঃখিত!' : 'সফল!' }}",
+                text: "{{ session('message') }}",
+                confirmButtonText: 'ঠিক আছে',
+                timer: 4000, // Auto close after 4 seconds
+                timerProgressBar: true,
+            });
+        </script>
     @endif
 
     <script>
@@ -626,7 +637,6 @@
                 quantity: quantity,
                 delivery_area: delivery_area,
                 XSRF_TOKEN: token,
-
             }
             fetch('/cart/autosave', {
                 method: 'POST',
