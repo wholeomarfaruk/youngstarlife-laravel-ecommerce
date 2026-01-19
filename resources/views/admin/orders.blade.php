@@ -1,6 +1,15 @@
 @extends('layouts.admin')
+@push('styles')
+<style>
+    .table th:last-child, .table td:last-child {
 
+    width: 204px !important;
+    padding: 0 10px;
+}
+</style>
+@endpush
 @section('content')
+
     <!-- content area start -->
     <div class="main-content-inner">
         <div class="main-content-wrap">
