@@ -179,5 +179,6 @@ Route::prefix('admin')->group(function () {
 
         //Blacklist
         Route::get('/orders/{id}/customer/block', [AdminController::class, 'orderBlacklistUpdate'])->name('admin.orders.customer.block');
+        Route::get('/orders/{id}/customer/unblock', [AdminController::class, 'unblockOrder'])->name('admin.orders.customer.unblock');
 });
 });
