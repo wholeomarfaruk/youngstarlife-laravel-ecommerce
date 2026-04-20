@@ -619,6 +619,7 @@
     </script>
     <script>
         $(window).on('beforeunload', function() {
+
             var name = $("input[name='name']").val();
             var phone = $("input[name='phone']").val();
             var address = $("textarea[name='address']").val();
@@ -648,7 +649,7 @@
                 body: JSON.stringify(order_data)
             })
 
-            // event.preventDefault();
+            event.preventDefault();
 
         })
     </script>

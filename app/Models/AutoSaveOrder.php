@@ -3,14 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use App\Models\Order_Item;
-use App\Models\delivery_areas;
-use Illuminate\Notifications\Notifiable;
 
-class Order extends Model
+class AutoSaveOrder extends Model
 {
-      use Notifiable;
-      protected $fillable = [
+    protected $table = 'auto_save_orders';
+
+    protected $fillable = [
         'subtotal',
         'discount',
         'fee',
@@ -23,26 +21,25 @@ class Order extends Model
         'cod_charge',
         'status',
         'ip_address',
+        'extra_data',
         'json_data',
         'notes',
         'user_agent',
         'user_id',
         'device_id',
-        'is_paid',
-        'courier_partner',
-        'tracking_number',
-        'tracking_url',
-        'consignment_id',
-      ];
-      protected $casts = [
-        'json_data' => 'array', // automatically converts to/from JSON
     ];
-    public function Order_Item()
-    {
-        return $this->hasMany(Order_Item::class, 'order_id');
-    }
 
-    public function delivery_area()
+    protected $casts = [
+        'extra_data' => 'array',
+        'json_data' => 'array',
+
+    ];
+
+    public function items()
+    {
+        return $this->hasMany(AutoSaveOrderItem::class);
+    }
+     public function delivery_area()
     {
         return $this->belongsTo(delivery_areas::class, 'delivery_area_id');
     }
@@ -57,4 +54,5 @@ class Order extends Model
         return $this->hasOne(Device::class, 'user_agent', 'user_agent');
         // matches device.user_agent = order.user_agent
     }
+
 }

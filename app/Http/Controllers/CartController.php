@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AutoSaveOrder;
+use App\Models\AutoSaveOrderItem;
 use App\Models\BlackList;
 use App\Models\Device;
 use Carbon\Carbon;
@@ -422,7 +424,7 @@ class CartController extends Controller
 
             $product = products::find($request->product_id);
             $deliveryArea = delivery_areas::find($request->delivery_area);
-            $deliveryCharge = $deliveryArea->charge;
+            $deliveryCharge = $deliveryArea?->charge;
 
             // Convert price and delivery charge to float for calculation
             $price = (float) ($product->discount_price ?? $product->price);
@@ -431,7 +433,7 @@ class CartController extends Controller
 
             // Calculate total
             $total = ($price * $quantity) + $delivery;
-            $order = new Order();
+            $order = new AutoSaveOrder();
             $order->name = $request->name;
             $order->phone = $phone ?? $request->phone;
             $order->address = $request->address;
@@ -443,7 +445,6 @@ class CartController extends Controller
             $order->discount = '0';
             $order->fee = $deliveryArea->charge ?? 0;
 
-            $order->is_paid = false;
             $order->status = 'autosave';
             if ($request->server('REMOTE_ADDR')) {
                 $order->ip_address = $request->server('REMOTE_ADDR');
@@ -458,14 +459,14 @@ class CartController extends Controller
             }
             $order->save();
 
-            $orderItem = new Order_Item();
-            $orderItem->order_id = $order->id;
+            $orderItem = new AutoSaveOrderItem();
+            $orderItem->auto_save_order_id = $order->id;
             $orderItem->product_id = $request->product_id;
             $orderItem->price = $price;
             $orderItem->quantity = $request->quantity;
             if ($request->has('size')) {
 
-                $orderItem->options = json_encode(['size' => $request->size ?? '']);
+                $orderItem->options = ['size' => $request->size ?? ''];
             }
             $orderItem->save();
 

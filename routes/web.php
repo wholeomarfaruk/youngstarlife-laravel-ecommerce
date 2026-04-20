@@ -141,6 +141,12 @@ Route::prefix('admin')->group(function () {
         Route::put('/orders/update/{id}/details', [AdminController::class, 'updateOrderDetails'])->name('admin.orders.update.details');
         Route::get('/orders/add', [AdminController::class, 'orderAdd'])->name('admin.orders.add');
         Route::post('/orders/store', [AdminController::class, 'orderStore'])->name('admin.orders.store');
+
+        //auto saved orders
+        Route::get('/auto-saved-orders', [AdminController::class, 'autoSavedOrders'])->name('admin.auto.saved.orders');
+        Route::get('/auto-saved-orders/{id}/delete', [AdminController::class, 'autoSavedOrdersDelete'])->name('admin.auto.saved.orders.delete');
+        Route::get('/auto-saved-order-details/{id}', [AdminController::class, 'autoSavedOrderDetails'])->name('admin.auto.saved.order.details');
+        Route::post('/auto-saved-order-restore/{id}', [AdminController::class, 'autoSavedOrderRestore'])->name('admin.auto.saved.order.restore');
         //delivery areas
         Route::get('/delivery-areas', [AdminController::class, 'deliveryAreas'])->name('admin.deliveryareas');
         Route::get('/delivery-areas/add', [AdminController::class, 'deliveryAreaAdd'])->name('admin.deliveryareas.add');

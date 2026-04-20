@@ -18,4 +18,9 @@ class Order_Item extends Model
     {
         return $this->belongsTo(products::class,'product_id');
     }
+
+
+    protected $casts = [
+        'options' => 'array',
+    ];
 }

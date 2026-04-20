@@ -1,10 +1,13 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use ShahariarAhmad\CourierFraudCheckerBd\Services\PathaoService;
 use ShahariarAhmad\CourierFraudCheckerBd\Services\SteadfastService;
 use App\Exports\OrderExport;
 use App\Models\Analytic;
+use App\Models\AutoSaveOrder;
+use App\Models\AutoSaveOrderItem;
 use App\Models\Size;
 use App\Models\Visit;
 use Illuminate\Http\Request;
@@ -19,6 +22,7 @@ use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\Device;
 use App\Models\Media;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Facades\File;
@@ -58,12 +62,11 @@ class AdminController extends Controller
         $search = $request->search;
         if ($search) {
             $products = products::where('name', 'like', '%' . $search . '%')
-            ->orWhere('id', 'like', '%' . $search . '%')
-            ->orWhere('price', 'like', '%' . $search . '%')
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
-
-        }else{
+                ->orWhere('id', 'like', '%' . $search . '%')
+                ->orWhere('price', 'like', '%' . $search . '%')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+        } else {
 
             $products = products::orderBy('created_at', 'desc')->paginate(20);
         }
@@ -173,10 +176,7 @@ class AdminController extends Controller
                     $media->user_id = auth()->id();
                     $media->save();
                     $file->move(public_path($path), $file->getClientOriginalName());
-
                 }
-
-
             }
             if ($request->hasFile('sizechart')) {
 
@@ -187,59 +187,60 @@ class AdminController extends Controller
                     mkdir(public_path($path), 0777, true);
                 }
 
-                    // Save in media table
-                    $media = new Media();
-                    $media->filename = basename($file->getClientOriginalName());
-                    $media->original_name = $file->getClientOriginalName();
-                    $media->mime_type = $file->getMimeType();
-                    $media->extension = $file->getClientOriginalExtension();
-                    $media->size = $file->getSize();
-                    $media->type = 'image';
-                    $media->category = 'sizechart';
-                    $media->disk = 'public';
-                    $media->path = $path . $file->getClientOriginalName();
-                    $media->mediable_id = $product->id;
-                    $media->mediable_type = products::class;
-                    if ($request->has('caption')) {
-                        $media->caption = $request->input('caption');
-                    }
+                // Save in media table
+                $media = new Media();
+                $media->filename = basename($file->getClientOriginalName());
+                $media->original_name = $file->getClientOriginalName();
+                $media->mime_type = $file->getMimeType();
+                $media->extension = $file->getClientOriginalExtension();
+                $media->size = $file->getSize();
+                $media->type = 'image';
+                $media->category = 'sizechart';
+                $media->disk = 'public';
+                $media->path = $path . $file->getClientOriginalName();
+                $media->mediable_id = $product->id;
+                $media->mediable_type = products::class;
+                if ($request->has('caption')) {
+                    $media->caption = $request->input('caption');
+                }
 
-                    $media->user_id = auth()->id();
-                    $media->save();
-                    $file->move(public_path($path), $file->getClientOriginalName());
-
-
-
+                $media->user_id = auth()->id();
+                $media->save();
+                $file->move(public_path($path), $file->getClientOriginalName());
             }
             if ($request->has('categories')) {
                 $product->categories()->attach($request->categories);
-
             }
             if ($request->has('segments')) {
                 $product->segments()->attach($request->segments);
             }
         } catch (\Throwable $th) {
             return redirect()->back()->with('error', $th->getMessage());
-
         }
         return redirect()->route('admin.products')->with('status', 'Product Added Successfully');
     }
 
     public function generateProductThumbnailImage($image, $imageName)
     {
+
         $thumbnail_path = public_path('storage/images/products/thumbnails/');
         $image_path = public_path('storage/images/products/');
+        if (!file_exists($thumbnail_path)) {
+            mkdir($thumbnail_path, 0777, true);
+        }
+        if (!file_exists($image_path)) {
+            mkdir($image_path, 0777, true);
+        }
 
         $image = Image::read($image->path());
         $image->save($image_path . $imageName, 70);
         $image->save($thumbnail_path . $imageName, 70);
-
     }
 
     public function productEdit($id)
     {
         $product = products::find($id);
-        return view('admin.products-edit', compact('product', ));
+        return view('admin.products-edit', compact('product',));
     }
     public function productUpdate(Request $request)
     {
@@ -348,10 +349,7 @@ class AdminController extends Controller
                 $media->user_id = auth()->id();
                 $media->save();
                 $file->move(public_path($path), $file->getClientOriginalName());
-
             }
-
-
         }
         if ($request->hasFile('sizechart')) {
 
@@ -372,27 +370,27 @@ class AdminController extends Controller
             }
 
 
-                $file = $images;
-                // Save in media table
-                $media = new Media();
-                $media->filename = basename($file->getClientOriginalName());
-                $media->original_name = $file->getClientOriginalName();
-                $media->mime_type = $file->getMimeType();
-                $media->extension = $file->getClientOriginalExtension();
-                $media->size = $file->getSize();
-                $media->type = 'image';
-                $media->category = 'sizechart';
-                $media->disk = 'public';
-                $media->path = $path . $file->getClientOriginalName();
-                $media->mediable_id = $product->id;
-                $media->mediable_type = products::class;
-                if ($request->has('caption')) {
-                    $media->caption = $request->input('caption');
-                }
+            $file = $images;
+            // Save in media table
+            $media = new Media();
+            $media->filename = basename($file->getClientOriginalName());
+            $media->original_name = $file->getClientOriginalName();
+            $media->mime_type = $file->getMimeType();
+            $media->extension = $file->getClientOriginalExtension();
+            $media->size = $file->getSize();
+            $media->type = 'image';
+            $media->category = 'sizechart';
+            $media->disk = 'public';
+            $media->path = $path . $file->getClientOriginalName();
+            $media->mediable_id = $product->id;
+            $media->mediable_type = products::class;
+            if ($request->has('caption')) {
+                $media->caption = $request->input('caption');
+            }
 
-                $media->user_id = auth()->id();
-                $media->save();
-                $file->move(public_path($path), $file->getClientOriginalName());
+            $media->user_id = auth()->id();
+            $media->save();
+            $file->move(public_path($path), $file->getClientOriginalName());
         }
         if ($request->has('categories')) {
             $product->categories()->sync($request->categories);
@@ -411,7 +409,6 @@ class AdminController extends Controller
         if (File::exists(public_path('storage/images/products/thumbnails/' . $product->image))) {
             File::delete(public_path('storage/images/products/thumbnails/' . $product->image));
             File::delete(public_path('storage/images/products/' . $product->image));
-
         }
         $product->delete();
         return redirect()->route('admin.products')->with('status', 'Product Deleted Successfully');
@@ -482,13 +479,11 @@ class AdminController extends Controller
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::whereNot('status', 'deleted')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
             $orders = Order::whereNot('status', 'deleted')->orderBy('created_at', 'desc')->paginate(20);
-
         }
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')
@@ -496,6 +491,22 @@ class AdminController extends Controller
             ->groupBy('status')
             ->get();
         $orders_count = Order::count();
+
+        //auto save order delete
+
+        $pendingOrders = Order::where('status', 'pending')
+            ->with('Order_Item')
+            ->get();
+
+        foreach ($pendingOrders as $order) {
+            $productIds = $order->Order_Item->pluck('product_id');
+
+            AutoSaveOrder::where('phone', $order->phone)
+                ->whereHas('items', function ($q) use ($productIds) {
+                    $q->whereIn('product_id', $productIds);
+                })
+                ->delete();
+        }
 
         return view('admin.orders', compact('orders', 'status_group', 'orders_count'));
     }
@@ -511,13 +522,11 @@ class AdminController extends Controller
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::where('status', 'pending')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
             $orders = Order::where('status', 'pending')->orderBy('created_at', 'desc')->paginate(20);
-
         }
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')
@@ -540,13 +549,11 @@ class AdminController extends Controller
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::where('status', 'confirmed')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
             $orders = Order::where('status', 'confirmed')->orderBy('created_at', 'desc')->paginate(20);
-
         }
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')
@@ -565,17 +572,15 @@ class AdminController extends Controller
                 ->orWhere('status', 'processing')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
 
-                  ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::where('status', 'processing')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
             $orders = Order::where('status', 'processing')->orderBy('created_at', 'desc')->paginate(20);
-
         }
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')
@@ -594,17 +599,15 @@ class AdminController extends Controller
                 ->orWhere('status', 'ready')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
 
-                 ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::where('status', 'ready')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
             $orders = Order::where('status', 'ready')->orderBy('created_at', 'desc')->paginate(20);
-
         }
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')
@@ -623,17 +626,15 @@ class AdminController extends Controller
                 ->orWhere('status', 'in_review')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
 
-                    ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::where('status', 'in_review')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
             $orders = Order::where('status', 'in_review')->orderBy('created_at', 'desc')->paginate(20);
-
         }
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')
@@ -652,17 +653,15 @@ class AdminController extends Controller
                 ->orWhere('status', 'in_transit')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
 
-                 ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::where('status', 'in_transit')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
             $orders = Order::where('status', 'in_transit')->orderBy('created_at', 'desc')->paginate(20);
-
         }
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')
@@ -681,17 +680,15 @@ class AdminController extends Controller
                 ->orWhere('status', 'delivered')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
 
-                  ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::where('status', 'delivered')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
             $orders = Order::where('status', 'delivered')->orderBy('created_at', 'desc')->paginate(20);
-
         }
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')
@@ -710,17 +707,15 @@ class AdminController extends Controller
                 ->orWhere('status', 'delivery_in_review')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
 
-                 ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::where('status', 'delivery_in_review')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
             $orders = Order::where('status', 'delivery_in_review')->orderBy('created_at', 'desc')->paginate(20);
-
         }
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')
@@ -739,17 +734,15 @@ class AdminController extends Controller
                 ->orWhere('status', 'on_hold')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
 
-                   ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::where('status', 'on_hold')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
             $orders = Order::where('status', 'on_hold')->orderBy('created_at', 'desc')->paginate(20);
-
         }
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')
@@ -768,17 +761,15 @@ class AdminController extends Controller
                 ->orWhere('status', 'cancelled')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
 
-                   ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::where('status', 'cancelled')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
             $orders = Order::where('status', 'cancelled')->orderBy('created_at', 'desc')->paginate(20);
-
         }
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')
@@ -801,13 +792,11 @@ class AdminController extends Controller
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
-
         } elseif ($request->has('order_status')) {
             $status = $request->order_status;
             $orders = Order::where('status', 'returned')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
         } else {
             $orders = Order::where('status', 'returned')->orderBy('created_at', 'desc')->paginate(20);
-
         }
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')
@@ -825,7 +814,7 @@ class AdminController extends Controller
             $orders = Order::where('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
                 ->orWhere('phone', 'LIKE', '%' . $search . '%')
 
-                  ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
                 ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
@@ -846,22 +835,28 @@ class AdminController extends Controller
         if (!$order) {
             abort(404);
         }
-        if ($order) {
+if ($order) {
+    $phone = $order->phone;
 
-            //fraud check steadfst
-            $phone = $order->phone;
-            if (strlen($phone) == 11) {
-
-                try {
-                    $order->fraud_check_steadfast = collect((new SteadfastService())->steadfast($phone));
-                } catch (\Throwable $e) {
-                    $order->fraud_check_steadfast = collect(['error' => 'Steadfast check failed']);
-                }
-
-                $order->fraud_check_pathao = collect((new PathaoService())->pathao($phone));
-                // dd($order->fraud_check_pathao);
-            }
+    if (strlen($phone) == 11) {
+        try {
+            $order->fraud_check_steadfast = collect((new SteadfastService())->steadfast($phone));
+        } catch (\Throwable $e) {
+            $order->fraud_check_steadfast = collect([
+                'error' => 'Steadfast check failed'
+            ]);
         }
+
+        try {
+            $order->fraud_check_pathao = collect((new PathaoService())->pathao($phone));
+        } catch (\Throwable $e) {
+            $order->fraud_check_pathao = collect([
+                'error' => 'Pathao check failed',
+                'message' => $e->getMessage(),
+            ]);
+        }
+    }
+}
         // dd($order->fraud_check);
         $orderItems = Order_Item::where('order_id', $id)->paginate(20);
         $products = products::all();
@@ -875,7 +870,6 @@ class AdminController extends Controller
         if ($order->status == $request->status) {
 
             return redirect()->route('admin.orders.details', $order->id)->with('status', 'Order Status Already Updated');
-
         } else {
             if ($request->status == 'pending') {
                 $order->status = $request->status;
@@ -918,9 +912,6 @@ class AdminController extends Controller
                 $order->status = $request->status;
                 $order->save();
             }
-
-
-
         }
 
 
@@ -1329,7 +1320,6 @@ class AdminController extends Controller
             $customer->blackLists()->create([
                 'reason' => 'Blacklist from Order by ' . auth()->user()->name,
             ]);
-
         } elseif ($customer->isBlocked == 0) {
             $customer->blackLists()->create([
                 'reason' => 'Blacklist from Order by ' . auth()->user()->name,
@@ -1365,11 +1355,11 @@ class AdminController extends Controller
         $order = Order::find($id);
         $customer = Customer::where('phone', $order->phone)->first();
         $device = Device::where('user_agent', $order->user_agent)->first();
-        if($customer && $device){
+        if ($customer && $device) {
 
-        $customer->blackLists()->delete();
-        $device->blackLists()->delete();
-        }else{
+            $customer->blackLists()->delete();
+            $device->blackLists()->delete();
+        } else {
             return response()->json([
                 'success' => false,
                 'message' => 'Customer or Device is not Blacklisted',
@@ -1386,5 +1376,148 @@ class AdminController extends Controller
             'DeviceisBlocked' => $device->isBlocked,
             'CustomerisBlocked' => $customer->isBlocked,
         ]);
+    }
+    public function autoSavedOrders(Request $request)
+    {
+        if ($request->has('search')) {
+            $search = $request->search;
+            $orders = AutoSaveOrder::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
+                ->orWhere('phone', 'LIKE', '%' . $search . '%')
+                ->orWhere('id', 'LIKE', '%' . $search . '%')
+                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+        } elseif ($request->has('order_status')) {
+            $status = $request->order_status;
+            $orders = AutoSaveOrder::whereNot('status', 'deleted')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
+        } else {
+            $orders = AutoSaveOrder::whereNot('status', 'deleted')->orderBy('created_at', 'desc')->paginate(20);
+        }
+
+        $status_group = AutoSaveOrder::whereNot('status', 'deleted')->select('status')
+            ->selectRaw('COUNT(*) as count')
+            ->groupBy('status')
+            ->get();
+        $orders_count = AutoSaveOrder::count();
+
+
+        //auto save order delete
+
+        $pendingOrders = Order::where('status', 'pending')
+            ->with('Order_Item')
+            ->get();
+
+        foreach ($pendingOrders as $order) {
+            $productIds = $order->Order_Item->pluck('product_id');
+
+            AutoSaveOrder::where('phone', $order->phone)
+                ->whereHas('items', function ($q) use ($productIds) {
+                    $q->whereIn('product_id', $productIds);
+                })
+                ->delete();
+        }
+
+        return view('admin.autosaveorders', compact('orders', 'status_group', 'orders_count'));
+    }
+    public function autoSavedOrderDelete($id)
+    {
+        $order = AutoSaveOrder::find($id);
+        $order->delete();
+        return response()->json(['success' => 'Order Deleted Successfully']);
+    }
+    public function autoSavedOrderDetails($id)
+    {
+
+
+
+        $order = AutoSaveOrder::find($id);
+
+        if (!$order) {
+            abort(404);
+        }
+        if ($order) {
+            $phone = $order->phone;
+
+            if (strlen($phone) == 11) {
+                try {
+                    $order->fraud_check_steadfast = collect((new SteadfastService())->steadfast($phone));
+                } catch (\Throwable $e) {
+                    $order->fraud_check_steadfast = collect([
+                        'error' => 'Steadfast check failed'
+                    ]);
+                }
+
+                try {
+                    $order->fraud_check_pathao = collect((new PathaoService())->pathao($phone));
+                } catch (\Throwable $e) {
+                    $order->fraud_check_pathao = collect([
+                        'error' => 'Pathao check failed',
+                        'message' => $e->getMessage(),
+                    ]);
+                }
+            }
+        }
+        $orderItems = AutoSaveOrderItem::where('auto_save_order_id', $id)->paginate(20);
+        $products = products::all();
+        return view('admin.autosaveorderdetails', compact('order', 'orderItems', 'products'))->with('title', 'Order Details');
+    }
+
+
+
+    public function autoSavedOrderRestore($id)
+    {
+        DB::beginTransaction();
+
+        try {
+            $autoSaveOrder = AutoSaveOrder::with('items')->findOrFail($id);
+
+            // Create real order
+            $order = Order::create([
+                'name'             => $autoSaveOrder->name,
+                'phone'            => $autoSaveOrder->phone,
+                'address'          => $autoSaveOrder->address,
+                'delivery_area_id' => $autoSaveOrder->delivery_area_id,
+                'cod_percentage'   => $autoSaveOrder->cod_percentage ?? 0,
+                'cod_charge'       => $autoSaveOrder->cod_charge ?? 0,
+                'subtotal'         => $autoSaveOrder->subtotal ?? 0,
+                'total'            => $autoSaveOrder->total ?? 0,
+                'discount'         => $autoSaveOrder->discount ?? 0,
+                'fee'              => $autoSaveOrder->fee ?? 0,
+                'status'           => 'pending',
+                'ip_address'       => $autoSaveOrder->ip_address,
+                'user_agent'       => $autoSaveOrder->user_agent,
+                'json_data'        => $autoSaveOrder->json_data,
+            ]);
+
+            // Copy items
+            foreach ($autoSaveOrder->items as $item) {
+                Order_Item::create([
+                    'order_id'    => $order->id,
+                    'product_id'  => $item->product_id,
+                    'price'       => $item->price,
+                    'quantity'    => $item->quantity,
+                    'options'     => $item->options,
+                ]);
+            }
+
+            // Option 1: delete autosave order after restore
+            $autoSaveOrder->items()->delete();
+            $autoSaveOrder->delete();
+
+            // Option 2: keep it and mark restored instead
+            // $autoSaveOrder->status = 'restored';
+            // $autoSaveOrder->save();
+
+            DB::commit();
+
+            return redirect()->route('admin.auto.saved.orders')->with('success', 'Order created successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
