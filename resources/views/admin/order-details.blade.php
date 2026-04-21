@@ -183,7 +183,7 @@
                                         @endif
 
                                     </p>
-                                    @if ($order->fraud_check_steadfast && $fraud_score_steadfast && $order->fraud_check_steadfast['total'] > 0 wire)
+                                    @if ($order->fraud_check_steadfast && $fraud_score_steadfast && $order->fraud_check_steadfast['total'])
                                         <strong>SteadFast Customer Check:</strong>
                                         <p>
                                             Total Order : {{ $order->fraud_check_steadfast['total'] ?? 0 }}<br>
@@ -211,7 +211,7 @@
                                             {{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}%
                                         </div>
                                     </div>
-                                    @if ($order->fraud_check_pathao && $fraud_score_pathao && $order->fraud_check_pathao['total'] > 0 wire)
+                                    @if ($order->fraud_check_pathao && $fraud_score_pathao && $order->fraud_check_pathao['total'])
                                         <strong>Pathao Customer Check:</strong>
                                         <p>
                                             Total Order : {{ $order->fraud_check_pathao['total'] ?? 0 }}<br>
