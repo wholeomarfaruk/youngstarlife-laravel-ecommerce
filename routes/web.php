@@ -142,6 +142,9 @@ Route::prefix('admin')->group(function () {
         Route::get('/orders/add', [AdminController::class, 'orderAdd'])->name('admin.orders.add');
         Route::post('/orders/store', [AdminController::class, 'orderStore'])->name('admin.orders.store');
 
+        //order datatable
+        Route::get('/order-datatable', [AdminController::class, 'ordersDataTable'])->name('admin.orders.datatable');
+
         //auto saved orders
         Route::get('/auto-saved-orders', [AdminController::class, 'autoSavedOrders'])->name('admin.auto.saved.orders');
         Route::get('/auto-saved-orders/{id}/delete', [AdminController::class, 'autoSavedOrdersDelete'])->name('admin.auto.saved.orders.delete');

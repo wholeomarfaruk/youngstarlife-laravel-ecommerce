@@ -13,6 +13,9 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/animation.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/bootstrap.css') }}">
     <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/bootstrap-select.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('lib/flatpickr/flatpickr.min.css') }}">
+
+
     <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/style.css') }}">
     <link rel="stylesheet" href="{{ asset('admin-resource/font/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('admin-resource/icon/style.css') }}">
@@ -24,6 +27,7 @@
         integrity="sha512-A81ejcgve91dAWmCGseS60zjrAdohm7PTcAjjiDWtw3Tcj91PNMa1gJ/ImrhG+DbT5V+JQ5r26KT5+kgdVTb5w=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/custom.css') }}">
+      @livewireStyles
     @stack('styles')
 </head>
 
@@ -649,17 +653,22 @@
     <script src="{{ asset('admin-resource/js/bootstrap-select.min.js') }}"></script>
     <script src="{{ asset('admin-resource/js/sweetalert.min.js') }}"></script>
     <script src="{{ asset('admin-resource/js/apexcharts/apexcharts.js') }}"></script>
-    <script src="{{ asset('admin-resource/js/main.js') }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="{{ asset('lib/flatpickr/flatpickr.js') }}"></script>
+    {{-- datatables --}}
+
+    <script src="{{ asset('admin-resource/js/main.js') }}"></script>
     <!-- Styles -->
     {{-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/css/select2.min.css" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
 <!-- Or for RTL support -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.rtl.min.css" /> --}}
-
+    @livewireScripts
 
     <script>
+        // commonjs
+
         (function($) {
 
             var tfLineChart = (function() {

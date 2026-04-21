@@ -28,6 +28,7 @@ use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Facades\File;
 use Maatwebsite\Excel\Facades\Excel;
 use ShahariarAhmad\CourierFraudCheckerBd\Facade\CourierFraudCheckerBd;
+use Yajra\DataTables\DataTables;
 
 class AdminController extends Controller
 {
@@ -471,45 +472,44 @@ class AdminController extends Controller
     }
     public function orders(Request $request)
     {
-        if ($request->has('search')) {
-            $search = $request->search;
-            $orders = Order::whereNot('status', 'deleted')->where('name', 'LIKE', '%' . $search . '%')
-                ->orWhere('phone', 'LIKE', '%' . $search . '%')
-                ->orWhere('id', 'LIKE', '%' . $search . '%')
-                ->orWhere('consignment_id', 'LIKE', '%' . $search . '%')
-                ->orderBy('created_at', 'desc')
-                ->paginate(20);
-        } elseif ($request->has('order_status')) {
-            $status = $request->order_status;
-            $orders = Order::whereNot('status', 'deleted')->where('status', $status)->orderBy('created_at', 'desc')->paginate(20);
-        } else {
-            $orders = Order::whereNot('status', 'deleted')->orderBy('created_at', 'desc')->paginate(20);
-        }
-
-        $status_group = Order::whereNot('status', 'deleted')->select('status')
-            ->selectRaw('COUNT(*) as count')
-            ->groupBy('status')
-            ->get();
-        $orders_count = Order::count();
-
-        //auto save order delete
-
-        $pendingOrders = Order::where('status', 'pending')
-            ->with('Order_Item')
-            ->get();
-        if ($pendingOrders->count() > 0) {
-            foreach ($pendingOrders as $order) {
-                $productIds = $order->Order_Item->pluck('product_id');
-
-                AutoSaveOrder::where('phone', $order->phone)
-                    ->whereHas('items', function ($q) use ($productIds) {
-                        $q->whereIn('product_id', $productIds);
-                    })
-                    ->delete();
-            }
-        }
-        return view('admin.orders', compact('orders', 'status_group', 'orders_count'));
+        return view('admin.orders');
     }
+public function ordersDataTable(Request $request)
+{
+    $query = Order::query()
+        ->where('status', '!=', 'deleted');
+
+    return DataTables::eloquent($query)
+        ->filter(function ($query) use ($request) {
+            // status filter
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            // date range filter
+            if ($request->filled('start_date')) {
+                $query->whereDate('created_at', '>=', $request->start_date);
+            }
+
+            if ($request->filled('end_date')) {
+                $query->whereDate('created_at', '<=', $request->end_date);
+            }
+
+            // optional datatable search
+            if ($request->filled('search.value')) {
+                $search = $request->input('search.value');
+
+                $query->where(function ($q) use ($search) {
+                    $q->where('id', 'like', "%{$search}%")
+                      ->orWhere('status', 'like', "%{$search}%");
+                });
+            }
+        }, true)
+        ->orderColumn('created_at', function ($query, $order) {
+            $query->orderBy('created_at', $order);
+        })
+        ->make(true);
+}
     public function ordersPending(Request $request)
     {
         if ($request->has('search')) {
