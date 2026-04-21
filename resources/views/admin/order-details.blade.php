@@ -133,7 +133,7 @@
                                             {{ floatval($item->product->discount_price ?? $item->product->price) * (int) $item->quantity }}
                                         </td>
 
-                                        <td class="text-center">{{ $item->options }}</td>
+                                        <td class="text-center">{{ json_encode($item->options, JSON_PRETTY_PRINT) }}</td>
                                         <td class="text-center">{{ $item->return_status ? 'Yes' : 'No' }}</td>
                                         <td class="text-center">
                                             <div class="list-icon-function view-icon">
@@ -427,7 +427,7 @@
                                                         name="order_items[{{ $item->product->id }}][size]"
                                                         id="options_{{ $item->product->id }}" class="form-control"
                                                         placeholder="Enter size"
-                                                        value="{{ json_decode($item?->options)?->size }}">
+                                                        value="{{ is_array($item->options) ? data_get($item, 'options.size') : json_decode($item->options)?->size }}">
                                                 </div>
 
                                                 <!-- 5️⃣ Actions -->
