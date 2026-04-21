@@ -184,7 +184,7 @@
                                         @endif
 
                                     </p>
-                                    @if ($order->fraud_check_steadfast  && $order->fraud_check_steadfast['total'])
+                                    @if ($order->fraud_check_steadfast  && isset($order->fraud_check_steadfast['total']))
                                         <strong>SteadFast Customer Check:</strong>
                                         <p>
                                             Total Order : {{ $order->fraud_check_steadfast['total'] ?? 0 }}<br>
@@ -212,7 +212,7 @@
                                             </div>
                                         </div>
                                     @endif
-                                    @if ($order->fraud_check_pathao && $order->fraud_check_pathao['total'])
+                                    @if ($order->fraud_check_pathao && isset($order->fraud_check_pathao['total']))
                                         <strong>Pathao Customer Check:</strong>
                                         <p>
                                             Total Order : {{ $order->fraud_check_pathao['total'] ?? 0 }}<br>
