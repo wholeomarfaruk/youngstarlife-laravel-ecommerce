@@ -240,7 +240,7 @@ class AdminController extends Controller
     public function productEdit($id)
     {
         $product = products::find($id);
-        return view('admin.products-edit', compact('product',));
+        return view('admin.products-edit', compact('product', ));
     }
     public function productUpdate(Request $request)
     {
@@ -497,17 +497,17 @@ class AdminController extends Controller
         $pendingOrders = Order::where('status', 'pending')
             ->with('Order_Item')
             ->get();
+        if ($pendingOrders->count() > 0) {
+            foreach ($pendingOrders as $order) {
+                $productIds = $order->Order_Item->pluck('product_id');
 
-        foreach ($pendingOrders as $order) {
-            $productIds = $order->Order_Item->pluck('product_id');
-
-            AutoSaveOrder::where('phone', $order->phone)
-                ->whereHas('items', function ($q) use ($productIds) {
-                    $q->whereIn('product_id', $productIds);
-                })
-                ->delete();
+                AutoSaveOrder::where('phone', $order->phone)
+                    ->whereHas('items', function ($q) use ($productIds) {
+                        $q->whereIn('product_id', $productIds);
+                    })
+                    ->delete();
+            }
         }
-
         return view('admin.orders', compact('orders', 'status_group', 'orders_count'));
     }
     public function ordersPending(Request $request)
@@ -835,28 +835,28 @@ class AdminController extends Controller
         if (!$order) {
             abort(404);
         }
-if ($order) {
-    $phone = $order->phone;
+        if ($order) {
+            $phone = $order->phone;
 
-    if (strlen($phone) == 11) {
-        try {
-            $order->fraud_check_steadfast = collect((new SteadfastService())->steadfast($phone));
-        } catch (\Throwable $e) {
-            $order->fraud_check_steadfast = collect([
-                'error' => 'Steadfast check failed'
-            ]);
-        }
+            if (strlen($phone) == 11) {
+                try {
+                    $order->fraud_check_steadfast = collect((new SteadfastService())->steadfast($phone));
+                } catch (\Throwable $e) {
+                    $order->fraud_check_steadfast = collect([
+                        'error' => 'Steadfast check failed'
+                    ]);
+                }
 
-        try {
-            $order->fraud_check_pathao = collect((new PathaoService())->pathao($phone));
-        } catch (\Throwable $e) {
-            $order->fraud_check_pathao = collect([
-                'error' => 'Pathao check failed',
-                'message' => $e->getMessage(),
-            ]);
+                try {
+                    $order->fraud_check_pathao = collect((new PathaoService())->pathao($phone));
+                } catch (\Throwable $e) {
+                    $order->fraud_check_pathao = collect([
+                        'error' => 'Pathao check failed',
+                        'message' => $e->getMessage(),
+                    ]);
+                }
+            }
         }
-    }
-}
         // dd($order->fraud_check);
         $orderItems = Order_Item::where('order_id', $id)->paginate(20);
         $products = products::all();
@@ -1406,17 +1406,20 @@ if ($order) {
         $pendingOrders = Order::where('status', 'pending')
             ->with('Order_Item')
             ->get();
+        if ($pendingOrders->count() > 0) {
 
-        foreach ($pendingOrders as $order) {
-            $productIds = $order->Order_Item->pluck('product_id');
 
-            AutoSaveOrder::where('phone', $order->phone)
-                ->whereHas('items', function ($q) use ($productIds) {
-                    $q->whereIn('product_id', $productIds);
-                })
-                ->delete();
+
+            foreach ($pendingOrders as $order) {
+                $productIds = $order->Order_Item->pluck('product_id');
+
+                AutoSaveOrder::where('phone', $order->phone)
+                    ->whereHas('items', function ($q) use ($productIds) {
+                        $q->whereIn('product_id', $productIds);
+                    })
+                    ->delete();
+            }
         }
-
         return view('admin.autosaveorders', compact('orders', 'status_group', 'orders_count'));
     }
     public function autoSavedOrderDelete($id)
@@ -1473,30 +1476,30 @@ if ($order) {
 
             // Create real order
             $order = Order::create([
-                'name'             => $autoSaveOrder->name,
-                'phone'            => $autoSaveOrder->phone,
-                'address'          => $autoSaveOrder->address,
+                'name' => $autoSaveOrder->name,
+                'phone' => $autoSaveOrder->phone,
+                'address' => $autoSaveOrder->address,
                 'delivery_area_id' => $autoSaveOrder->delivery_area_id,
-                'cod_percentage'   => $autoSaveOrder->cod_percentage ?? 0,
-                'cod_charge'       => $autoSaveOrder->cod_charge ?? 0,
-                'subtotal'         => $autoSaveOrder->subtotal ?? 0,
-                'total'            => $autoSaveOrder->total ?? 0,
-                'discount'         => $autoSaveOrder->discount ?? 0,
-                'fee'              => $autoSaveOrder->fee ?? 0,
-                'status'           => 'pending',
-                'ip_address'       => $autoSaveOrder->ip_address,
-                'user_agent'       => $autoSaveOrder->user_agent,
-                'json_data'        => $autoSaveOrder->json_data,
+                'cod_percentage' => $autoSaveOrder->cod_percentage ?? 0,
+                'cod_charge' => $autoSaveOrder->cod_charge ?? 0,
+                'subtotal' => $autoSaveOrder->subtotal ?? 0,
+                'total' => $autoSaveOrder->total ?? 0,
+                'discount' => $autoSaveOrder->discount ?? 0,
+                'fee' => $autoSaveOrder->fee ?? 0,
+                'status' => 'pending',
+                'ip_address' => $autoSaveOrder->ip_address,
+                'user_agent' => $autoSaveOrder->user_agent,
+                'json_data' => $autoSaveOrder->json_data,
             ]);
 
             // Copy items
             foreach ($autoSaveOrder->items as $item) {
                 Order_Item::create([
-                    'order_id'    => $order->id,
-                    'product_id'  => $item->product_id,
-                    'price'       => $item->price,
-                    'quantity'    => $item->quantity,
-                    'options'     => $item->options,
+                    'order_id' => $order->id,
+                    'product_id' => $item->product_id,
+                    'price' => $item->price,
+                    'quantity' => $item->quantity,
+                    'options' => $item->options,
                 ]);
             }
 
