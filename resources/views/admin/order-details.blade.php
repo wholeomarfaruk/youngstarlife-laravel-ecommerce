@@ -202,7 +202,6 @@
                                                 $fraud_score_steadfast = number_format($score_steadfast, 2);
                                             @endphp
                                         </p>
-
                                         <div class="progress">
                                             <div class="progress-bar bg-{{ $fraud_score_steadfast >= 70 ? 'success' : 'danger' }}"
                                                 role="progressbar"
