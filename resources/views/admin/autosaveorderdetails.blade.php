@@ -107,7 +107,6 @@
                                 <th class="text-center">Quantity</th>
                                 <th class="text-center">SKU</th>
                                 <th class="text-center">Options</th>
-                                <th class="text-center">Return Status</th>
                                 <th class="text-center">Action</th>
                             </tr>
                         </thead>
@@ -133,8 +132,8 @@
                                             {{ floatval($item->product->discount_price ?? $item->product->price) * (int) $item->quantity }}
                                         </td>
 
-                                        <td class="text-center">{{ $item->options }}</td>
-                                        <td class="text-center">{{ $item->return_status ? 'Yes' : 'No' }}</td>
+                                        <td class="text-center">{{ json_encode($item->options, JSON_PRETTY_PRINT) }}</td>
+
                                         <td class="text-center">
                                             <div class="list-icon-function view-icon">
                                                 <div class="item eye">
@@ -281,7 +280,7 @@
                         <div class="col-md-12">
   <button type="submit" class="btn btn-primary">Create Order</button>
                         </div>
-                       
+
                     </div>
 
                 </form>
@@ -392,7 +391,7 @@
                                                         name="order_items[{{ $item->product->id }}][size]"
                                                         id="options_{{ $item->product->id }}" class="form-control"
                                                         placeholder="Enter size"
-                                                        value="{{ json_decode($item?->options)?->size }}">
+                                                        value="{{ data_get($item, 'options.size') }}">
                                                 </div>
 
                                                 <!-- 5️⃣ Actions -->
