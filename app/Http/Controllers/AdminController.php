@@ -1422,7 +1422,7 @@ public function ordersDataTable(Request $request)
         }
         return view('admin.autosaveorders', compact('orders', 'status_group', 'orders_count'));
     }
-    public function autoSavedOrderDelete($id)
+    public function autoSavedOrdersDelete($id)
     {
         $order = AutoSaveOrder::find($id);
         $order->delete();
