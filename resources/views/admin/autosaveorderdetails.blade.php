@@ -200,7 +200,7 @@
                                                 $fraud_score_steadfast = number_format($score_steadfast, 2);
                                             @endphp
                                         </p>
-                                    @endif
+
                                     <div class="progress">
                                         <div class="progress-bar bg-{{ $fraud_score_steadfast >= 70 ? 'success' : 'danger' }}"
                                             role="progressbar"
@@ -210,6 +210,7 @@
                                             {{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}%
                                         </div>
                                     </div>
+                                            @endif
                                     @if ($order->fraud_check_pathao && $fraud_score_pathao && $order->fraud_check_pathao['total'])
                                         <strong>Pathao Customer Check:</strong>
                                         <p>
@@ -226,7 +227,7 @@
                                                 $fraud_score_pathao = number_format($score_pathao, 2);
                                             @endphp
                                         </p>
-                                    @endif
+
                                     <div class="progress">
                                         <div class="progress-bar bg-{{ $fraud_score_pathao >= 70 ? 'success' : 'danger' }}"
                                             role="progressbar"
@@ -236,7 +237,7 @@
                                             {{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}%
                                         </div>
                                     </div>
-
+  @endif
                                     <p>Delivery Area :
                                         {{ $order?->delivery_area?->name . ' - ' . $order?->delivery_area?->charge }} TK
                                     </p>

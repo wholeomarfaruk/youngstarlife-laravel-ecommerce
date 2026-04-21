@@ -179,7 +179,8 @@
                                                 onclick="blockcustomer({{ $order->id }})"
                                                 class="btn btn-danger btn-sm small">Block</a>
                                         @else
-                                            <a href="javascript:void(0)" class="btn btn-success btn-sm small" onclick="unblockCustomer({{ $order->id }})">Unblock</a>
+                                            <a href="javascript:void(0)" class="btn btn-success btn-sm small"
+                                                onclick="unblockCustomer({{ $order->id }})">Unblock</a>
                                         @endif
 
                                     </p>
@@ -201,16 +202,17 @@
                                                 $fraud_score_steadfast = number_format($score_steadfast, 2);
                                             @endphp
                                         </p>
-                                    @endif
-                                    <div class="progress">
-                                        <div class="progress-bar bg-{{ $fraud_score_steadfast >= 70 ? 'success' : 'danger' }}"
-                                            role="progressbar"
-                                            style="width: {{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}%;"
-                                            aria-valuenow="{{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}"
-                                            aria-valuemin="0" aria-valuemax="100">
-                                            {{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}%
+
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{{ $fraud_score_steadfast >= 70 ? 'success' : 'danger' }}"
+                                                role="progressbar"
+                                                style="width: {{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}%;"
+                                                aria-valuenow="{{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}"
+                                                aria-valuemin="0" aria-valuemax="100">
+                                                {{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}%
+                                            </div>
                                         </div>
-                                    </div>
+                                    @endif
                                     @if ($order->fraud_check_pathao && $fraud_score_pathao && $order->fraud_check_pathao['total'])
                                         <strong>Pathao Customer Check:</strong>
                                         <p>
@@ -227,17 +229,17 @@
                                                 $fraud_score_pathao = number_format($score_pathao, 2);
                                             @endphp
                                         </p>
-                                    @endif
-                                    <div class="progress">
-                                        <div class="progress-bar bg-{{ $fraud_score_pathao >= 70 ? 'success' : 'danger' }}"
-                                            role="progressbar"
-                                            style="width: {{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}%;"
-                                            aria-valuenow="{{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}"
-                                            aria-valuemin="0" aria-valuemax="100">
-                                            {{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}%
-                                        </div>
-                                    </div>
 
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{{ $fraud_score_pathao >= 70 ? 'success' : 'danger' }}"
+                                                role="progressbar"
+                                                style="width: {{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}%;"
+                                                aria-valuenow="{{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}"
+                                                aria-valuemin="0" aria-valuemax="100">
+                                                {{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}%
+                                            </div>
+                                        </div>
+                                    @endif
 
                                     <p>Delivery Area :
                                         {{ $order?->delivery_area?->name . ' - ' . $order?->delivery_area?->charge }} TK
@@ -327,7 +329,8 @@
                 <div class="my-account__address-item col-md-12">
                     <div class="my-account__address-item__detail">
                         <p>IP Address: {{ $order->ip_address }}</p>
-                        <p class="{{ $order?->device?->isBlocked ? 'text-danger' : '' }}">User Agent: {{ $order->user_agent }}</p>
+                        <p class="{{ $order?->device?->isBlocked ? 'text-danger' : '' }}">User Agent:
+                            {{ $order->user_agent }}</p>
 
                         <pre style="font-size: 14px; line-height: 20px; "> {{ json_encode($order->json_data, JSON_PRETTY_PRINT) }}</pre>
                         <br>
@@ -709,7 +712,6 @@
 
 
         <script>
-
             function blockcustomer(id) {
 
 
@@ -750,7 +752,8 @@
                                     if (responseJson.success) {
                                         // Successfully blocked, reload the page
                                         // location.reload();
-                                        Swal.fire('Success!', responseJson.message || 'Customer blocked successfully.', 'success');
+                                        Swal.fire('Success!', responseJson.message ||
+                                            'Customer blocked successfully.', 'success');
                                     } else {
                                         // Block was unsuccessful according to the server's logic/message
                                         console.error("Block failed:", responseJson.message);
@@ -762,7 +765,7 @@
                                 .catch(error => {
                                     console.error('Fetch operation error:', error);
                                     Swal.fire('Error!', 'An unexpected error occurred during the request.',
-                                    'error');
+                                        'error');
                                 });
                         }
                     });
@@ -817,7 +820,8 @@
                                     if (responseJson.success) {
                                         // Successfully blocked, reload the page
                                         // location.reload();
-                                        Swal.fire('Success!', responseJson.message || 'Customer unblocked successfully.', 'success');
+                                        Swal.fire('Success!', responseJson.message ||
+                                            'Customer unblocked successfully.', 'success');
                                     } else {
                                         // Block was unsuccessful according to the server's logic/message
                                         console.error("unBlock failed:", responseJson.message);
@@ -829,7 +833,7 @@
                                 .catch(error => {
                                     console.error('Fetch operation error:', error);
                                     Swal.fire('Error!', 'An unexpected error occurred during the request.',
-                                    'error');
+                                        'error');
                                 });
                         }
                     });
@@ -842,7 +846,5 @@
                     });
                 }
             }
-
-
         </script>
     @endsection
