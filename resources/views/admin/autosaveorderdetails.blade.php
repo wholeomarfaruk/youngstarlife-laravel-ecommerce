@@ -178,11 +178,12 @@
                                                 onclick="blockcustomer({{ $order->id }})"
                                                 class="btn btn-danger btn-sm small">Block</a>
                                         @else
-                                            <a href="javascript:void(0)" class="btn btn-success btn-sm small" onclick="unblockCustomer({{ $order->id }})">Unblock</a>
+                                            <a href="javascript:void(0)" class="btn btn-success btn-sm small"
+                                                onclick="unblockCustomer({{ $order->id }})">Unblock</a>
                                         @endif
 
                                     </p>
-  @if ($order->fraud_check_steadfast && isset($order->fraud_check_steadfast['total']))
+                                    @if ($order->fraud_check_steadfast && isset($order->fraud_check_steadfast['total']))
                                         <strong>SteadFast Customer Check:</strong>
                                         <p>
                                             Total Order : {{ $order->fraud_check_steadfast['total'] ?? 0 }}<br>
@@ -201,17 +202,17 @@
                                             @endphp
                                         </p>
 
-                                    <div class="progress">
-                                        <div class="progress-bar bg-{{ $fraud_score_steadfast >= 70 ? 'success' : 'danger' }}"
-                                            role="progressbar"
-                                            style="width: {{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}%;"
-                                            aria-valuenow="{{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}"
-                                            aria-valuemin="0" aria-valuemax="100">
-                                            {{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}%
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{{ $fraud_score_steadfast >= 70 ? 'success' : 'danger' }}"
+                                                role="progressbar"
+                                                style="width: {{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}%;"
+                                                aria-valuenow="{{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}"
+                                                aria-valuemin="0" aria-valuemax="100">
+                                                {{ $fraud_score_steadfast > 100 ? 100 : $fraud_score_steadfast }}%
+                                            </div>
                                         </div>
-                                    </div>
-                                            @endif
-                                    @if ($order->fraud_check_pathao  && isset($order->fraud_check_pathao['total']))
+                                    @endif
+                                    @if ($order->fraud_check_pathao && isset($order->fraud_check_pathao['total']))
                                         <strong>Pathao Customer Check:</strong>
                                         <p>
                                             Total Order : {{ $order->fraud_check_pathao['total'] ?? 0 }}<br>
@@ -228,16 +229,16 @@
                                             @endphp
                                         </p>
 
-                                    <div class="progress">
-                                        <div class="progress-bar bg-{{ $fraud_score_pathao >= 70 ? 'success' : 'danger' }}"
-                                            role="progressbar"
-                                            style="width: {{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}%;"
-                                            aria-valuenow="{{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}"
-                                            aria-valuemin="0" aria-valuemax="100">
-                                            {{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}%
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{{ $fraud_score_pathao >= 70 ? 'success' : 'danger' }}"
+                                                role="progressbar"
+                                                style="width: {{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}%;"
+                                                aria-valuenow="{{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}"
+                                                aria-valuemin="0" aria-valuemax="100">
+                                                {{ $fraud_score_pathao > 100 ? 100 : $fraud_score_pathao }}%
+                                            </div>
                                         </div>
-                                    </div>
-  @endif
+                                    @endif
                                     <p>Delivery Area :
                                         {{ $order?->delivery_area?->name . ' - ' . $order?->delivery_area?->charge }} TK
                                     </p>
@@ -278,7 +279,7 @@
                     <input type="hidden" name="order_id" value="{{ $order->id }}">
                     <div class="row">
                         <div class="col-md-12">
-  <button type="submit" class="btn btn-primary">Create Order</button>
+                            <button type="submit" class="btn btn-primary">Create Order</button>
                         </div>
 
                     </div>
@@ -291,7 +292,8 @@
                 <div class="my-account__address-item col-md-12">
                     <div class="my-account__address-item__detail">
                         <p>IP Address: {{ $order->ip_address }}</p>
-                        <p class="{{ $order?->device?->isBlocked ? 'text-danger' : '' }}">User Agent: {{ $order->user_agent }}</p>
+                        <p class="{{ $order?->device?->isBlocked ? 'text-danger' : '' }}">User Agent:
+                            {{ $order->user_agent }}</p>
 
                         <pre style="font-size: 14px; line-height: 20px; "> {{ json_encode($order->json_data, JSON_PRETTY_PRINT) }}</pre>
                         <br>
@@ -327,9 +329,7 @@
 
                                     @foreach ($products as $product)
                                         @php
-                                            $isSelected = $order->items
-                                                ->pluck('product_id')
-                                                ->contains($product->id);
+                                            $isSelected = $order->items->pluck('product_id')->contains($product->id);
                                         @endphp
                                         <option value="{{ $product->id }}" data-id="{{ $product->id }}"
                                             {{ $product->stock_status == 'out_of_stock' ? 'disabled' : '' }}
@@ -673,7 +673,6 @@
 
 
         <script>
-
             function blockcustomer(id) {
 
 
@@ -714,7 +713,8 @@
                                     if (responseJson.success) {
                                         // Successfully blocked, reload the page
                                         // location.reload();
-                                        Swal.fire('Success!', responseJson.message || 'Customer blocked successfully.', 'success');
+                                        Swal.fire('Success!', responseJson.message ||
+                                            'Customer blocked successfully.', 'success');
                                     } else {
                                         // Block was unsuccessful according to the server's logic/message
                                         console.error("Block failed:", responseJson.message);
@@ -726,7 +726,7 @@
                                 .catch(error => {
                                     console.error('Fetch operation error:', error);
                                     Swal.fire('Error!', 'An unexpected error occurred during the request.',
-                                    'error');
+                                        'error');
                                 });
                         }
                     });
@@ -781,7 +781,8 @@
                                     if (responseJson.success) {
                                         // Successfully blocked, reload the page
                                         // location.reload();
-                                        Swal.fire('Success!', responseJson.message || 'Customer unblocked successfully.', 'success');
+                                        Swal.fire('Success!', responseJson.message ||
+                                            'Customer unblocked successfully.', 'success');
                                     } else {
                                         // Block was unsuccessful according to the server's logic/message
                                         console.error("unBlock failed:", responseJson.message);
@@ -793,7 +794,7 @@
                                 .catch(error => {
                                     console.error('Fetch operation error:', error);
                                     Swal.fire('Error!', 'An unexpected error occurred during the request.',
-                                    'error');
+                                        'error');
                                 });
                         }
                     });
@@ -806,7 +807,5 @@
                     });
                 }
             }
-
-
         </script>
     @endsection
