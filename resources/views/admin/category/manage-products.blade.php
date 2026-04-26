@@ -95,7 +95,7 @@
                                 name="products[]" required multiple data-live-search="true" title="Choose products...">
                                 @foreach ($products as $product)
                                     <option value="{{ $product->id }}">
-                                        {{ $product->id . ' - ' . $product->name . ' - ' . $product->discount_price ?? $product->price }}
+                                        {{ $product->id . ' - ' . $product->name . ' - ' . ($product->discount_price ?? $product->price) }}
                                         Tk</option>
                                 @endforeach
                             </select>
