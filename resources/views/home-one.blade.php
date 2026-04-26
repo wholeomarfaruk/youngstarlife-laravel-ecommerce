@@ -11,18 +11,13 @@
             font-weight: 600;
 
         }
-
         .sec-style-1 .sec-body {}
-
         .sec-style-1 .sec-body .sec-grid-box {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 20px;
         }
-
-
         .sec-style-1 .sec-body .sec-grid-box .sec-grid-item {}
-
         .p-card-1 {
             display: flex;
             flex-direction: column;

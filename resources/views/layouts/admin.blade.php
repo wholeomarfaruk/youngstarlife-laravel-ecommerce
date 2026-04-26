@@ -481,34 +481,7 @@
                                                             class="icon-trash-2"></i> Clear all</a></h6>
                                             </li>
 
-                                            @foreach ($orderpendings as $notify)
-                                                <li class="{{ $notify->read_at ? '' : 'unread' }}">
-                                                    <div class="message-item item-4">
-                                                        <div class="image">
-                                                            <i class="icon-noti-4"></i>
-                                                        </div>
-                                                        <div>
-                                                            <div class="body-title-2">{{ $notify->data['title'] }}
-                                                            </div>
-                                                            <div class="text-tiny">{!! html_entity_decode($notify->data['message'], ENT_QUOTES, 'UTF-8') !!}</< /div>
-                                                            </div>
-                                                        </div>
-
-                                                    </div>
-                                                    <div
-                                                        class="footer w-100 d-flex justify-content-end align-items-center gap-3">
-                                                        <div class="date">
-                                                            <div class="text-tiny">
-                                                                {{ $notify->created_at->diffForHumans() }}</div>
-                                                        </div>
-                                                        <div class="action">
-                                                            <a href="{{ route('admin.notifications.read', $notify->id) }}"
-                                                                class="btn btn-sm btn-secondary">Mark as read</a>
-                                                        </div>
-                                                    </div>
-                                                    <hr>
-                                                </li>
-                                            @endforeach
+                                           
                                             {{-- - <li>
                                                 <div class="message-item item-1">
                                                     <div class="image">

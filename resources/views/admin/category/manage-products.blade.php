@@ -1,8 +1,9 @@
 @extends('layouts.admin')
+
+@push('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.css"
     integrity="sha512-A81ejcgve91dAWmCGseS60zjrAdohm7PTcAjjiDWtw3Tcj91PNMa1gJ/ImrhG+DbT5V+JQ5r26KT5+kgdVTb5w=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
-@push('styles')
     <style>
         .table-striped th:nth-child(2),
         .table-striped td:nth-child(2) {
@@ -80,6 +81,7 @@
             </div>
 
             <div class="wg-box">
+            <div class="wg-box">
                 <form class="form-new-product form-style-1 needs-validation"
                     action="{{ route('admin.categories.assign.products', $category->id) }}" method="POST"
                     enctype="multipart/form-data" novalidate>
@@ -116,7 +118,7 @@
                 </form>
             </div>
             <div class="wg-box">
-                <div class="table-responsive">
+                <div class="wg-table table-responsive">
                     @if (Session::has('status'))
                         <div class="alert alert-success" role="alert">
                             {{ Session::get('status') }}
@@ -124,7 +126,6 @@
                     @endif
                     <table class="table table-striped table-bordered">
                         <thead>
-
                             <tr>
                                 <th>#</th>
                                 <th>Name</th>
@@ -184,10 +185,7 @@
                     </table>
                 </div>
             </div>
-            <div class="divider"></div>
-            <div class="flex items-center justify-between flex-wrap gap10 wgp-pagination mt-5">
-                {{-- {{ $Categoryproducts->links('pagination::bootstrap-5') }} --}}
-            </div>
+        </div>
         </div>
     </div>
 
