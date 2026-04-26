@@ -409,14 +409,14 @@ td {
   border: 1px solid #343444;
 }
 
-table {
+/* table {
   border-collapse: separate;
   border-spacing: 0;
   border-width: 1px 0 0 1px;
   margin: 0 0 30px;
   table-layout: fixed;
   width: 100%;
-}
+} */
 
 caption,
 th,
@@ -503,7 +503,7 @@ input[type=submit] {
   border: 0;
 }
 
-input[type=checkbox],
+/* input[type=checkbox],
 input[type=radio] {
   padding: 0;
   width: 22px;
@@ -512,8 +512,8 @@ input[type=radio] {
   background: rgba(0, 0, 0, 0) !important;
   cursor: pointer;
   vertical-align: sub;
-  /* Addresses excess padding in IE8/9 */
-}
+
+} */
 
 input[type=search] {
   -webkit-appearance: textfield;

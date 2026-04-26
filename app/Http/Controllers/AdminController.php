@@ -60,18 +60,8 @@ class AdminController extends Controller
     //Products
     public function products(Request $request)
     {
-        $search = $request->search;
-        if ($search) {
-            $products = products::where('name', 'like', '%' . $search . '%')
-                ->orWhere('id', 'like', '%' . $search . '%')
-                ->orWhere('price', 'like', '%' . $search . '%')
-                ->orderBy('created_at', 'desc')
-                ->paginate(20);
-        } else {
 
-            $products = products::orderBy('created_at', 'desc')->paginate(20);
-        }
-        return view('admin.products', compact('products'));
+        return view('admin.products');
     }
 
     public function productsAdd()
