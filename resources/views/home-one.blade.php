@@ -176,7 +176,7 @@
         </div>
     </section>
     @foreach ($categories as $category)
-        @if ($category->products->count() > 0)
+        @if ($category->products->where('status', 1)->count() > 0)
             <section class="sec-style-1 my-3">
                 <div class="container">
                     <div class="sec-header">
