@@ -14,6 +14,11 @@ class Orders extends Component
     public $search = '';
     public $order_status;
     public $daterange;
+    protected $paginationTheme = 'bootstrap';
+
+        protected $queryString = [
+        'search' => ['except' => '']
+    ];
     public function updatingSearch()
     {
         $this->resetPage();

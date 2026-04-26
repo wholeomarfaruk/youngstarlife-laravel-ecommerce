@@ -13,6 +13,7 @@ class Products extends Component
         protected $queryString = [
         'search' => ['except' => '']
     ];
+    protected $paginationTheme = 'bootstrap';
     public function updatingSearch()
     {
         $this->resetPage();
