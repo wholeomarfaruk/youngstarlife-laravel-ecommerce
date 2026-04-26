@@ -16,7 +16,7 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('lib/flatpickr/flatpickr.min.css') }}">
 
 
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/style.css?v=1.0') }}">
     <link rel="stylesheet" href="{{ asset('admin-resource/font/fonts.css') }}">
     <link rel="stylesheet" href="{{ asset('admin-resource/icon/style.css') }}">
     <link rel="shortcut icon" href="{{ asset('admin-resource/images/favicon.ico') }}">
@@ -481,7 +481,7 @@
                                                             class="icon-trash-2"></i> Clear all</a></h6>
                                             </li>
 
-                                           
+
                                             {{-- - <li>
                                                 <div class="message-item item-1">
                                                     <div class="image">
