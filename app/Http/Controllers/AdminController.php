@@ -64,9 +64,18 @@ class AdminController extends Controller
         return view('admin.products');
     }
 
-    public function productsAdd()
+    public function productsAdd($id = null)
     {
-        return view('admin.products-add');
+
+        $product = null;
+
+
+        if ($id) {
+            $product = products::find($id);
+
+        }
+
+        return view('admin.products-add',compact('product'));
     }
     public function productStore(Request $request)
     {

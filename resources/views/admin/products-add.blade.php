@@ -39,7 +39,7 @@
                         </div>
                         <input class="mb-10 @error('name') is-invalid @enderror" type="text"
                             placeholder="Enter product name" name="name" tabindex="0" aria-required="true"
-                            value="{{ old('name') }}" required autocomplete="name" autofocus
+                            value="{{ old('name', $product->name) }}" required autocomplete="name" autofocus
                             onchange="stringtoSlug(this.value)">
                         <div class="text-tiny">Do not exceed 100 characters when entering the
                             product name.</div>
@@ -55,7 +55,7 @@
                         <fieldset class="name">
                             <div class="body-title mb-10">Price <span class="tf-color-1">*</span></div>
                             <input class="mb-10 @error('regular_price') is-invalid @enderror" type="text"
-                                placeholder="Enter price" name="price" tabindex="0" value="{{ old('price') }}"
+                                placeholder="Enter price" name="price" tabindex="0" value="{{ old('price', $product->price) }}"
                                 aria-required="true" required="required" autofocus>
                             @error('price')
                                 <span class="invalid-feedback" role="alert">
@@ -64,10 +64,10 @@
                             @enderror
                         </fieldset>
                         <fieldset class="name">
-                            <div class="body-title mb-10">Discount Price <span class="tf-color-1">*</span></div>
+                            <div class="body-title mb-10">Discount Price </div>
                             <input class="mb-10 @error('regular_price') is-invalid @enderror" type="text"
-                                placeholder="Enter price" name="discount_price" tabindex="0" value="{{ old('discount_price') }}"
-                                aria-required="true" required="required" autofocus>
+                                placeholder="Enter price" name="discount_price" tabindex="0" value="{{ old('discount_price', $product->discount_price) }}"
+                                aria-required="true"  autofocus>
                             @error('discount_price')
                                 <span class="invalid-feedback" role="alert">
                                     <strong>{{ $message }}</strong>
@@ -81,7 +81,7 @@
                             <div class="body-title mb-10">Quantity <span class="tf-color-1">*</span>
                             </div>
                             <input class="mb-10 @error('quantity') is-invalid @enderror" type="text"
-                                placeholder="Enter quantity" name="quantity" tabindex="0" value="{{ old('quantity') }}"
+                                placeholder="Enter quantity" name="quantity" tabindex="0" value="{{ old('quantity', $product->quantity) }}"
                                 aria-required="true" required="required">
                             @error('quantity')
                                 <span class="invalid-feedback" role="alert">
@@ -96,8 +96,8 @@
                             <div class="body-title mb-10">Stock</div>
                             <div class="select mb-10">
                                 <select class="" name="stock_status">
-                                    <option value="in_stock">InStock</option>
-                                    <option value="out_of_stock">Out of Stock</option>
+                                    <option value="in_stock" {{ $product->stock_status == 'in_stock' ? 'selected' : '' }}>InStock</option>
+                                    <option value="out_of_stock" {{ $product->stock_status == 'out_of_stock' ? 'selected' : '' }}>Out of Stock</option>
                                 </select>
                             </div>
                             @error('stock_status')
@@ -107,10 +107,10 @@
                             @enderror
                         </fieldset>
                         <fieldset class="name">
-                            <div class="body-title mb-10">SKU <span class="tf-color-1">*</span>
+                            <div class="body-title mb-10">SKU
                             </div>
                             <input class="mb-10 @error('sku') is-invalid @enderror" type="text" placeholder="Enter SKU"
-                                name="sku" tabindex="0" value="{{ old('sku') }}" aria-required="true"
+                                name="sku" tabindex="0" value="{{ old('sku', $product->sku) }}" aria-required="true"
                                 required="required">
                             @error('sku')
                                 <span class="invalid-feedback" role="alert">
@@ -130,9 +130,9 @@
                         @enderror
                     </fieldset>
                     <fieldset class="name">
-                        <div class="body-title mb-10">SEO Description <span class="tf-color-1">*</span></div>
+                        <div class="body-title mb-10">SEO Description </div>
                         <textarea class="mb-10 @error('short_description') is-invalid @enderror" name="short_description" tabindex="0"
-                            aria-required="true" required="required">{{ old('description') }}</textarea>
+                            aria-required="true" >{{ old('description') }}</textarea>
                         @error('short_description')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
