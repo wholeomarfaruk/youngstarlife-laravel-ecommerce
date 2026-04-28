@@ -84,7 +84,7 @@
 </div>
                                             <a href="{{ route('admin.products.edit', ['id' => $product->id]) }}">
                                                 <div class="item edit">
-                                                    <i class="icon-clipboard"></i>
+                                                    Copy
                                                 </div>
                                             </a>
                                             <a href="{{ route('admin.products.copy', ['id' => $product->id]) }}">
