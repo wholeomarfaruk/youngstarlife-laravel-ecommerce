@@ -19,8 +19,6 @@ use Spatie\LaravelPackageTools\Package;
      Route::get('/optimize', function () {
             Artisan::call('optimize:clear');
             Artisan::call('optimize');
-            exec('php artisan optimize');
-            shell_exec('php artisan optimize');
             return '<h3>✅ Application optimized successfully!</h3>';
         });
 Route::post('/cart/add/json', [CartController::class, 'add_json_to_cart'])->name('cart.add.json')->withoutMiddleware('auth');
