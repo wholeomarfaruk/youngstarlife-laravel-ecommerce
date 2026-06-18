@@ -172,6 +172,7 @@
                                 <th>SKU</th>
                                 <th>Stock</th>
                                 <th>Quantity</th>
+                                <th>Status</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
@@ -203,6 +204,13 @@
                                         <td>{{ $pitem->stock_status }}</td>
                                         <td>{{ $pitem->quantity }}</td>
                                         <td>
+                                            @if ($pitem->status == 1)
+                                                <span class="badge bg-success">Active</span>
+                                            @else
+                                                <span class="badge bg-danger">Inactive</span>
+                                            @endif
+                                        </td>
+                                        <td>
                                             <div class="list-icon-function">
 
 
@@ -222,7 +230,7 @@
                                 @endforeach
                             @else
                                 <tr>
-                                    <td colspan="9" class="text-center">No products found</td>
+                                    <td colspan="10" class="text-center">No products found</td>
                                 </tr>
                             @endif
                         </tbody>
