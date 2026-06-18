@@ -59,9 +59,9 @@ class HomeController extends Controller
             abort(404);
         }
 
-         $products = $category->products()->where('status', 1)
-            ->orderByPivot('sort_order', 'asc') // manual admin sort order
-            ->paginate(12);
+         // Ordering (category sort_order, then global product sort_order) is defined
+         // on the Category::products() relation, so it applies here automatically.
+         $products = $category->products()->where('status', 1)->paginate(12);
         return view('category-products', compact('category', 'products'));
     }
 }
