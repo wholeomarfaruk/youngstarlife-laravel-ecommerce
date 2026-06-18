@@ -194,7 +194,7 @@
                     </div>
                     <div class="sec-body">
                         <div class="sec-grid-box">
-                            @foreach ($category?->products->take(6) as $product)
+                            @foreach ($category?->products->where('status', 1)->take(6) as $product) 
                                 <div class="sec-grid-item p-card-1">
 
                                     <div class="p-img-box">
