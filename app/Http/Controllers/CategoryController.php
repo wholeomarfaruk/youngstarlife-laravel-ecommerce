@@ -188,13 +188,43 @@ class CategoryController extends Controller
     public function assignProducts(Request $request, $id){
 
         $category = Category::find($id);
-        $category->products()->attach($request->products);
+
+        // Append newly assigned products to the end of the current order.
+        $maxOrder = (int) $category->products()->max('sort_order');
+        $attach = [];
+        foreach ((array) $request->products as $productId) {
+            $maxOrder++;
+            $attach[$productId] = ['sort_order' => $maxOrder];
+        }
+        $category->products()->attach($attach);
+
         return redirect()->back()->with('status', 'Product added successfully');
     }
     public function unassignProducts(Request $request, $id){
         $category = Category::find($id);
         $category->products()->detach($request->products);
         return redirect()->back()->with('status', 'Product removed successfully');
+    }
+
+    /**
+     * Persist the manual drag/number sort order for a category's products.
+     */
+    public function updateProductsOrder(Request $request, $id){
+        $request->validate([
+            'order'              => 'required|array',
+            'order.*.id'         => 'required|integer',
+            'order.*.sort_order' => 'required|integer',
+        ]);
+
+        $category = Category::findOrFail($id);
+
+        foreach ($request->order as $row) {
+            $category->products()->updateExistingPivot($row['id'], [
+                'sort_order' => $row['sort_order'],
+            ]);
+        }
+
+        return response()->json(['status' => 'success', 'message' => 'Sort order updated']);
     }
 
 

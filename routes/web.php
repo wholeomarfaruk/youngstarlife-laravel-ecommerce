@@ -97,6 +97,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/categories/{id}/manage-products', [CategoryController::class, 'manageProducts'])->name('admin.categories.manage.products');
         Route::post('/categories/{id}/assign-products', [CategoryController::class, 'assignProducts'])->name('admin.categories.assign.products');
         Route::delete('/categories/{id}/unassign-products', [CategoryController::class, 'unassignProducts'])->name('admin.categories.unassign.products');
+        Route::post('/categories/{id}/products-order', [CategoryController::class, 'updateProductsOrder'])->name('admin.categories.products.order');
         // Products
         Route::get('/products', [AdminController::class, 'products'])->name('admin.products');
         Route::get('/products/add', [AdminController::class, 'productsAdd'])->name('admin.products.add');

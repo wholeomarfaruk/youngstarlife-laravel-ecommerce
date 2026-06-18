@@ -57,8 +57,8 @@ class HomeController extends Controller
             abort(404);
         }
 
-         $products = $category->products()->where('status', 1)->orderByDesc('featured') // featured first
-            ->orderByDesc('created_at')               // newest first
+         $products = $category->products()->where('status', 1)
+            ->orderByPivot('sort_order', 'asc') // manual admin sort order
             ->paginate(12);
         return view('category-products', compact('category', 'products'));
     }

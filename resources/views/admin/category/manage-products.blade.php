@@ -58,6 +58,39 @@
             /* indentation for subcategories */
         }
     </style>
+    <style>
+        .drag-handle {
+            cursor: grab;
+            color: #888;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        .sortable-ghost {
+            opacity: 0.4;
+            background: #e9f5ff;
+        }
+
+        .sortable-drag {
+            background: #fff;
+        }
+
+        .sort-order-input {
+            width: 80px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 4px 6px;
+        }
+
+        tr.row-saving {
+            background: #fff8e1 !important;
+        }
+    </style>
 @endpush
 @section('content')
     <!-- content area start -->
@@ -124,23 +157,35 @@
                             {{ Session::get('status') }}
                         </div>
                     @endif
-                    <table class="table table-striped table-bordered">
+                    <div class="text-tiny mb-2">
+                        Drag rows by the <i class="icon-move"></i> handle, or type a number in
+                        <strong>Sort Order</strong> to reposition. Changes save automatically.
+                    </div>
+                    <table class="table table-striped table-bordered" id="category-products-table">
                         <thead>
                             <tr>
+                                <th></th>
+                                <th>Sort Order</th>
                                 <th>#</th>
                                 <th>Name</th>
                                 <th>Price</th>
                                 <th>SKU</th>
                                 <th>Stock</th>
                                 <th>Quantity</th>
-                                <th>Featured</th>
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="sortable-products">
                             @if (count($Categoryproducts) > 0)
                                 @foreach ($Categoryproducts as $pitem)
-                                    <tr>
+                                    <tr data-id="{{ $pitem->id }}">
+                                        <td class="drag-handle" title="Drag to reorder">
+                                            <i class="icon-menu"></i>
+                                        </td>
+                                        <td>
+                                            <input type="number" class="sort-order-input"
+                                                value="{{ $pitem->pivot->sort_order }}" min="0" step="1">
+                                        </td>
                                         <td>{{ $pitem->id }}</td>
                                         <td class="pname">
                                             <div class="image">
@@ -157,7 +202,6 @@
                                         <td>{{ $pitem->sku }}</td>
                                         <td>{{ $pitem->stock_status }}</td>
                                         <td>{{ $pitem->quantity }}</td>
-                                        <td>{{ $pitem->featured == 1 ? 'Yes' : 'No' }}</td>
                                         <td>
                                             <div class="list-icon-function">
 
@@ -178,7 +222,7 @@
                                 @endforeach
                             @else
                                 <tr>
-                                    <td colspan="8" class="text-center">No products found</td>
+                                    <td colspan="9" class="text-center">No products found</td>
                                 </tr>
                             @endif
                         </tbody>
@@ -193,8 +237,102 @@
     <!-- content area end -->
 @endsection
 @push('scripts')
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
     <script>
         $(document).ready(function() {
+            const orderUrl = "{{ route('admin.categories.products.order', $category->id) }}";
+            const csrf = "{{ csrf_token() }}";
+            const tbody = document.getElementById('sortable-products');
+
+            // Renumber the visible rows top-to-bottom and reflect it in the inputs.
+            function renumberRows() {
+                $('#sortable-products > tr[data-id]').each(function(index) {
+                    $(this).find('.sort-order-input').val(index + 1);
+                });
+            }
+
+            // Collect current order and persist it.
+            function saveOrder() {
+                const order = [];
+                const rows = $('#sortable-products > tr[data-id]');
+                rows.each(function(index) {
+                    order.push({
+                        id: parseInt($(this).data('id'), 10),
+                        sort_order: index + 1
+                    });
+                });
+
+                rows.addClass('row-saving');
+
+                $.ajax({
+                    url: orderUrl,
+                    method: 'POST',
+                    data: {
+                        order: order
+                    },
+                    headers: {
+                        'X-CSRF-TOKEN': csrf
+                    },
+                    success: function() {
+                        rows.removeClass('row-saving');
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'success',
+                            title: 'Sort order saved',
+                            showConfirmButton: false,
+                            timer: 1500
+                        });
+                    },
+                    error: function() {
+                        rows.removeClass('row-saving');
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: 'error',
+                            title: 'Could not save order',
+                            showConfirmButton: false,
+                            timer: 2000
+                        });
+                    }
+                });
+            }
+
+            // Drag-and-drop reordering.
+            if (tbody) {
+                new Sortable(tbody, {
+                    handle: '.drag-handle',
+                    animation: 150,
+                    ghostClass: 'sortable-ghost',
+                    dragClass: 'sortable-drag',
+                    onEnd: function() {
+                        renumberRows();
+                        saveOrder();
+                    }
+                });
+            }
+
+            // Number-input reordering: move the row to the requested position.
+            $('#sortable-products').on('change', '.sort-order-input', function() {
+                const row = $(this).closest('tr');
+                let target = parseInt($(this).val(), 10);
+                const rows = $('#sortable-products > tr[data-id]');
+
+                if (isNaN(target) || target < 1) target = 1;
+                if (target > rows.length) target = rows.length;
+
+                row.detach();
+                const remaining = $('#sortable-products > tr[data-id]');
+                if (target - 1 >= remaining.length) {
+                    $('#sortable-products').append(row);
+                } else {
+                    remaining.eq(target - 1).before(row);
+                }
+
+                renumberRows();
+                saveOrder();
+            });
+
             $('.delete').on('click', function(e) {
                 e.preventDefault();
                 var form = $(this).closest('form');
