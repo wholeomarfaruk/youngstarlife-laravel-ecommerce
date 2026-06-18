@@ -24,7 +24,7 @@
                     <div class="wg-filter flex-grow">
                         <form class="form-search">
                             <fieldset class="name">
-                                <input type="text" placeholder="Search here..." class="" name="search"
+                                <input wire:model.live="search" type="text" placeholder="Search here..." class="" name="search"
                                     tabindex="2" value="" aria-required="true" required="">
                             </fieldset>
                             <div class="button-submit">
