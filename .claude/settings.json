@@ -12,7 +12,13 @@
       "Bash(php -l app/Http/Controllers/AdminController.php)",
       "PowerShell(php artisan view:clear 2>&1)",
       "PowerShell(php artisan livewire:discover 2>&1)",
-      "PowerShell(php artisan view:cache 2>&1)"
+      "PowerShell(php artisan view:cache 2>&1)",
+      "Bash(php -l app/Console/Commands/PruneOldNotifications.php)",
+      "Bash(php -l app/Http/Controllers/Admin/NotificationController.php)",
+      "Bash(php -l app/Http/Controllers/Admin/OrderController.php)",
+      "Bash(php -l app/Notifications/PendingOrderNotification.php)",
+      "PowerShell(php artisan notifications:prune --days=7 2>&1)",
+      "Bash(php -l routes/console.php)"
     ],
     "additionalDirectories": [
       "\\tmp"

@@ -475,63 +475,52 @@
                                             aria-labelledby="dropdownMenuButton2"
                                             style="max-height: 70vh; overflow: scroll;">
                                             <li>
-                                                <h6>Notifications ({{ $orderpendings->count() }}) - <a
-                                                        href="{{ route('admin.notifications.clear.all') }}"
-                                                        class="notify-clear-all fs-6 text-danger"><i
-                                                            class="icon-trash-2"></i> Clear all</a></h6>
+                                                <h6>Notifications ({{ $orderpendings->count() }})
+                                                    @if ($orderpendings->count() > 0)
+                                                        - <a href="{{ route('admin.notifications.clear.all') }}"
+                                                            class="notify-clear-all fs-6 text-danger"><i
+                                                                class="icon-trash-2"></i> Clear all</a>
+                                                    @endif
+                                                </h6>
                                             </li>
 
-
-                                            {{-- - <li>
-                                                <div class="message-item item-1">
-                                                    <div class="image">
-                                                        <i class="icon-noti-1"></i>
-                                                    </div>
-                                                    <div>
-                                                        <div class="body-title-2">Discount available</div>
-                                                        <div class="text-tiny">Morbi sapien massa, ultricies at rhoncus
-                                                            at, ullamcorper nec diam</div>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                           <li>
-                                                <div class="message-item item-2">
-                                                    <div class="image">
-                                                        <i class="icon-noti-2"></i>
-                                                    </div>
-                                                    <div>
-                                                        <div class="body-title-2">Account has been verified</div>
-                                                        <div class="text-tiny">Mauris libero ex, iaculis vitae rhoncus
-                                                            et</div>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="message-item item-3">
-                                                    <div class="image">
-                                                        <i class="icon-noti-3"></i>
-                                                    </div>
-                                                    <div>
-                                                        <div class="body-title-2">Order shipped successfully</div>
-                                                        <div class="text-tiny">Integer aliquam eros nec sollicitudin
-                                                            sollicitudin</div>
-                                                    </div>
-                                                </div>
-                                            </li>
-                                            <li>
-                                                <div class="message-item item-4">
-                                                    <div class="image">
-                                                        <i class="icon-noti-4"></i>
-                                                    </div>
-                                                    <div>
-                                                        <div class="body-title-2">Order pending: <span>ID 305830</span>
+                                            @forelse ($orderpendings as $note)
+                                                <li class="mb-10" data-note-id="{{ $note->id }}">
+                                                    <div class="message-item item-4 d-flex align-items-start gap10">
+                                                        <div class="image">
+                                                            <i class="icon-noti-4"></i>
                                                         </div>
-                                                        <div class="text-tiny">Ultricies at rhoncus at ullamcorper
+                                                        <div class="flex-grow">
+                                                            <div class="body-title-2">
+                                                                {{ $note->data['title'] ?? 'Notification' }}
+                                                            </div>
+                                                            <div class="text-tiny">
+                                                                {!! $note->data['message'] ?? '' !!}
+                                                            </div>
+                                                            <div class="flex items-center gap10 mt-3">
+                                                                <a href="{{ route('admin.notifications.read', $note->id) }}"
+                                                                    class="text-tiny text-primary">Mark read</a>
+                                                                <form
+                                                                    action="{{ route('admin.notifications.clear', $note->id) }}"
+                                                                    method="POST" class="notify-delete-form d-inline">
+                                                                    @csrf
+                                                                    @method('DELETE')
+                                                                    <button type="submit"
+                                                                        class="btn-link text-tiny text-danger notify-delete"
+                                                                        style="border:0;background:none;padding:0;cursor:pointer;">
+                                                                        Delete
+                                                                    </button>
+                                                                </form>
+                                                            </div>
                                                         </div>
                                                     </div>
-                                                </div>
-                                            </li> --}}
-                                            <li><a href="#" class="tf-button w-full">View all</a></li>
+                                                </li>
+                                                <li class="mb-10">
+                                                    <div class="divider"></div>
+                                                </li>
+                                            @empty
+                                                <li class="text-center text-tiny py-3">No new notifications</li>
+                                            @endforelse
                                         </ul>
                                     </div>
                                 </div>
@@ -835,6 +824,24 @@
                     window.location.href = url;
                 }
             })
+        });
+
+        // Delete a single notification (with confirmation).
+        $(document).on('click', '.notify-delete', function(e) {
+            e.preventDefault();
+            var form = $(this).closest('form');
+            Swal.fire({
+                title: 'Delete this notification?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit();
+                }
+            });
         });
     </script>
     @stack('scripts')

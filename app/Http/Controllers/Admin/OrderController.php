@@ -11,6 +11,11 @@ class OrderController extends Controller
 {
     public function fetchPendingOrders()
     {
+        // Auto-delete notifications older than 7 days (runs on every admin load; no cron needed).
+        \DB::table('notifications')
+            ->where('created_at', '<', now()->subDays(7))
+            ->delete();
+
         $pendingOrders = Order::whereIn('status', [
             'pending',
             'confirmed',

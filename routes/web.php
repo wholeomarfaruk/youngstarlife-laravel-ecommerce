@@ -187,6 +187,7 @@ Route::prefix('admin')->group(function () {
     //notifications
     Route::get('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('admin.notifications.clear.all');
     Route::get('/notifications/mark-as-read/{id}', [NotificationController::class, 'read'])->name('admin.notifications.read');
+    Route::delete('/notifications/{id}/clear', [NotificationController::class, 'clear'])->name('admin.notifications.clear');
 
             //sticker
         Route::post('/generate-sticker', [StickerController::class, 'generate'])->name('admin.generate.sticker');
