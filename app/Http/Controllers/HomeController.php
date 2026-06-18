@@ -15,8 +15,9 @@ class HomeController extends Controller
     public function index()
     {
 
-        $products = Products::where('status', 1)->orderByDesc('featured') // featured first
-            ->orderByDesc('created_at')               // newest first
+        $products = Products::where('status', 1)
+            ->orderBy('sort_order', 'asc') // manual admin sort order
+            ->orderByDesc('id')
             ->paginate(12);
         $deliveryAreas = delivery_areas::all();
         $slides = Slide::all();
@@ -27,8 +28,9 @@ class HomeController extends Controller
     public function shop()
     {
 
-        $products = Products::where('status', 1)->orderByDesc('featured') // featured first
-            ->orderByDesc('created_at')               // newest first
+        $products = Products::where('status', 1)
+            ->orderBy('sort_order', 'asc') // manual admin sort order
+            ->orderByDesc('id')
             ->paginate(12);
         $deliveryAreas = delivery_areas::all();
         $slides = Slide::all();

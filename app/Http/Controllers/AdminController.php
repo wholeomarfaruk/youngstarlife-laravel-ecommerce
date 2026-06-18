@@ -134,6 +134,9 @@ class AdminController extends Controller
                 $product->status = $request->status ? true : false;
             }
 
+            // Place new products at the end of the global sort order.
+            $product->sort_order = ((int) products::max('sort_order')) + 1;
+
             $product->save();
 
             if ($request->has('sizes')) {

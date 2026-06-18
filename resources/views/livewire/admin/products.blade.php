@@ -1,5 +1,34 @@
 
 <div>
+    <style>
+        #products-sort-table .drag-handle {
+            cursor: grab;
+            color: #888;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        #products-sort-table .drag-handle:active {
+            cursor: grabbing;
+        }
+
+        #products-sort-table .sortable-ghost {
+            opacity: 0.4;
+            background: #e9f5ff;
+        }
+
+        #products-sort-table .sortable-drag {
+            background: #fff;
+        }
+
+        #products-sort-table .sort-order-input {
+            width: 80px;
+            text-align: center;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 4px 6px;
+        }
+    </style>
     <div class="main-content-inner">
         <div class="main-content-wrap">
             <div class="flex items-center flex-wrap justify-between gap20 mb-27">
@@ -41,10 +70,17 @@
                             {{ Session::get('status') }}
                         </div>
                     @endif
-                    <table class="table table-striped table-bordered">
+                    <div class="text-tiny mb-2">
+                        Drag rows by the handle to reorder within this page, or type a number in
+                        <strong>Sort Order</strong> to move a product to any global position. Changes save automatically.
+                    </div>
+                    <table class="table table-striped table-bordered" id="products-sort-table"
+                        wire:ignore.self>
                         <thead>
 
                             <tr>
+                                <th></th>
+                                <th>Sort Order</th>
                                 <th>#</th>
                                 <th>Name</th>
                                 <th>Price</th>
@@ -55,9 +91,17 @@
                                 <th>Action</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="products-sortable">
                             @foreach ($products as $product)
-                                <tr>
+                                <tr wire:key="product-{{ $product->id }}" data-id="{{ $product->id }}">
+                                    <td class="drag-handle" title="Drag to reorder">
+                                        <i class="icon-menu"></i>
+                                    </td>
+                                    <td>
+                                        <input type="number" class="sort-order-input"
+                                            value="{{ $product->sort_order }}" min="1" step="1"
+                                            wire:change.debounce.500ms="setPosition({{ $product->id }}, $event.target.value)">
+                                    </td>
                                     <td>{{ $product->id }}</td>
                                     <td class="pname">
                                         <div class="image">
@@ -117,4 +161,50 @@
             </div>
         </div>
     </div>
+
+    @script
+    <script>
+        // Load SortableJS once, then keep the table sortable across Livewire re-renders.
+        function loadSortable(cb) {
+            if (window.Sortable) return cb();
+            const s = document.createElement('script');
+            s.src = 'https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js';
+            s.onload = cb;
+            document.head.appendChild(s);
+        }
+
+        let sortableInstance = null;
+
+        function initProductsSortable() {
+            const el = document.getElementById('products-sortable');
+            if (!el) return;
+
+            // Avoid stacking multiple instances on the same element after a morph.
+            if (sortableInstance && sortableInstance.el === el) return;
+            if (sortableInstance) {
+                try { sortableInstance.destroy(); } catch (e) {}
+            }
+
+            sortableInstance = window.Sortable.create(el, {
+                handle: '.drag-handle',
+                animation: 150,
+                ghostClass: 'sortable-ghost',
+                dragClass: 'sortable-drag',
+                onEnd: function() {
+                    const ids = Array.from(el.querySelectorAll('tr[data-id]'))
+                        .map(tr => tr.getAttribute('data-id'));
+                    $wire.updateOrder(ids);
+                }
+            });
+        }
+
+        loadSortable(initProductsSortable);
+
+        // Re-attach after Livewire updates the DOM (search, pagination, reorder).
+        Livewire.hook('morphed', () => {
+            sortableInstance = null;
+            loadSortable(initProductsSortable);
+        });
+    </script>
+    @endscript
 </div>

@@ -12,6 +12,7 @@ class products extends Model
         'price',
         'stock',
         'status',
+        'sort_order',
     ];
     protected $appends = ['featured_image','sizechart'];
     use HasFactory;

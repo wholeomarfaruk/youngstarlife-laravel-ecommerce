@@ -7,7 +7,12 @@
       "Bash(php -l app/Models/Category.php)",
       "Bash(php -l app/Http/Controllers/HomeController.php)",
       "PowerShell(php artisan tinker --execute=\"use App\\\\Models\\\\Category; \\\\$n=0; foreach\\(Category::all\\(\\) as \\\\$c\\){ \\\\$i=1; foreach\\(\\\\$c->products\\(\\)->orderByDesc\\('products_id'\\)->get\\(\\) as \\\\$p\\){ \\\\$c->products\\(\\)->updateExistingPivot\\(\\\\$p->id,['sort_order'=>\\\\$i]\\); \\\\$i++; \\\\$n++; } } echo 'rows seeded: '.\\\\$n;\" 2>&1 | Select-Object -Last 5)",
-      "Bash(rm -f /tmp/seed_sort.php; php artisan view:clear >/dev/null 2>&1; echo \"view cache cleared\")"
+      "Bash(rm -f /tmp/seed_sort.php; php artisan view:clear >/dev/null 2>&1; echo \"view cache cleared\")",
+      "Bash(php -l app/Livewire/Admin/Products.php)",
+      "Bash(php -l app/Http/Controllers/AdminController.php)",
+      "PowerShell(php artisan view:clear 2>&1)",
+      "PowerShell(php artisan livewire:discover 2>&1)",
+      "PowerShell(php artisan view:cache 2>&1)"
     ],
     "additionalDirectories": [
       "\\tmp"
