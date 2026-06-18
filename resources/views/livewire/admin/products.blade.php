@@ -82,12 +82,12 @@
   <input class="form-check-input" type="checkbox" role="switch" id="switchCheckChecked" {{ $product->status == 1 ? 'checked' : '' }} wire:click="updateStatus({{ $product->id }})">
   <label class="form-check-label" for="switchCheckChecked">Status</label>
 </div>
-                                            <a href="{{ route('admin.products.edit', ['id' => $product->id]) }}">
+                                            <a href="{{ route('admin.products.copy', ['id' => $product->id]) }}">
                                                 <div class="item edit">
                                                     Copy
                                                 </div>
                                             </a>
-                                            <a href="{{ route('admin.products.copy', ['id' => $product->id]) }}">
+                                            <a href="{{ route('admin.products.edit', ['id' => $product->id]) }}">
                                                 <div class="item edit">
                                                     <i class="icon-edit-3"></i>
                                                 </div>
