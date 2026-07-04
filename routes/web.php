@@ -40,6 +40,7 @@ Route::post('/record-session', [SessionRecordController::class, 'store']);
 
 
 Route::get('/shop', [HomeController::class, 'shop'])->name('shop');
+Route::get('/reviews', [HomeController::class, 'reviews'])->name('reviews');
 Route::get('/category/{slug}', [HomeController::class, 'categoryShow'])->name('category.show');
 Route::get('/product/{slug}', [HomeController::class, 'productShow'])->name('product.show');
 
@@ -165,6 +166,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/slides/{id}/edit', [AdminController::class, 'slideEdit'])->name('admin.slides.edit');
         Route::put('/slides/{id}/update', [AdminController::class, 'slideUpdate'])->name('admin.slides.update');
         Route::delete('/slides/{id}/delete', [AdminController::class, 'slideDelete'])->name('admin.slides.delete');
+        Route::delete('/slides/bulk-delete', [AdminController::class, 'slideBulkDelete'])->name('admin.slides.bulk-delete');
 
         //Analytics
         Route::get('/analytics/report', [AdminController::class, 'analytics'])->name('admin.analytics.report');

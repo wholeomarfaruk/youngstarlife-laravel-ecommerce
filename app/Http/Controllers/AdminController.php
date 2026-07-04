@@ -1063,16 +1063,12 @@ public function ordersDataTable(Request $request)
     {
 
         $this->validate($request, [
-            'title' => 'required',
-            'subtitle' => 'required',
-            'tagline' => 'required',
+            'title' => 'nullable|string|max:255',
             'image' => 'required|mimes:jpg,jpeg,png',
         ]);
 
         $slide = new Slide();
         $slide->title = $request->title;
-        $slide->subtitle = $request->subtitle;
-        $slide->tagline = $request->tagline;
         if ($request->hasFile('image')) {
             $image = $request->file('image');
             $extension = $image->getClientOriginalExtension();
@@ -1088,17 +1084,25 @@ public function ordersDataTable(Request $request)
     {
         $thumbnail_path = public_path('storage/images/slides/thumbnails/');
         $image_path = public_path('storage/images/slides/');
-        $image = Image::read($image->path());
-        $image->cover(602, 602, 'top');
-        $image->resize(602, 602, function ($constraint) {
-            $constraint->aspectRatio();
-        });
-        $image->save($image_path . $imageName);
-        $image->cover(202, 202, 'top');
-        $image->resize(202, 202, function ($constraint) {
-            $constraint->aspectRatio();
-        });
-        $image->save($thumbnail_path . $imageName);
+
+        // Ensure the target directories exist (the storage symlink may not have them yet).
+        if (!File::exists($image_path)) {
+            File::makeDirectory($image_path, 0755, true);
+        }
+        if (!File::exists($thumbnail_path)) {
+            File::makeDirectory($thumbnail_path, 0755, true);
+        }
+
+        $sourcePath = $image->path();
+
+        // Full-size: scale down to fit within the bound WITHOUT cropping; keeps
+        // the whole image and its aspect ratio, and never upscales.
+        $full = Image::read($sourcePath)->scaleDown(1000, 1000);
+        $full->save($image_path . $imageName, quality: 75); // compress
+
+        // Thumbnail: same, smaller bound, no cropping.
+        $thumb = Image::read($sourcePath)->scaleDown(400, 400);
+        $thumb->save($thumbnail_path . $imageName, quality: 70);
     }
     public function slideEdit($id)
     {
@@ -1108,14 +1112,10 @@ public function ordersDataTable(Request $request)
     public function slideUpdate(Request $request)
     {
         $this->validate($request, [
-            'title' => 'required',
-            'subtitle' => 'required',
-            'tagline' => 'required',
+            'title' => 'nullable|string|max:255',
         ]);
         $slide = Slide::find($request->id);
         $slide->title = $request->title;
-        $slide->subtitle = $request->subtitle;
-        $slide->tagline = $request->tagline;
         if ($request->hasFile('image')) {
             if (File::exists(public_path('storage/images/slides/thumbnails/' . $slide->image))) {
                 File::delete(public_path('storage/images/slides/thumbnails/' . $slide->image));
@@ -1139,6 +1139,25 @@ public function ordersDataTable(Request $request)
         }
         $slide->delete();
         return redirect()->route('admin.slides')->with('status', 'Slide Deleted Successfully');
+    }
+    public function slideBulkDelete(Request $request)
+    {
+        $ids = $request->input('ids', []);
+
+        if (!is_array($ids) || count($ids) === 0) {
+            return redirect()->route('admin.slides')->with('status', 'No reviews selected.');
+        }
+
+        $slides = Slide::whereIn('id', $ids)->get();
+        foreach ($slides as $slide) {
+            if (File::exists(public_path('storage/images/slides/thumbnails/' . $slide->image))) {
+                File::delete(public_path('storage/images/slides/thumbnails/' . $slide->image));
+                File::delete(public_path('storage/images/slides/' . $slide->image));
+            }
+            $slide->delete();
+        }
+
+        return redirect()->route('admin.slides')->with('status', $slides->count() . ' review(s) deleted successfully.');
     }
     //Analytics
     public function gAnalaytics()

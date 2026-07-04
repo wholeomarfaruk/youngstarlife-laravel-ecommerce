@@ -175,6 +175,10 @@
             </div>
         </div>
     </section>
+
+    {{-- Customer Reviews slider --}}
+    @livewire('customer-reviews')
+
     @foreach ($categories as $category)
         @if ($category->products->where('status', 1)->count() > 0)
             <section class="sec-style-1 my-3">

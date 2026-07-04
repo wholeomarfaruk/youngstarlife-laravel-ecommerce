@@ -33,9 +33,9 @@
                 <form class="form-new-product form-style-1 needs-validation" method="POST" action="{{ route('admin.slides.store') }}" novalidate enctype="multipart/form-data">
                     @csrf
                     <fieldset class="name">
-                        <div class="body-title">Title <span class="tf-color-1">*</span></div>
-                        <input class="flex-grow @error('title') is-invalid @enderror" type="text" placeholder="Title" name="title"
-                            tabindex="0" value="{{old('title')}}" aria-required="true" required="required">
+                        <div class="body-title">Title <span class="text-tiny">(optional caption)</span></div>
+                        <input class="flex-grow @error('title') is-invalid @enderror" type="text" placeholder="Title (optional)" name="title"
+                            tabindex="0" value="{{old('title')}}">
                             @error('title')
 
                                 <span class="invalid-feedback" role="alert">
@@ -43,28 +43,6 @@
                                 </span>
                             @enderror
                     </fieldset>
-                    <fieldset class="name">
-                        <div class="body-title">Sub Title <span class="tf-color-1">*</span></div>
-                        <input class="flex-grow @error('subtitle') is-invalid @enderror" type="text" placeholder="Sub Title" name="subtitle"
-                            tabindex="0" value="{{old('subtitle')}}" aria-required="true" required="required">
-                            @error('subtitle')
-
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                        </fieldset>
-                    <fieldset class="name">
-                        <div class="body-title">Tag Line <span class="tf-color-1">*</span></div>
-                        <input class="flex-grow @error('tagline') is-invalid @enderror" type="text" placeholder="Tag Line" name="tagline"
-                            tabindex="0" value="{{old('tagline')}}" aria-required="true" required="required">
-                            @error('tagline')
-
-                            <span class="invalid-feedback" role="alert">
-                                <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                        </fieldset>
                     <fieldset>
                         <div class="body-title">Upload image <span class="tf-color-1">*</span>
                         </div>

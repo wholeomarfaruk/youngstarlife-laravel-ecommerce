@@ -258,13 +258,14 @@
                                         <div class="text">Delivery Areas</div>
                                     </a>
                                 </li>
-                                {{-- <li class="menu-item">
-                                    <a href="{{ route('admin.slides') }}" class="">
+                                <li class="menu-item">
+                                    <a href="{{ route('admin.slides') }}"
+                                        class="{{ Request::is('admin/slides*') ? 'active' : '' }}">
                                         <div class="icon"><i class="icon-image"></i></div>
-                                        <div class="text">Slider</div>
+                                        <div class="text">Customer Reviews</div>
                                     </a>
                                 </li>
-                                <li class="menu-item">
+                                {{-- <li class="menu-item">
                                     <a href="users.html" class="">
                                         <div class="icon"><i class="icon-user"></i></div>
                                         <div class="text">User</div>

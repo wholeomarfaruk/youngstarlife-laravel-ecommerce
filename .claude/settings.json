@@ -18,7 +18,12 @@
       "Bash(php -l app/Http/Controllers/Admin/OrderController.php)",
       "Bash(php -l app/Notifications/PendingOrderNotification.php)",
       "PowerShell(php artisan notifications:prune --days=7 2>&1)",
-      "Bash(php -l routes/console.php)"
+      "Bash(php -l routes/console.php)",
+      "Bash(ls app/Livewire)",
+      "Bash(ls app/Http/Livewire)",
+      "Bash(php -r ' *)",
+      "Read(//c/Users/SARK/.claude/projects/f--projects-youngstarlife-laravel-ecommerce/memory/**)",
+      "Bash(ls MEMORY.md)"
     ],
     "additionalDirectories": [
       "\\tmp"

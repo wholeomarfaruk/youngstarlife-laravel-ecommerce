@@ -25,6 +25,11 @@ class HomeController extends Controller
         $categories = Category::all();
         return view('home-one', compact('products', 'deliveryAreas', 'slides', 'analytics', 'categories'));
     }
+    public function reviews()
+    {
+        $reviews = Slide::where('status', 1)->orderByDesc('id')->get();
+        return view('reviews', compact('reviews'));
+    }
     public function shop()
     {
 
