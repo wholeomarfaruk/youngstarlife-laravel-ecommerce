@@ -60,7 +60,11 @@ class HomeController extends Controller
         $deliveryAreas = delivery_areas::limit(5)->get();
         $products = products::where('status', 1)->where('id', '!=', $product->id)->inRandomOrder()->limit(8)->get();
 
-        return view('product-show', compact('product', 'deliveryAreas', 'products'));
+        $reviewsQuery = Slide::where('status', 1);
+        $total = (clone $reviewsQuery)->count();
+        $reviews = $reviewsQuery->orderByDesc('id')->take(20)->get();
+
+        return view('product-show', compact('product', 'deliveryAreas', 'products', 'reviews', 'total'));
     }
     public function categoryShow(Request $request, $slug)
     {
