@@ -334,6 +334,7 @@
             /* Customer Reviews slider */
             .sec-reviews .reviewsSwiper {
                 padding-bottom: 40px;
+                height: auto !important;
             }
 
             .sec-reviews .review-card {
