@@ -203,8 +203,7 @@
                                                 @foreach ($product?->sizes as $size)
                                                     <div class="size-option">
                                                         <input class="form-check-input" type="radio" name="size"
-                                                            value="{{ $size->name }}" id="size-{{ $size->id }}"
-                                                            required>
+                                                            value="{{ $size->name }}" id="size-{{ $size->id }}">
                                                         <label class="form-check-label" for="size-{{ $size->id }}">
                                                             {{ $size->name }}
                                                         </label>
@@ -689,6 +688,23 @@
                 });
 
             }
+
+            // Size options are visually hidden radios (see .size-option CSS above), so native
+            // HTML5 "required" validation silently blocks submission with no visible message.
+            // Validate explicitly and show SweetAlert2 instead.
+            $('#order-form').on('submit', function(e) {
+                let sizeOptions = $(this).find('input[name="size"]');
+                if (sizeOptions.length > 0 && sizeOptions.filter(':checked').length === 0) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'সাইজ নির্বাচন করুন',
+                        text: 'অর্ডার করার আগে অনুগ্রহ করে একটি সাইজ সিলেক্ট করুন।',
+                        confirmButtonText: 'ঠিক আছে',
+                    });
+                    return false;
+                }
+            });
 
             $('#order-button').on('click', function(e) {
                 e.preventDefault();
