@@ -198,7 +198,7 @@
                     </div>
                     <div class="sec-body">
                         <div class="sec-grid-box">
-                            @foreach ($category?->products->where('status', 1)->take(6) as $product) 
+                            @foreach ($category?->products->where('status', 1)->take(6) as $product)
                                 <div class="sec-grid-item p-card-1">
 
                                     <div class="p-img-box">
@@ -269,3 +269,34 @@
         </div>
     </section>
 @endsection
+
+
+    @push('scripts')
+            <script>
+                function initReviewsSwiper() {
+                    var el = document.querySelector('.sec-reviews .reviewsSwiper');
+                    if (!el || el.dataset.swiperInit || typeof Swiper === 'undefined') return;
+                    el.dataset.swiperInit = '1';
+                    new Swiper(el, {
+                        spaceBetween: 15,
+                        slidesPerView: 2, // mobile
+                        grabCursor: true,
+                        loop: true,
+                        autoplay: {
+                            delay: 2500,
+                            disableOnInteraction: false,
+                            pauseOnMouseEnter: true,
+                        },
+                        pagination: {
+                            el: ".sec-reviews .swiper-pagination",
+                            clickable: true,
+                        },
+                        breakpoints: {
+                            768: { slidesPerView: 3 }, // tablet
+                            992: { slidesPerView: 4 }, // desktop
+                        },
+                    });
+                }
+                initReviewsSwiper();
+            </script>
+        @endpush

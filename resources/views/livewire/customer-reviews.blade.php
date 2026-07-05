@@ -96,34 +96,6 @@
              lazy component's AJAX hydration). A plain <script> tag here would be inert because
              Livewire injects the swapped-in markup via DOM morphing, not the HTML parser, so the
              browser never executes it. --}}
-        @push('scripts')
-            <script>
-                function initReviewsSwiper() {
-                    var el = document.querySelector('.sec-reviews .reviewsSwiper');
-                    if (!el || el.dataset.swiperInit || typeof Swiper === 'undefined') return;
-                    el.dataset.swiperInit = '1';
-                    new Swiper(el, {
-                        spaceBetween: 15,
-                        slidesPerView: 2, // mobile
-                        grabCursor: true,
-                        loop: true,
-                        autoplay: {
-                            delay: 2500,
-                            disableOnInteraction: false,
-                            pauseOnMouseEnter: true,
-                        },
-                        pagination: {
-                            el: ".sec-reviews .swiper-pagination",
-                            clickable: true,
-                        },
-                        breakpoints: {
-                            768: { slidesPerView: 3 }, // tablet
-                            992: { slidesPerView: 4 }, // desktop
-                        },
-                    });
-                }
-                initReviewsSwiper();
-            </script>
-        @endpush
+    
     @endif
 </div>
