@@ -23,7 +23,12 @@ class HomeController extends Controller
         $slides = Slide::all();
         $analytics = Analytic::all();
         $categories = Category::all();
-        return view('home-one', compact('products', 'deliveryAreas', 'slides', 'analytics', 'categories'));
+
+        $reviewsQuery = Slide::where('status', 1);
+        $total = (clone $reviewsQuery)->count();
+        $reviews = $reviewsQuery->orderByDesc('id')->take(20)->get();
+
+        return view('home-one', compact('products', 'deliveryAreas', 'slides', 'analytics', 'categories', 'reviews', 'total'));
     }
     public function reviews()
     {
