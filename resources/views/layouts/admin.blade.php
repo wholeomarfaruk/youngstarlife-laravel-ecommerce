@@ -845,6 +845,65 @@
             });
         });
     </script>
+    <script>
+        (function () {
+            if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+            var vapidPublicKey = "{{ config('webpush.vapid.public_key') }}";
+            if (!vapidPublicKey) return;
+
+            function urlBase64ToUint8Array(base64String) {
+                var padding = '='.repeat((4 - base64String.length % 4) % 4);
+                var base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+                var rawData = window.atob(base64);
+                var outputArray = new Uint8Array(rawData.length);
+                for (var i = 0; i < rawData.length; ++i) {
+                    outputArray[i] = rawData.charCodeAt(i);
+                }
+                return outputArray;
+            }
+
+            function keyToBase64(subscription, name) {
+                var key = subscription.getKey(name);
+                return key ? btoa(String.fromCharCode.apply(null, new Uint8Array(key))) : null;
+            }
+
+            navigator.serviceWorker.register('/sw.js').then(function (registration) {
+                return Notification.requestPermission().then(function (permission) {
+                    if (permission !== 'granted') return null;
+
+                    return registration.pushManager.getSubscription().then(function (existing) {
+                        if (existing) return existing;
+
+                        return registration.pushManager.subscribe({
+                            userVisibleOnly: true,
+                            applicationServerKey: urlBase64ToUint8Array(vapidPublicKey),
+                        });
+                    });
+                });
+            }).then(function (subscription) {
+                if (!subscription) return;
+
+                fetch("{{ route('admin.notifications.push.subscribe') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    },
+                    body: JSON.stringify({
+                        endpoint: subscription.endpoint,
+                        keys: {
+                            p256dh: keyToBase64(subscription, 'p256dh'),
+                            auth: keyToBase64(subscription, 'auth'),
+                        },
+                        contentEncoding: (PushManager.supportedContentEncodings || ['aesgcm'])[0],
+                    }),
+                });
+            }).catch(function (err) {
+                console.warn('Push subscription setup failed:', err);
+            });
+        })();
+    </script>
     @stack('scripts')
 </body>
 

@@ -190,6 +190,7 @@ Route::prefix('admin')->group(function () {
     Route::get('/notifications/clear-all', [NotificationController::class, 'clearAll'])->name('admin.notifications.clear.all');
     Route::get('/notifications/mark-as-read/{id}', [NotificationController::class, 'read'])->name('admin.notifications.read');
     Route::delete('/notifications/{id}/clear', [NotificationController::class, 'clear'])->name('admin.notifications.clear');
+    Route::post('/notifications/push-subscribe', [NotificationController::class, 'subscribePush'])->name('admin.notifications.push.subscribe');
 
             //sticker
         Route::post('/generate-sticker', [StickerController::class, 'generate'])->name('admin.generate.sticker');

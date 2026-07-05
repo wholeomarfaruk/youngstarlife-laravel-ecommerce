@@ -15,9 +15,12 @@ use App\Models\Order;
 use App\Models\Order_Item;
 use App\Models\Coupon;
 use App\Models\Customer;
+use App\Models\User;
+use App\Notifications\NewOrderPushNotification;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use PhpParser\Node\Stmt\TryCatch;
 use Validator;
 
@@ -392,6 +395,15 @@ class CartController extends Controller
             $order_check = Order::where('phone', $order->phone)->where('status', 'autosave')->get();
             if ($order_check->count() > 0) {
                 $order_check->each->delete();
+            }
+
+            // Instant web push alert to admins for the new order. Never let a push
+            // failure (no subscription yet, invalid VAPID, etc.) affect the
+            // customer's successful checkout, so this is isolated in its own try/catch.
+            try {
+                Notification::send(User::all(), new NewOrderPushNotification($order));
+            } catch (\Throwable $th) {
+                Log::warning('New order push notification failed: ' . $th->getMessage());
             }
 
             return redirect()->route('order.received', ['order' => $order->id]);

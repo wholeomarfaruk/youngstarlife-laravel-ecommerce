@@ -33,4 +33,23 @@ class NotificationController extends Controller
         return redirect()->back();
     }
 
+    public function subscribePush(Request $request)
+    {
+        $request->validate([
+            'endpoint' => 'required|string',
+            'keys.p256dh' => 'nullable|string',
+            'keys.auth' => 'nullable|string',
+            'contentEncoding' => 'nullable|string',
+        ]);
+
+        auth()->user()->updatePushSubscription(
+            $request->endpoint,
+            $request->input('keys.p256dh'),
+            $request->input('keys.auth'),
+            $request->contentEncoding
+        );
+
+        return response()->json(['status' => 'success']);
+    }
+
 }
