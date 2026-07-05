@@ -92,10 +92,12 @@
             </div>
         </section>
 
-        {{-- Inline init so it runs when this (lazy-loaded) component's markup lands,
-             not tied to the layout's @stack('scripts') which is already flushed. --}}
-        <script>
-            (function () {
+        {{-- @script content is evaluated by Livewire itself on every render (including this
+             lazy component's AJAX hydration). A plain <script> tag here would be inert because
+             Livewire injects the swapped-in markup via DOM morphing, not the HTML parser, so the
+             browser never executes it. --}}
+        @script
+            <script>
                 function initReviewsSwiper() {
                     var el = document.querySelector('.sec-reviews .reviewsSwiper');
                     if (!el || el.dataset.swiperInit || typeof Swiper === 'undefined') return;
@@ -120,12 +122,8 @@
                         },
                     });
                 }
-                if (document.readyState === 'loading') {
-                    document.addEventListener('DOMContentLoaded', initReviewsSwiper);
-                } else {
-                    initReviewsSwiper();
-                }
-            })();
-        </script>
+                initReviewsSwiper();
+            </script>
+        @endscript
     @endif
 </div>
