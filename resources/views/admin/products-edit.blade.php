@@ -41,8 +41,7 @@
                         </div>
                         <input class="mb-10 @error('name') is-invalid @enderror" type="text"
                             placeholder="Enter product name" name="name" tabindex="0" aria-required="true"
-                            value="{{ $product->name }}" required autocomplete="name" autofocus
-                            onchange="stringtoSlug(this.value)">
+                            value="{{ $product->name }}" required autocomplete="name" autofocus>
                         <div class="text-tiny">Do not exceed 100 characters when entering the
                             product name.</div>
                         @error('name')
@@ -303,6 +302,24 @@
     <!-- content area end -->
 @endsection
 @push('scripts')
+    @if (session('error'))
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Update failed',
+                text: @json(session('error')),
+            });
+        </script>
+    @endif
+    @if ($errors->any())
+        <script>
+            Swal.fire({
+                icon: 'error',
+                title: 'Please fix the following errors',
+                html: @json(implode('<br>', $errors->all())),
+            });
+        </script>
+    @endif
     <script>
         $(function() {
             $('#myFile').on('change', function() {

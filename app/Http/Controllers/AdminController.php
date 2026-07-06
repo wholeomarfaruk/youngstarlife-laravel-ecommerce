@@ -23,6 +23,7 @@ use App\Models\Customer;
 use App\Models\Device;
 use App\Models\Media;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Facades\File;
@@ -248,90 +249,141 @@ class AdminController extends Controller
     public function productUpdate(Request $request)
     {
         // return $request->all();
+        $thumbnailMimes = 'jpg,jpeg,png,gif,webp,bmp,avif'; // must be rasterizable (used for thumbnail generation)
+        $imageMimes = $thumbnailMimes . ',svg';
+
         $request->validate([
             'name' => 'required',
             'price' => 'required|numeric',
             'stock_status' => 'required|in:in_stock,out_of_stock',
             'featured' => 'boolean',
             'quantity' => 'required|integer',
-            'image' => 'mimes:jpg,jpeg,png,webp|max:2048',
-
+            'image' => 'mimes:' . $thumbnailMimes . '|max:4096',
+            'images.*' => 'mimes:' . $imageMimes . '|max:4096',
+            'sizechart' => 'mimes:' . $imageMimes . '|max:4096',
         ]);
-        $product = products::find($request->id);
-        $product->name = $request->name;
-        $product->price = $request->price;
-        if ($request->slug) {
-            $slug = $request->slug;
-            if (products::where('slug', $slug)->whereNotIn('id', [$product->id])->exists()) {
-                $slug = $slug . '-' . Carbon::now()->timestamp;
+
+        try {
+            $product = products::find($request->id);
+            if (!$product) {
+                throw new \Exception('Product not found.');
             }
-            $product->slug = $slug;
-        }
-
-
-        $product->discount_price = $request->discount_price;
-
-        if ($request->sku) {
-            $product->sku = $request->sku;
-        }
-        $product->stock_status = $request->stock_status;
-        $product->featured = $request->featured ? true : false;
-        $product->quantity = $request->quantity;
-        if ($request->description) {
-            $product->description = $request->description;
-        }
-        if ($request->hasFile('image')) {
-            if (File::exists(public_path('storage/images/products/thumbnails/' . $product->image))) {
-                File::delete(public_path('storage/images/products/thumbnails/' . $product->image));
-                File::delete(public_path('storage/images/products/' . $product->image));
-            }
-            $image = $request->file('image');
-            $extension = $image->getClientOriginalExtension();
-            $filename = Carbon::now()->timestamp . "." . $extension;
-            $this->generateProductThumbnailImage($image, $filename);
-            $product->image = $filename;
-        }
-
-
-        if ($request->short_description) {
-            $product->short_description = $request->short_description;
-        }
-        if ($request->has('status')) {
-            $product->status = true;
-        } else {
-            $product->status = false;
-        }
-
-        $product->save();
-        $product->sizes()->delete();
-        if ($request->has('sizes')) {
-
-            foreach ($request->sizes as $key => $size) {
-                $size = Size::create([
-                    'products_id' => $product->id,
-                    'name' => $size
-                ]);
-            }
-        }
-        if ($request->hasFile('images')) {
-
-            // Store file in 'public/media'
-            $images = $request->file('images');
-            $path = 'storage/images/products/' . $product->id . '/';
-            if (!file_exists(public_path($path))) {
-                mkdir(public_path($path), 0777, true);
-            }
-            $old_media = $product->media()->where('category', 'product_images')->get();
-            foreach ($old_media as $media) {
-                if (file_exists(public_path($media->path))) {
-                    unlink(public_path($media->path));
+            $product->name = $request->name;
+            $product->price = $request->price;
+            if ($request->slug) {
+                $slug = $request->slug;
+                if (products::where('slug', $slug)->whereNotIn('id', [$product->id])->exists()) {
+                    $slug = $slug . '-' . Carbon::now()->timestamp;
                 }
-                $media->delete();
+                $product->slug = $slug;
             }
 
-            foreach ($images as $key => $file) {
+
+            $product->discount_price = $request->discount_price;
+
+            if ($request->sku) {
+                $product->sku = $request->sku;
+            }
+            $product->stock_status = $request->stock_status;
+            $product->featured = $request->featured ? true : false;
+            $product->quantity = $request->quantity;
+            if ($request->description) {
+                $product->description = $request->description;
+            }
+            if ($request->hasFile('image')) {
+                if (File::exists(public_path('storage/images/products/thumbnails/' . $product->image))) {
+                    File::delete(public_path('storage/images/products/thumbnails/' . $product->image));
+                    File::delete(public_path('storage/images/products/' . $product->image));
+                }
+                $image = $request->file('image');
+                $extension = $image->getClientOriginalExtension();
+                $filename = Carbon::now()->timestamp . "." . $extension;
+                $this->generateProductThumbnailImage($image, $filename);
+                $product->image = $filename;
+            }
 
 
+            if ($request->short_description) {
+                $product->short_description = $request->short_description;
+            }
+            if ($request->has('status')) {
+                $product->status = true;
+            } else {
+                $product->status = false;
+            }
+
+            $product->save();
+            $product->sizes()->delete();
+            if ($request->has('sizes')) {
+
+                foreach ($request->sizes as $key => $size) {
+                    $size = Size::create([
+                        'products_id' => $product->id,
+                        'name' => $size
+                    ]);
+                }
+            }
+            if ($request->hasFile('images')) {
+
+                // Store file in 'public/media'
+                $images = $request->file('images');
+                $path = 'storage/images/products/' . $product->id . '/';
+                if (!file_exists(public_path($path))) {
+                    mkdir(public_path($path), 0777, true);
+                }
+                $old_media = $product->media()->where('category', 'product_images')->get();
+                foreach ($old_media as $media) {
+                    if (file_exists(public_path($media->path))) {
+                        unlink(public_path($media->path));
+                    }
+                    $media->delete();
+                }
+
+                foreach ($images as $key => $file) {
+
+
+                    // Save in media table
+                    $media = new Media();
+                    $media->filename = basename($file->getClientOriginalName());
+                    $media->original_name = $file->getClientOriginalName();
+                    $media->mime_type = $file->getMimeType();
+                    $media->extension = $file->getClientOriginalExtension();
+                    $media->size = $file->getSize();
+                    $media->type = 'image';
+                    $media->category = 'product_images';
+                    $media->disk = 'public';
+                    $media->path = $path . $file->getClientOriginalName();
+                    $media->mediable_id = $product->id;
+                    $media->mediable_type = products::class;
+                    if ($request->has('caption')) {
+                        $media->caption = $request->input('caption');
+                    }
+
+                    $media->user_id = auth()->id();
+                    $media->save();
+                    $file->move(public_path($path), $file->getClientOriginalName());
+                }
+            }
+            if ($request->hasFile('sizechart')) {
+
+                // Store file in 'public/media'
+                $images = $request->file('sizechart');
+                $path = 'storage/images/products/' . $product->id . '/';
+                if (!file_exists(public_path($path))) {
+                    mkdir(public_path($path), 0777, true);
+                }
+                $old_media = $product->sizeChart;
+                if ($old_media) {
+                    $media = $old_media;
+
+                    if (file_exists(public_path($media->path))) {
+                        unlink(public_path($media->path));
+                    }
+                    $media->delete();
+                }
+
+
+                $file = $images;
                 // Save in media table
                 $media = new Media();
                 $media->filename = basename($file->getClientOriginalName());
@@ -340,7 +392,7 @@ class AdminController extends Controller
                 $media->extension = $file->getClientOriginalExtension();
                 $media->size = $file->getSize();
                 $media->type = 'image';
-                $media->category = 'product_images';
+                $media->category = 'sizechart';
                 $media->disk = 'public';
                 $media->path = $path . $file->getClientOriginalName();
                 $media->mediable_id = $product->id;
@@ -353,56 +405,22 @@ class AdminController extends Controller
                 $media->save();
                 $file->move(public_path($path), $file->getClientOriginalName());
             }
-        }
-        if ($request->hasFile('sizechart')) {
-
-            // Store file in 'public/media'
-            $images = $request->file('sizechart');
-            $path = 'storage/images/products/' . $product->id . '/';
-            if (!file_exists(public_path($path))) {
-                mkdir(public_path($path), 0777, true);
+            if ($request->has('categories')) {
+                $product->categories()->sync($request->categories);
             }
-            $old_media = $product->sizeChart;
-            if ($old_media) {
-                $media = $old_media;
-
-                if (file_exists(public_path($media->path))) {
-                    unlink(public_path($media->path));
-                }
-                $media->delete();
+            if ($request->has('segments')) {
+                $product->segments()->sync($request->segments);
             }
 
+            return redirect()->route('admin.products')->with('status', 'Product Updated Successfully');
+        } catch (\Throwable $e) {
+            Log::error('Product update failed: ' . $e->getMessage(), [
+                'product_id' => $request->id,
+                'exception' => $e,
+            ]);
 
-            $file = $images;
-            // Save in media table
-            $media = new Media();
-            $media->filename = basename($file->getClientOriginalName());
-            $media->original_name = $file->getClientOriginalName();
-            $media->mime_type = $file->getMimeType();
-            $media->extension = $file->getClientOriginalExtension();
-            $media->size = $file->getSize();
-            $media->type = 'image';
-            $media->category = 'sizechart';
-            $media->disk = 'public';
-            $media->path = $path . $file->getClientOriginalName();
-            $media->mediable_id = $product->id;
-            $media->mediable_type = products::class;
-            if ($request->has('caption')) {
-                $media->caption = $request->input('caption');
-            }
-
-            $media->user_id = auth()->id();
-            $media->save();
-            $file->move(public_path($path), $file->getClientOriginalName());
+            return redirect()->back()->withInput()->with('error', 'Something went wrong while updating the product: ' . $e->getMessage());
         }
-        if ($request->has('categories')) {
-            $product->categories()->sync($request->categories);
-        }
-        if ($request->has('segments')) {
-            $product->segments()->sync($request->segments);
-        }
-
-        return redirect()->route('admin.products')->with('status', 'Product Updated Successfully');
     }
 
 
