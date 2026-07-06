@@ -190,7 +190,7 @@ class CategoryController extends Controller
         $category = Category::find($id);
 
         // Append newly assigned products to the end of the current order.
-        $maxOrder = (int) $category->products()->max('sort_order');
+        $maxOrder = (int) $category->products()->max('product_category.sort_order');
         $attach = [];
         foreach ((array) $request->products as $productId) {
             $maxOrder++;
