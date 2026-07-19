@@ -98,6 +98,7 @@ class HomeController extends Controller
             'availability',
             'condition',
             'price',
+            'sale_price',
             'link',
             'image_link',
             'brand',
@@ -108,9 +109,7 @@ class HomeController extends Controller
             fputcsv($file, $columns);
 
             foreach ($products as $product) {
-                $price = ($product->discount_price && $product->discount_price > 0)
-                    ? $product->discount_price
-                    : $product->price;
+                $hasDiscount = $product->discount_price && $product->discount_price > 0;
 
                 fputcsv($file, [
                     $product->id,
@@ -118,7 +117,8 @@ class HomeController extends Controller
                     strip_tags((string) $product->short_description ?: (string) $product->description),
                     $product->stock_status === 'in_stock' ? 'in stock' : 'out of stock',
                     'new',
-                    number_format((float) $price, 2, '.', '') . ' BDT',
+                    number_format((float) $product->price, 2, '.', '') . ' BDT',
+                    $hasDiscount ? number_format((float) $product->discount_price, 2, '.', '') . ' BDT' : '',
                     route('product.show', $product->slug),
                     $product->featured_image,
                     config('app.name'),
