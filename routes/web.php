@@ -43,6 +43,7 @@ Route::get('/shop', [HomeController::class, 'shop'])->name('shop');
 Route::get('/reviews', [HomeController::class, 'reviews'])->name('reviews');
 Route::get('/category/{slug}', [HomeController::class, 'categoryShow'])->name('category.show');
 Route::get('/product/{slug}', [HomeController::class, 'productShow'])->name('product.show');
+Route::get('/facebook-product-feed.csv', [HomeController::class, 'facebookProductFeed'])->name('facebook.product.feed');
 
 Route::get('/product/flower-silk-3-piece-dress', [HomeController::class, 'ProductOne'])->name('product.one');
 Route::get('/product/safina-3-piece-dress', [HomeController::class, 'ProductTwo'])->name('product.two');

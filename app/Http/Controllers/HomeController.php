@@ -81,4 +81,53 @@ class HomeController extends Controller
             ->paginate(12);
         return view('category-products', compact('category', 'products'));
     }
+
+    public function facebookProductFeed()
+    {
+        $products = Products::where('status', 1)->orderBy('id')->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="facebook-product-feed.csv"',
+        ];
+
+        $columns = [
+            'id',
+            'title',
+            'description',
+            'availability',
+            'condition',
+            'price',
+            'link',
+            'image_link',
+            'brand',
+        ];
+
+        $callback = function () use ($products, $columns) {
+            $file = fopen('php://output', 'w');
+            fputcsv($file, $columns);
+
+            foreach ($products as $product) {
+                $price = ($product->discount_price && $product->discount_price > 0)
+                    ? $product->discount_price
+                    : $product->price;
+
+                fputcsv($file, [
+                    $product->id,
+                    $product->name,
+                    strip_tags((string) $product->short_description ?: (string) $product->description),
+                    $product->stock_status === 'in_stock' ? 'in stock' : 'out of stock',
+                    'new',
+                    number_format((float) $price, 2, '.', '') . ' BDT',
+                    route('product.show', $product->slug),
+                    $product->featured_image,
+                    config('app.name'),
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }
