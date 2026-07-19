@@ -86,48 +86,33 @@ class HomeController extends Controller
     {
         $products = Products::where('status', 1)->orderBy('id')->get();
 
-        $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="facebook-product-feed.csv"',
-        ];
+        $xml = new \SimpleXMLElement('<?xml version="1.0" encoding="UTF-8"?><rss xmlns:g="http://base.google.com/ns/1.0" version="2.0"></rss>');
+        $channel = $xml->addChild('channel');
+        $channel->addChild('title', htmlspecialchars(config('app.name')));
+        $channel->addChild('link', htmlspecialchars(url('/')));
+        $channel->addChild('description', 'Facebook product catalog feed');
 
-        $columns = [
-            'id',
-            'title',
-            'description',
-            'availability',
-            'condition',
-            'price',
-            'sale_price',
-            'link',
-            'image_link',
-            'brand',
-        ];
+        foreach ($products as $product) {
+            $hasDiscount = $product->discount_price && $product->discount_price > 0;
 
-        $callback = function () use ($products, $columns) {
-            $file = fopen('php://output', 'w');
-            fputcsv($file, $columns);
-
-            foreach ($products as $product) {
-                $hasDiscount = $product->discount_price && $product->discount_price > 0;
-
-                fputcsv($file, [
-                    $product->id,
-                    $product->name,
-                    strip_tags((string) $product->short_description ?: (string) $product->description),
-                    $product->stock_status === 'in_stock' ? 'in stock' : 'out of stock',
-                    'new',
-                    number_format((float) $product->price, 2, '.', '') . ' BDT',
-                    $hasDiscount ? number_format((float) $product->discount_price, 2, '.', '') . ' BDT' : '',
-                    route('product.show', $product->slug),
-                    $product->featured_image,
-                    config('app.name'),
-                ]);
+            $item = $channel->addChild('item');
+            $item->addChild('g:id', $product->id, 'http://base.google.com/ns/1.0');
+            $item->addChild('g:title', null, 'http://base.google.com/ns/1.0')[0] = $product->name;
+            $item->addChild('g:description', null, 'http://base.google.com/ns/1.0')[0] =
+                strip_tags((string) $product->short_description ?: (string) $product->description);
+            $item->addChild('g:availability', $product->stock_status === 'in_stock' ? 'in stock' : 'out of stock', 'http://base.google.com/ns/1.0');
+            $item->addChild('g:condition', 'new', 'http://base.google.com/ns/1.0');
+            $item->addChild('g:price', number_format((float) $product->price, 2, '.', '') . ' BDT', 'http://base.google.com/ns/1.0');
+            if ($hasDiscount) {
+                $item->addChild('g:sale_price', number_format((float) $product->discount_price, 2, '.', '') . ' BDT', 'http://base.google.com/ns/1.0');
             }
+            $item->addChild('g:link', null, 'http://base.google.com/ns/1.0')[0] = route('product.show', $product->slug);
+            $item->addChild('g:image_link', null, 'http://base.google.com/ns/1.0')[0] = $product->featured_image;
+            $item->addChild('g:brand', htmlspecialchars(config('app.name')), 'http://base.google.com/ns/1.0');
+        }
 
-            fclose($file);
-        };
-
-        return response()->stream($callback, 200, $headers);
+        return response($xml->asXML(), 200, [
+            'Content-Type' => 'application/xml; charset=UTF-8',
+        ]);
     }
 }
