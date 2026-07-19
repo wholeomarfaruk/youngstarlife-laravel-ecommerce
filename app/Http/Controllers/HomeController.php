@@ -107,7 +107,7 @@ class HomeController extends Controller
                 $item->addChild('g:sale_price', number_format((float) $product->discount_price, 2, '.', '') . ' BDT', 'http://base.google.com/ns/1.0');
             }
             $item->addChild('g:link', null, 'http://base.google.com/ns/1.0')[0] = route('product.show', $product->slug);
-            $item->addChild('g:image_link', null, 'http://base.google.com/ns/1.0')[0] = $product->featured_image;
+            $item->addChild('g:image_link', null, 'http://base.google.com/ns/1.0')[0] = asset('storage/images/products/' . $product->image);
             $item->addChild('g:brand', htmlspecialchars(config('app.name')), 'http://base.google.com/ns/1.0');
         }
 
