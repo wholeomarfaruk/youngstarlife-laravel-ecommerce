@@ -148,6 +148,12 @@
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.ai_extract') }}"
+                                                class=" {{ Request::is('admin/orders/ai-extract') ? 'active' : '' }}">
+                                                <div class="text">AI Order Extract</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
                                             <a href="{{ route('admin.orders.pending') }}"
                                                 class=" {{ Request::is('admin/orders/pending') ? 'active' : '' }}">
                                                 <div class="text">Pending Orders

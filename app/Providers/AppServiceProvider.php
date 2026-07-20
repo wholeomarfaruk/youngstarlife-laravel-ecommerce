@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Services\AnthropicOrderExtractionService;
+use App\Services\GeminiOrderExtractionService;
+use App\Services\OpenAiOrderExtractionService;
+use App\Services\OpenRouterOrderExtractionService;
+use App\Services\OrderExtractionServiceInterface;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -11,7 +16,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->bind(OrderExtractionServiceInterface::class, function () {
+            return match (config('services.ai.provider')) {
+                'openai' => new OpenAiOrderExtractionService(),
+                'gemini' => new GeminiOrderExtractionService(),
+                'openrouter' => new OpenRouterOrderExtractionService(),
+                default => new AnthropicOrderExtractionService(),
+            };
+        });
     }
 
     /**

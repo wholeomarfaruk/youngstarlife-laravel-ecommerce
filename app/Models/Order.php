@@ -22,6 +22,7 @@ class Order extends Model
         'cod_percentage',
         'cod_charge',
         'status',
+        'source',
         'ip_address',
         'json_data',
         'notes',

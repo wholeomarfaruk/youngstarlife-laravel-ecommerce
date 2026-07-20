@@ -143,6 +143,9 @@ Route::prefix('admin')->group(function () {
         Route::put('/orders/update/{id}/details', [AdminController::class, 'updateOrderDetails'])->name('admin.orders.update.details');
         Route::get('/orders/add', [AdminController::class, 'orderAdd'])->name('admin.orders.add');
         Route::post('/orders/store', [AdminController::class, 'orderStore'])->name('admin.orders.store');
+        Route::get('/orders/ai-extract', function () {
+            return view('admin.order-ai-extract');
+        })->name('admin.orders.ai_extract');
 
         //order datatable
         Route::get('/order-datatable', [AdminController::class, 'ordersDataTable'])->name('admin.orders.datatable');
