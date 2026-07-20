@@ -393,9 +393,13 @@
                                 </div>
 
                                 <div id="productPickerPanel" class="border rounded-3 p-3 mb-3 d-none">
-                                    <input type="text" id="productPickerSearch" class="form-control form-control-sm mb-3"
-                                        placeholder="Search products...">
-                                    <div id="productPickerGrid" class="row g-2" style="max-height:320px; overflow-y:auto;"></div>
+                                    <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
+                                        <input type="text" id="productPickerSearch" class="form-control form-control-sm"
+                                            placeholder="Search products...">
+                                        <button type="button" class="btn-close flex-shrink-0" id="closeProductPicker"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div id="productPickerGrid" class="row g-3" style="max-height:360px; overflow-y:auto;"></div>
                                     <div id="productPickerEmpty" class="text-center text-muted small py-3 d-none">
                                         No products found.
                                     </div>
@@ -404,11 +408,15 @@
 
                             <template id="productPickerCardTemplate">
                                 <div class="col-6 col-md-4 col-lg-3 product-picker-item">
-                                    <div class="border rounded-3 p-2 text-center h-100 product-picker-card" style="cursor:pointer;">
-                                        <img src="" alt="" class="rounded mb-2 product-picker-image"
-                                            style="width:100%; height:90px; object-fit:cover;">
+                                    <div class="border rounded-3 p-2 text-center h-100 product-picker-card d-flex flex-column"
+                                        style="cursor:pointer;">
+                                        <div class="d-flex align-items-center justify-content-center mb-2 bg-light rounded"
+                                            style="height:120px;">
+                                            <img src="" alt="" class="product-picker-image"
+                                                style="max-width:100%; max-height:100%; object-fit:contain;">
+                                        </div>
                                         <div class="small fw-semibold product-picker-name text-truncate" title=""></div>
-                                        <div class="small text-muted product-picker-price"></div>
+                                        <div class="small text-muted product-picker-price mt-auto"></div>
                                     </div>
                                 </div>
                             </template>
@@ -582,6 +590,7 @@
             const totalHint = document.getElementById('totalHint');
 
             const openProductPickerBtn = document.getElementById('openProductPicker');
+            const closeProductPickerBtn = document.getElementById('closeProductPicker');
             const productPickerPanel = document.getElementById('productPickerPanel');
             const productPickerGrid = document.getElementById('productPickerGrid');
             const productPickerEmpty = document.getElementById('productPickerEmpty');
@@ -605,6 +614,10 @@
                     renderProductPicker('');
                     productPickerSearch.focus();
                 }
+            });
+
+            closeProductPickerBtn.addEventListener('click', function() {
+                productPickerPanel.classList.add('d-none');
             });
 
             productPickerSearch.addEventListener('input', function() {
