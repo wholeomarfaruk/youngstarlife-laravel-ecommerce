@@ -452,41 +452,49 @@
                                 @endif
                             </div>
 
-                            <fieldset class="mt-3">
-                                <label for="delivery_charge" class="form-label fw-semibold">Delivery Charge</label>
-                                <input type="number" id="delivery_charge" name="delivery_charge" class="form-control"
-                                    placeholder="Enter delivery charge" value="{{ $order->fee ?? 0 }}" min="0">
-                            </fieldset>
-                            <fieldset class="mt-3">
-                                <label for="discount" class="form-label fw-semibold">Discount Amount</label>
-                                <input type="number" id="discount" name="discount" class="form-control"
-                                    placeholder="Enter discount amount if any" value="{{ $order->discount ?? 0 }}" min="0">
-                            </fieldset>
                         </form>
                     </div>
                     <div class="modal-footer flex-column align-items-stretch">
-                        <table class="table table-bordered mb-2 text-center align-middle">
+                        <table class="table table-bordered mb-2 align-middle">
                             <tr>
                                 <th width="40%">Sub Total:</th>
-                                <td><span id="subTotal">0</span> Tk</td>
+                                <td class="text-end">
+                                    <span id="subTotal">0.00</span> Tk
+                                </td>
                             </tr>
                             <tr>
                                 <th>Delivery Charge:</th>
-                                <td><span id="deliveryDisplay">0</span> Tk</td>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-end gap-2">
+                                        <input type="number" id="delivery_charge" name="delivery_charge"
+                                            class="form-control form-control-sm text-end" style="max-width:160px;"
+                                            value="{{ $order->fee ?? 0 }}" min="0" step="0.01">
+                                        <span>Tk</span>
+                                    </div>
+                                </td>
                             </tr>
                             <tr>
                                 <th>Discount:</th>
-                                <td><span id="discount_price">0</span> Tk</td>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-end gap-2">
+                                        <input type="number" id="discount" name="discount"
+                                            class="form-control form-control-sm text-end" style="max-width:160px;"
+                                            value="{{ $order->discount ?? 0 }}" min="0" step="0.01">
+                                        <span>Tk</span>
+                                    </div>
+                                </td>
                             </tr>
                             <tr>
                                 <th>Calculated Total:</th>
-                                <td><span id="calculatedTotal">0</span> Tk</td>
+                                <td class="text-end">
+                                    <span id="calculatedTotal">0.00</span> Tk
+                                </td>
                             </tr>
                             <tr class="table-info">
                                 <th>Total Amount:</th>
                                 <td>
-                                    <div class="d-flex align-items-center justify-content-center gap-2">
-                                        <input type="number" id="total" name="total" class="form-control form-control-sm text-center fw-bold"
+                                    <div class="d-flex align-items-center justify-content-end gap-2">
+                                        <input type="number" id="total" name="total" class="form-control form-control-sm text-end fw-bold"
                                             style="max-width:160px;" min="0" step="0.01">
                                         <span>Tk</span>
                                     </div>
@@ -557,8 +565,6 @@
             const editForm = document.getElementById('editForm');
             const discountInput = document.getElementById('discount');
             const subTotalEl = document.getElementById('subTotal');
-            const deliveryDisplayEl = document.getElementById('deliveryDisplay');
-            const discountEl = document.getElementById('discount_price');
             const calculatedTotalEl = document.getElementById('calculatedTotal');
             const fee = document.getElementById('delivery_charge');
             const totalInput = document.getElementById('total');
@@ -573,7 +579,13 @@
                 calculateTotal({ syncTotalInput: true });
             });
 
-            productSelect.addEventListener('change', function() {
+            let isResettingProductSelect = false;
+
+            $(productSelect).on('change', function() {
+                if (isResettingProductSelect) {
+                    return;
+                }
+
                 const productId = this.value;
                 if (!productId) return;
 
@@ -616,8 +628,15 @@
                 $(editForm).append(formHtml);
 
                 // Reset the picker so the same product can be selected again for another line.
-                this.value = '';
-                if ($('.selectpicker').length) $('.selectpicker').selectpicker('val', '');
+                // Guarded so bootstrap-select's own change event (fired by .selectpicker('val', ''))
+                // doesn't re-enter this handler and add a second, duplicate line.
+                isResettingProductSelect = true;
+                if ($(productSelect).data('selectpicker')) {
+                    $(productSelect).selectpicker('val', '');
+                } else {
+                    productSelect.value = '';
+                }
+                isResettingProductSelect = false;
 
                 attachQuantityListeners();
                 calculateTotal({ syncTotalInput: true });
@@ -690,8 +709,6 @@
                 const calculatedTotal = Math.max(subTotal - discount, 0) + deliveryCharge;
 
                 subTotalEl.textContent = subTotal.toFixed(2);
-                deliveryDisplayEl.textContent = deliveryCharge.toFixed(2);
-                discountEl.textContent = discount.toFixed(2);
                 calculatedTotalEl.textContent = calculatedTotal.toFixed(2);
                 lastCalculatedTotal = calculatedTotal;
 
