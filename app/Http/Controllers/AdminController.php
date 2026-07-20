@@ -1017,7 +1017,7 @@ public function ordersDataTable(Request $request)
         $order->name = $request->name;
         $order->phone = $request->phone;
         $order->address = $request->address;
-        $order->note = $request->note;
+        $order->notes = $request->note;
         $order->save();
         return redirect()->back()->with('status', 'Order Details Updated Successfully');
     }
@@ -1359,7 +1359,7 @@ public function ordersDataTable(Request $request)
             $customer->blackLists()->create([
                 'reason' => 'Blacklist from Order by ' . auth()->user()->name,
             ]);
-        } elseif ($customer->isBlocked == 0) {
+        } elseif (!$customer->is_blocked) {
             $customer->blackLists()->create([
                 'reason' => 'Blacklist from Order by ' . auth()->user()->name,
             ]);
@@ -1373,7 +1373,7 @@ public function ordersDataTable(Request $request)
             $device->blackLists()->create([
                 'reason' => 'Blacklist from Order by ' . auth()->user()->name,
             ]);
-        } elseif ($device->isBlocked == 0) {
+        } elseif (!$device->is_blocked) {
             $device->blackLists()->create([
                 'reason' => 'Blacklist from Order by ' . auth()->user()->name,
             ]);
@@ -1385,8 +1385,8 @@ public function ordersDataTable(Request $request)
             'message' => 'Order Blacklisted Successfully',
             'customer' => $customer,
             'device' => $device,
-            'DeviceisBlocked' => $device->isBlocked,
-            'CustomerisBlocked' => $customer->isBlocked,
+            'DeviceisBlocked' => $device->is_blocked,
+            'CustomerisBlocked' => $customer->is_blocked,
         ]);
     }
     public function unblockOrder($id)
@@ -1412,8 +1412,8 @@ public function ordersDataTable(Request $request)
             'message' => 'Order Unblocked Successfully',
             'customer' => $customer,
             'device' => $device,
-            'DeviceisBlocked' => $device->isBlocked,
-            'CustomerisBlocked' => $customer->isBlocked,
+            'DeviceisBlocked' => $device->is_blocked,
+            'CustomerisBlocked' => $customer->is_blocked,
         ]);
     }
     public function autoSavedOrders(Request $request)
