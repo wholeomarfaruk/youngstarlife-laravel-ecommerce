@@ -385,22 +385,33 @@
                             @method('PUT')
 
                             <fieldset class="mb-3">
-                                <label for="products" class="form-label fw-semibold">Add Product</label>
-                                <select name="add_product" id="products"
-                                    class="form-control selectpicker @error('products') is-invalid @enderror"
-                                    data-live-search="true" title="Choose a product to add...">
-                                    <option value=""></option>
-                                    @foreach ($products as $product)
-                                        <option value="{{ $product->id }}" data-id="{{ $product->id }}"
-                                            {{ $product->stock_status == 'out_of_stock' ? 'disabled' : '' }}>
-                                            {{ $product->name }} -
-                                            {{ $product->stock_status == 'in_stock' ? 'In Stock' : 'Out of Stock' }} -
-                                            {{ $product->discount_price ?? $product->price }} Tk
-                                        </option>
-                                    @endforeach
-                                </select>
-                                <div class="form-text">Selecting a product adds it as a new line - the same product can be added multiple times (e.g. different sizes).</div>
+                                <div class="d-flex align-items-center justify-content-between mb-2">
+                                    <label class="form-label fw-semibold mb-0">Products</label>
+                                    <button type="button" class="btn btn-sm btn-primary" id="openProductPicker">
+                                        <i class="icon-plus"></i> Add Item
+                                    </button>
+                                </div>
+
+                                <div id="productPickerPanel" class="border rounded-3 p-3 mb-3 d-none">
+                                    <input type="text" id="productPickerSearch" class="form-control form-control-sm mb-3"
+                                        placeholder="Search products...">
+                                    <div id="productPickerGrid" class="row g-2" style="max-height:320px; overflow-y:auto;"></div>
+                                    <div id="productPickerEmpty" class="text-center text-muted small py-3 d-none">
+                                        No products found.
+                                    </div>
+                                </div>
                             </fieldset>
+
+                            <template id="productPickerCardTemplate">
+                                <div class="col-6 col-md-4 col-lg-3 product-picker-item">
+                                    <div class="border rounded-3 p-2 text-center h-100 product-picker-card" style="cursor:pointer;">
+                                        <img src="" alt="" class="rounded mb-2 product-picker-image"
+                                            style="width:100%; height:90px; object-fit:cover;">
+                                        <div class="small fw-semibold product-picker-name text-truncate" title=""></div>
+                                        <div class="small text-muted product-picker-price"></div>
+                                    </div>
+                                </div>
+                            </template>
 
                             <div id="editForm" class="mt-3">
                                 @if ($order->Order_Item->count() > 0)
@@ -560,8 +571,8 @@
         <!-- ====================== JS Section ====================== -->
         <script>
             var allProducts = @json($products);
+            var addedProductIds = new Set(@json($order->Order_Item->pluck('product_id')->values()));
 
-            const productSelect = document.getElementById('products');
             const editForm = document.getElementById('editForm');
             const discountInput = document.getElementById('discount');
             const subTotalEl = document.getElementById('subTotal');
@@ -569,6 +580,13 @@
             const fee = document.getElementById('delivery_charge');
             const totalInput = document.getElementById('total');
             const totalHint = document.getElementById('totalHint');
+
+            const openProductPickerBtn = document.getElementById('openProductPicker');
+            const productPickerPanel = document.getElementById('productPickerPanel');
+            const productPickerGrid = document.getElementById('productPickerGrid');
+            const productPickerEmpty = document.getElementById('productPickerEmpty');
+            const productPickerSearch = document.getElementById('productPickerSearch');
+            const productPickerCardTemplate = document.getElementById('productPickerCardTemplate');
 
             let lastCalculatedTotal = 0;
 
@@ -579,19 +597,62 @@
                 calculateTotal({ syncTotalInput: true });
             });
 
-            let isResettingProductSelect = false;
+            openProductPickerBtn.addEventListener('click', function() {
+                const isHidden = productPickerPanel.classList.contains('d-none');
+                productPickerPanel.classList.toggle('d-none', !isHidden);
+                if (isHidden) {
+                    productPickerSearch.value = '';
+                    renderProductPicker('');
+                    productPickerSearch.focus();
+                }
+            });
 
-            $(productSelect).on('change', function() {
-                if (isResettingProductSelect) {
+            productPickerSearch.addEventListener('input', function() {
+                renderProductPicker(this.value.trim().toLowerCase());
+            });
+
+            function renderProductPicker(query) {
+                productPickerGrid.innerHTML = '';
+
+                const available = allProducts.filter(p => !addedProductIds.has(p.id));
+                const filtered = query
+                    ? available.filter(p => p.name.toLowerCase().includes(query))
+                    : available;
+
+                if (filtered.length === 0) {
+                    productPickerEmpty.classList.remove('d-none');
                     return;
                 }
+                productPickerEmpty.classList.add('d-none');
 
-                const productId = this.value;
-                if (!productId) return;
+                filtered.forEach(product => {
+                    const card = productPickerCardTemplate.content.cloneNode(true);
+                    const price = product.discount_price ?? product.price;
 
-                const product = allProducts.find(p => String(p.id) === String(productId));
-                if (!product) return;
+                    const img = card.querySelector('.product-picker-image');
+                    img.src = `/storage/images/products/${product.image}`;
+                    img.alt = product.name;
 
+                    const nameEl = card.querySelector('.product-picker-name');
+                    nameEl.textContent = product.name;
+                    nameEl.title = product.name;
+
+                    card.querySelector('.product-picker-price').textContent = `${price} Tk`;
+
+                    const cardEl = card.querySelector('.product-picker-card');
+                    if (product.stock_status === 'out_of_stock') {
+                        cardEl.classList.add('opacity-50');
+                        cardEl.style.cursor = 'not-allowed';
+                        cardEl.title = 'Out of stock';
+                    } else {
+                        cardEl.addEventListener('click', () => addProductLine(product));
+                    }
+
+                    productPickerGrid.appendChild(card);
+                });
+            }
+
+            function addProductLine(product) {
                 const price = product.discount_price ?? product.price;
                 const line = nextLineIndex++;
                 const formHtml = `
@@ -626,21 +687,12 @@
             </div>`;
 
                 $(editForm).append(formHtml);
-
-                // Reset the picker so the same product can be selected again for another line.
-                // Guarded so bootstrap-select's own change event (fired by .selectpicker('val', ''))
-                // doesn't re-enter this handler and add a second, duplicate line.
-                isResettingProductSelect = true;
-                if ($(productSelect).data('selectpicker')) {
-                    $(productSelect).selectpicker('val', '');
-                } else {
-                    productSelect.value = '';
-                }
-                isResettingProductSelect = false;
+                addedProductIds.add(product.id);
+                renderProductPicker(productPickerSearch.value.trim().toLowerCase());
 
                 attachQuantityListeners();
                 calculateTotal({ syncTotalInput: true });
-            });
+            }
 
             function attachQuantityListeners() {
                 document.querySelectorAll('.quantity-input').forEach(input => {
