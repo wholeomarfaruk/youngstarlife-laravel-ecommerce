@@ -385,29 +385,27 @@
                             @method('PUT')
 
                             <fieldset class="mb-3">
-                                <label for="products" class="form-label fw-semibold">Add / Edit Products</label>
-                                <select name="products[]" id="products"
-                                    class="form-control selectpicker @error('products') is-invalid @enderror" required
-                                    multiple data-live-search="true" title="Choose products...">
+                                <label for="products" class="form-label fw-semibold">Add Product</label>
+                                <select name="add_product" id="products"
+                                    class="form-control selectpicker @error('products') is-invalid @enderror"
+                                    data-live-search="true" title="Choose a product to add...">
+                                    <option value=""></option>
                                     @foreach ($products as $product)
-                                        @php
-                                            $isSelected = $order->Order_Item->pluck('product_id')->contains($product->id);
-                                        @endphp
                                         <option value="{{ $product->id }}" data-id="{{ $product->id }}"
-                                            {{ $product->stock_status == 'out_of_stock' ? 'disabled' : '' }}
-                                            {{ $isSelected ? 'selected' : '' }}>
+                                            {{ $product->stock_status == 'out_of_stock' ? 'disabled' : '' }}>
                                             {{ $product->name }} -
                                             {{ $product->stock_status == 'in_stock' ? 'In Stock' : 'Out of Stock' }} -
                                             {{ $product->discount_price ?? $product->price }} Tk
                                         </option>
                                     @endforeach
                                 </select>
+                                <div class="form-text">Selecting a product adds it as a new line - the same product can be added multiple times (e.g. different sizes).</div>
                             </fieldset>
 
                             <div id="editForm" class="mt-3">
                                 @if ($order->Order_Item->count() > 0)
                                     @foreach ($order->Order_Item as $item)
-                                        <div id="product-item-{{ $item->product->id }}" class="product-item border rounded bg-light p-3 mb-3">
+                                        <div id="product-item-{{ $loop->index }}" class="product-item border rounded bg-light p-3 mb-3">
                                             <div class="row align-items-center text-center text-md-start">
                                                 <div class="col-12 col-md-2 mb-2 mb-md-0">
                                                     <img src="/storage/images/products/{{ $item->product->image }}"
@@ -426,27 +424,25 @@
                                                 </div>
                                                 <div class="col-6 col-md-2 mb-2 mb-md-0">
                                                     <label class="form-label small">Quantity</label>
-                                                    <input type="text" class="edit_product_id" hidden
-                                                        name="order_items[{{ $item->product->id }}][id]"
+                                                    <input type="hidden" name="order_items[{{ $loop->index }}][product_id]"
                                                         value="{{ $item->product->id }}">
                                                     <input type="number"
-                                                        name="order_items[{{ $item->product->id }}][quantity]"
-                                                        id="quantity_{{ $item->product->id }}"
+                                                        name="order_items[{{ $loop->index }}][quantity]"
                                                         value="{{ $item->quantity }}" min="1"
                                                         class="form-control quantity-input"
-                                                        data-id="{{ $item->product->id }}">
+                                                        data-line="{{ $loop->index }}">
                                                 </div>
                                                 <div class="col-6 col-md-3 mb-2 mb-md-0">
                                                     <label class="form-label small">Options</label>
                                                     <input type="text"
-                                                        name="order_items[{{ $item->product->id }}][size]"
-                                                        id="options_{{ $item->product->id }}" class="form-control"
+                                                        name="order_items[{{ $loop->index }}][size]"
+                                                        class="form-control"
                                                         placeholder="Enter size"
                                                         value="{{ is_array($item->options) ? data_get($item, 'options.size') : json_decode($item->options)?->size }}">
                                                 </div>
                                                 <div class="col-12 col-md-2">
                                                     <button type="button" class="btn btn-danger btn-sm w-100 mt-2 mt-md-0"
-                                                        onclick="removeProduct({{ $item->product->id }})">
+                                                        onclick="removeProductLine({{ $loop->index }})">
                                                         Remove
                                                     </button>
                                                 </div>
@@ -469,20 +465,35 @@
                         </form>
                     </div>
                     <div class="modal-footer flex-column align-items-stretch">
-                        <table class="table table-bordered mb-3 text-center align-middle">
+                        <table class="table table-bordered mb-2 text-center align-middle">
                             <tr>
                                 <th width="40%">Sub Total:</th>
                                 <td><span id="subTotal">0</span> Tk</td>
                             </tr>
                             <tr>
+                                <th>Delivery Charge:</th>
+                                <td><span id="deliveryDisplay">0</span> Tk</td>
+                            </tr>
+                            <tr>
                                 <th>Discount:</th>
                                 <td><span id="discount_price">0</span> Tk</td>
                             </tr>
+                            <tr>
+                                <th>Calculated Total:</th>
+                                <td><span id="calculatedTotal">0</span> Tk</td>
+                            </tr>
                             <tr class="table-info">
-                                <th>Total:</th>
-                                <td><strong><span id="total">0</span> Tk</strong></td>
+                                <th>Total Amount:</th>
+                                <td>
+                                    <div class="d-flex align-items-center justify-content-center gap-2">
+                                        <input type="number" id="total" name="total" class="form-control form-control-sm text-center fw-bold"
+                                            style="max-width:160px;" min="0" step="0.01">
+                                        <span>Tk</span>
+                                    </div>
+                                </td>
                             </tr>
                         </table>
+                        <div class="form-text text-start mb-2" id="totalHint"></div>
                         <div class="d-flex justify-content-end gap-2">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                             <button type="button" class="btn btn-primary" onclick="document.getElementById('orderEdit').submit();">
@@ -546,25 +557,33 @@
             const editForm = document.getElementById('editForm');
             const discountInput = document.getElementById('discount');
             const subTotalEl = document.getElementById('subTotal');
+            const deliveryDisplayEl = document.getElementById('deliveryDisplay');
             const discountEl = document.getElementById('discount_price');
+            const calculatedTotalEl = document.getElementById('calculatedTotal');
             const fee = document.getElementById('delivery_charge');
-            const totalEl = document.getElementById('total');
+            const totalInput = document.getElementById('total');
+            const totalHint = document.getElementById('totalHint');
+
+            let lastCalculatedTotal = 0;
+
+            let nextLineIndex = editForm.querySelectorAll('.product-item').length;
 
             document.getElementById('exampleModal').addEventListener('shown.bs.modal', function() {
                 attachQuantityListeners();
-                calculateTotal();
+                calculateTotal({ syncTotalInput: true });
             });
 
             productSelect.addEventListener('change', function() {
-                const selectedIds = Array.from(this.selectedOptions).map(opt => opt.value);
-                let addedIds = Array.from(editForm.querySelectorAll('input.edit_product_id')).map(input => input.value);
-                let filteredIds = selectedIds.filter(id => !addedIds.includes(id));
-                const selectedProducts = allProducts.filter(p => filteredIds.includes(String(p.id)));
+                const productId = this.value;
+                if (!productId) return;
 
-                selectedProducts.forEach(product => {
-                    const price = product.discount_price ?? product.price;
-                    const formHtml = `
-            <div id="product-item-${product.id}" class="product-item border rounded bg-light p-3 mb-3">
+                const product = allProducts.find(p => String(p.id) === String(productId));
+                if (!product) return;
+
+                const price = product.discount_price ?? product.price;
+                const line = nextLineIndex++;
+                const formHtml = `
+            <div id="product-item-${line}" class="product-item border rounded bg-light p-3 mb-3">
                 <div class="row align-items-center text-center text-md-start">
                     <div class="col-12 col-md-2 mb-2 mb-md-0">
                         <img src="/storage/images/products/${product.image}" alt="${product.name}"
@@ -578,51 +597,76 @@
                     </div>
                     <div class="col-6 col-md-2 mb-2 mb-md-0">
                         <label class="form-label small">Quantity</label>
-                        <input type="text" hidden name="order_items[${product.id}][id]" value="">
-                        <input type="number" name="order_items[${product.id}][quantity]" value="1" min="1"
-                               class="form-control quantity-input" data-id="${product.id}">
+                        <input type="hidden" name="order_items[${line}][product_id]" value="${product.id}">
+                        <input type="number" name="order_items[${line}][quantity]" value="1" min="1"
+                               class="form-control quantity-input" data-line="${line}">
                     </div>
                     <div class="col-6 col-md-3 mb-2 mb-md-0">
                         <label class="form-label small">Size</label>
-                        <input type="text" name="order_items[${product.id}][size]" class="form-control"
+                        <input type="text" name="order_items[${line}][size]" class="form-control"
                                placeholder="Enter size" value="">
                     </div>
                     <div class="col-12 col-md-2">
                         <button type="button" class="btn btn-danger btn-sm w-100 mt-2 mt-md-0"
-                                onclick="removeProduct(${product.id})">Remove</button>
+                                onclick="removeProductLine(${line})">Remove</button>
                     </div>
                 </div>
             </div>`;
 
-                    $(editForm).append(formHtml);
-                });
+                $(editForm).append(formHtml);
+
+                // Reset the picker so the same product can be selected again for another line.
+                this.value = '';
+                if ($('.selectpicker').length) $('.selectpicker').selectpicker('val', '');
 
                 attachQuantityListeners();
-                calculateTotal();
+                calculateTotal({ syncTotalInput: true });
             });
 
             function attachQuantityListeners() {
                 document.querySelectorAll('.quantity-input').forEach(input => {
-                    input.removeEventListener('input', calculateTotal);
-                    input.addEventListener('input', calculateTotal);
+                    input.removeEventListener('input', handleQuantityInput);
+                    input.addEventListener('input', handleQuantityInput);
                 });
             }
 
-            function removeProduct(productId) {
-                const productItem = document.getElementById(`product-item-${productId}`);
-                if (productItem) productItem.remove();
-
-                const option = document.querySelector(`#products option[value="${productId}"]`);
-                if (option) option.selected = false;
-
-                if ($('.selectpicker').length) $('.selectpicker').selectpicker('refresh');
-                calculateTotal();
+            function handleQuantityInput() {
+                calculateTotal({ syncTotalInput: true });
             }
 
-            discountInput.addEventListener('input', calculateTotal);
-            fee.addEventListener('input', calculateTotal);
+            function removeProductLine(line) {
+                const productItem = document.getElementById(`product-item-${line}`);
+                if (productItem) productItem.remove();
 
-            function calculateTotal() {
+                calculateTotal({ syncTotalInput: true });
+            }
+
+            discountInput.addEventListener('input', () => calculateTotal({ syncTotalInput: true }));
+            fee.addEventListener('input', () => calculateTotal({ syncTotalInput: true }));
+
+            // Editing Total Amount directly: if it's set below the calculated total,
+            // the shortfall is automatically added to Discount so the numbers stay consistent.
+            totalInput.addEventListener('input', function() {
+                const discountBase = parseFloat(discountInput.dataset.manualDiscount ?? discountInput.value) || 0;
+                const deliveryCharge = parseFloat(fee.value) || 0;
+                const subTotal = getSubTotal();
+                const calculatedTotal = Math.max(subTotal - discountBase, 0) + deliveryCharge;
+
+                const enteredTotal = totalInput.value === '' ? null : parseFloat(totalInput.value);
+
+                if (enteredTotal === null || isNaN(enteredTotal) || enteredTotal >= calculatedTotal) {
+                    // Back to (or above) the calculated total: restore the manually-set discount, no auto-adjustment.
+                    discountInput.value = discountBase.toFixed(2);
+                } else {
+                    // Entered total is lower than calculated: push the shortfall into Discount.
+                    const shortfall = Math.max(calculatedTotal - enteredTotal, 0);
+                    discountInput.value = (discountBase + shortfall).toFixed(2);
+                }
+
+                calculateTotal({ syncTotalInput: false });
+            });
+
+            function getSubTotal() {
                 let subTotal = 0;
 
                 document.querySelectorAll('.product-item').forEach(item => {
@@ -635,17 +679,44 @@
                     subTotal += price * qty;
                 });
 
-                const deliveryCharge = parseFloat(fee.value) || 0;
-                const discount = parseFloat(discountInput.value) || 0;
-                const total = Math.max(subTotal - discount, 0) + deliveryCharge;
-
-                subTotalEl.textContent = subTotal.toFixed(2);
-                discountEl.textContent = discount.toFixed(2);
-                totalEl.textContent = total.toFixed(2);
+                return subTotal;
             }
 
+            function calculateTotal(options) {
+                const opts = options || {};
+                const subTotal = getSubTotal();
+                const deliveryCharge = parseFloat(fee.value) || 0;
+                const discount = parseFloat(discountInput.value) || 0;
+                const calculatedTotal = Math.max(subTotal - discount, 0) + deliveryCharge;
+
+                subTotalEl.textContent = subTotal.toFixed(2);
+                deliveryDisplayEl.textContent = deliveryCharge.toFixed(2);
+                discountEl.textContent = discount.toFixed(2);
+                calculatedTotalEl.textContent = calculatedTotal.toFixed(2);
+                lastCalculatedTotal = calculatedTotal;
+
+                // Remember the discount value the admin actually typed (before any auto top-up),
+                // so re-editing Total Amount later recomputes from the real manual discount.
+                if (opts.syncTotalInput !== false) {
+                    discountInput.dataset.manualDiscount = discount;
+                }
+                if (opts.syncTotalInput) {
+                    totalInput.value = calculatedTotal.toFixed(2);
+                }
+
+                const enteredTotal = totalInput.value === '' ? calculatedTotal : parseFloat(totalInput.value);
+                if (!isNaN(enteredTotal) && enteredTotal < calculatedTotal) {
+                    totalHint.textContent = `Total Amount is below the calculated total (${calculatedTotal.toFixed(2)} Tk) - the ${(calculatedTotal - enteredTotal).toFixed(2)} Tk difference has been added to Discount.`;
+                    totalHint.classList.add('text-danger');
+                } else {
+                    totalHint.textContent = '';
+                    totalHint.classList.remove('text-danger');
+                }
+            }
+
+            discountInput.dataset.manualDiscount = discountInput.value || 0;
             attachQuantityListeners();
-            calculateTotal();
+            calculateTotal({ syncTotalInput: true });
         </script>
 
         <script>

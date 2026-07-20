@@ -979,33 +979,57 @@ public function ordersDataTable(Request $request)
         if (!$order) {
             return redirect()->back()->with('error', 'Order not found');
         }
+
+        $lines = $request->input('order_items', []);
+        $productIds = collect($lines)->pluck('product_id')->filter()->unique();
+        $productsById = products::whereIn('id', $productIds)->get()->keyBy('id');
+
         $order->Order_Item()->delete();
-        // $order->Order_Item()
-        $orderedProducts = products::whereIn('id', $request->products)->get();
-        foreach ($orderedProducts as $orderedProduct) {
+
+        $subtotal = 0;
+
+        foreach ($lines as $line) {
+            $product = $productsById->get($line['product_id'] ?? null);
+            if (!$product) {
+                continue;
+            }
+
+            $quantity = (int) ($line['quantity'] ?? 1) ?: 1;
+            $price = (float) ($product->discount_price ?? $product->price);
+
             $orderItem = new Order_Item();
             $orderItem->order_id = $order->id;
-            $orderItem->product_id = $orderedProduct->id;
-            $orderItem->quantity = $request->order_items[$orderedProduct->id]['quantity'];
-            $orderItem->price = $orderedProduct->price;
-            $orderItem->options = json_encode(['size' => $request->order_items[$orderedProduct->id]['size']]);
+            $orderItem->product_id = $product->id;
+            $orderItem->quantity = $quantity;
+            $orderItem->price = $price;
+            $orderItem->options = json_encode(['size' => $line['size'] ?? null]);
             $orderItem->save();
+
+            $subtotal += $price * $quantity;
         }
-        $subtotal = $orderedProducts->sum(function ($product) use ($request) {
-            return (float) ($product->discount_price ?? $product->price) * (float) $request->order_items[$product->id]['quantity'];
-        });
+
+        $fee = (float) $request->delivery_charge;
+        $discount = (float) $request->discount;
+
+        // If an explicit total was submitted and it's lower than what subtotal/discount/fee
+        // would calculate to, treat the shortfall as additional discount so the saved total
+        // matches exactly what the admin set (mirrors the client-side auto top-up).
+        if ($request->filled('total')) {
+            $requestedTotal = (float) $request->total;
+            $calculatedTotal = max($subtotal - $discount, 0) + $fee;
+
+            if ($requestedTotal < $calculatedTotal) {
+                $discount += $calculatedTotal - $requestedTotal;
+            }
+        }
+
         $order->subtotal = $subtotal;
-        $order->discount = $request->discount;
-        $order->fee = $request->delivery_charge;
-        $order->total = ($subtotal + (float) $request->delivery_charge) - (float) $request->discount;
+        $order->discount = $discount;
+        $order->fee = $fee;
+        $order->total = max($subtotal - $discount, 0) + $fee;
 
         $order->save();
 
-
-
-        $order->save();
-
-        // return $request->all();
         return redirect()->back()->with('status', 'Order Updated Successfully');
     }
     public function updateOrderDetails(Request $request, $id)
