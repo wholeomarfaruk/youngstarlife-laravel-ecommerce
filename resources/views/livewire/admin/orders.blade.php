@@ -270,7 +270,9 @@
          class="modal-backdrop-custom position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
          style="z-index: 1055; background: rgba(0,0,0,.5); display: flex;"
          @click.self="open = false">
-        <div class="bg-white rounded shadow" style="width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto;"
+         <div class="position-relative d-flex align-items-center justify-content-center w-100 h-100">
+
+        <div class="bg-white rounded shadow" style="width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;"
              @click.outside="open = false">
             <div class="d-flex justify-content-between align-items-center border-bottom p-3">
                 <h5 class="mb-0">Order Details</h5>
@@ -282,6 +284,7 @@
                 </div>
                 <div x-show="!loading" x-html="content"></div>
             </div>
+        </div>
         </div>
     </div>
 </div>
