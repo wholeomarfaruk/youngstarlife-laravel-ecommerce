@@ -49,20 +49,14 @@
             /* Prevent label splitting */
         }
 
-        .logo {
-            text-align: center;
-        }
-
-        .logo img {
-            width: 50px;
-            height: auto;
-            margin-bottom: 2px;
-        }
-
         .info p {
             margin: 2px 0;
             font-size: 11px;
             line-height: 1.2;
+        }
+
+        .info p.item-name {
+            font-size: 9px;
         }
 
         .barcode {
@@ -84,10 +78,6 @@
     <div class="page">
         @foreach ($stickers as $item)
             <div class="label">
-                <div class="logo">
-                    <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('frontend/img/youngstar_logo_transparent.png'))) }}" alt="Logo">
-                    <p style="text-align: center; margin: 0;"><strong>YOUNGSTAR Life</strong></p>
-                </div>
                 <div class="barcode">
                     {!! DNS1D::getBarcodeHTML($item['consignment_id'], 'C128', 1.2, 40) !!}
                 </div>
@@ -97,7 +87,7 @@
                     <p><strong>Name:</strong> {{ $item['name'] }}</p>
                     <p><strong>Phone:</strong> {{ $item['phone'] }}</p>
                     <p><strong>Price:</strong> {{ $item['price'] }}</p>
-                    <p><strong>Item:</strong> {{ $item['items'] }}</p>
+                    <p class="item-name"><strong>Item:</strong> {{ $item['items'] }}</p>
                 </div>
 
 
