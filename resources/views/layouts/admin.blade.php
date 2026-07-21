@@ -9,24 +9,24 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <title>{{ config('app.name', 'Laravel') }}</title>
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/animate.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/animation.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/bootstrap.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/bootstrap-select.min.css') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('lib/flatpickr/flatpickr.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/animate.min.css') }}?v=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/animation.css') }}?v=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/bootstrap.css') }}?v=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/bootstrap-select.min.css') }}?v=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ asset('lib/flatpickr/flatpickr.min.css') }}?v=1.0">
 
 
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/style.css?v=1.0') }}">
-    <link rel="stylesheet" href="{{ asset('admin-resource/font/fonts.css') }}">
-    <link rel="stylesheet" href="{{ asset('admin-resource/icon/style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/style.css') }}?v=1.0">
+    <link rel="stylesheet" href="{{ asset('admin-resource/font/fonts.css') }}?v=1.0">
+    <link rel="stylesheet" href="{{ asset('admin-resource/icon/style.css') }}?v=1.0">
     <link rel="shortcut icon" href="{{ asset('admin-resource/images/favicon.ico') }}">
     <link rel="apple-touch-icon-precomposed" href="{{ asset('admin-resource/images/favicon.ico') }}">
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/sweetalert.min.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/sweetalert.min.css') }}?v=1.0">
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.css"
         integrity="sha512-A81ejcgve91dAWmCGseS60zjrAdohm7PTcAjjiDWtw3Tcj91PNMa1gJ/ImrhG+DbT5V+JQ5r26KT5+kgdVTb5w=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/custom.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/custom.css') }}?v=1.0">
       @livewireStyles
     @stack('styles')
 </head>
