@@ -5,12 +5,12 @@
     <meta charset="UTF-8">
     <title>3x4 Inch Labels</title>
     <style>
-        /* @font-face {
+        @font-face {
             font-family: 'SolaimanLipi';
             src: url('{{ public_path('fonts/SolaimanLipi.ttf') }}') format('truetype');
             font-weight: normal;
             font-style: normal;
-        } */
+        }
         @page {
             /* Set physical page margins to 0 */
             margin: 0;
