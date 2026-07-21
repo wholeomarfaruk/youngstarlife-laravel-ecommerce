@@ -267,8 +267,8 @@
          }"
          @open-order-modal.window="fetchOrder($event.detail.id)"
          x-show="open" x-cloak
-         class="modal-backdrop-custom position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
-         style="z-index: 1055; background: rgba(0,0,0,.5);"
+         class="modal-backdrop-custom position-fixed top-0 start-0 w-100 h-100 align-items-center justify-content-center"
+         style="z-index: 1055; background: rgba(0,0,0,.5); display: flex;"
          @click.self="open = false">
         <div class="bg-white rounded shadow" style="width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto;"
              @click.outside="open = false">
