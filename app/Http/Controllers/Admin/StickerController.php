@@ -48,7 +48,7 @@ class StickerController extends Controller
                     $firstItem = $order->Order_Item->first();
                     $options = self::parseOptions($firstItem->options);
                     $size = (isset($options['size']) && !empty($options['size'])) ? ' (' . $options['size'] . ') ' : '';
-                    $items .= Str::limit($firstItem->product->name, 25) . $size . ' x ' . $firstItem->quantity . ' Qty';
+                    $items .= Str::limit($firstItem->product->name, 35) . $size . ' x ' . $firstItem->quantity . ' Qty';
 
                 } else {
                     $items = 'No items';
