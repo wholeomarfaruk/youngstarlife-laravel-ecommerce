@@ -47,8 +47,15 @@
             </thead>
             <tbody>
                 @forelse ($order->Order_Item as $item)
+                    @php
+                        $rawOpts = $item->options;
+                        if (is_string($rawOpts)) {
+                            $rawOpts = json_decode($rawOpts, true);
+                        }
+                        $itemSize = is_array($rawOpts) ? ($rawOpts['size'] ?? null) : null;
+                    @endphp
                     <tr>
-                        <td>{{ $item->product?->name ?? 'Deleted product' }}</td>
+                        <td>{{ $item->product?->name ?? 'Deleted product' }}{{ $itemSize ? ' (' . $itemSize . ')' : '' }}</td>
                         <td class="text-center">৳{{ number_format($item->product?->discount_price ?? $item->product?->price ?? 0, 2) }}</td>
                         <td class="text-center">{{ $item->quantity }}</td>
                         <td class="text-center">৳{{ number_format((float) ($item->product?->discount_price ?? $item->product?->price ?? 0) * (int) $item->quantity, 2) }}</td>
