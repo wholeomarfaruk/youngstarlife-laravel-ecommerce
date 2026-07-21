@@ -207,57 +207,15 @@
                     </div>
 
 
-
-                    <!-- Status update -->
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-bold">Update Order Status</h6>
-                        </div>
-                        <div class="card-body">
-                            <form action="{{ route('admin.orders.update', $order->id) }}" method="POST"
-                                class="row g-2 align-items-center">
-                                @csrf
-                                @method('PUT')
-                                <input type="hidden" name="order_id" value="{{ $order->id }}">
-                                <div class="col-sm-8 col-md-6">
-                                    <select name="status" id="status" class="form-select">
-                                        @foreach ([
-            'pending' => 'Pending',
-            'confirmed' => 'Confirmed',
-            'ready' => 'Ready',
-            'delivered' => 'Delivered',
-            'on_hold' => 'On Hold',
-            'in_review' => 'In Review',
-            'in_transit' => 'In Transit',
-            'processing' => 'Processing',
-            'delivery_in_review' => 'Delivery in Review',
-            'cancelled' => 'Cancelled',
-            'returned' => 'Returned',
-            'deleted' => 'Deleted',
-        ] as $value => $label)
-                                            <option value="{{ $value }}"
-                                                {{ $order->status == $value ? 'selected' : '' }}>{{ $label }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="col-sm-4 col-md-6">
-                                    <button type="submit" class="btn btn-primary">Update Status</button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
-
                     <!-- Customer / shipping -->
-                    <div class="row bg-white" >
+                    <div class="row bg-white">
                         <div class="col-md-6">
 
                             <div class="card shadow-sm mb-3">
                                 <div
                                     class="card-header bg-white d-flex align-items-center justify-content-between flex-wrap gap-2">
                                     <h6 class="mb-0 fw-bold">Shipping Details</h6>
-                                     <div class="d-flex justify-content-end mb-2 gap-2">
+                                    <div class="d-flex justify-content-end mb-2 gap-2">
                                         @if (!$order->customer || !$order->customer->is_blocked)
                                             <button id="blockcustomer" type="button"
                                                 onclick="blockcustomer({{ $order->id }})"
@@ -267,10 +225,10 @@
                                             <button type="button" class="btn btn-outline-success btn-sm"
                                                 onclick="unblockCustomer({{ $order->id }})">Unblock</button>
                                         @endif
-                                         <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
-                                        data-bs-target="#orderDetails">
-                                        <i class="icon-edit-3"></i> Edit
-                                    </button>
+                                        <button type="button" class="btn btn-sm btn-outline-primary"
+                                            data-bs-toggle="modal" data-bs-target="#orderDetails">
+                                            <i class="icon-edit-3"></i> Edit
+                                        </button>
                                     </div>
 
                                 </div>
@@ -313,39 +271,84 @@
                             </div>
                         </div>
                         <div class="col-md-6">
-                                                <!-- Order summary -->
+                            <!-- Order summary -->
+                            <div class="card shadow-sm mb-3">
+                                <div class="card-header bg-white">
+                                    <h6 class="mb-0 fw-bold">Order Summary</h6>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless table-sm mb-0">
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-muted">Product Price</td>
+                                                <td class="text-end fw-semibold">{{ number_format($order->subtotal, 2) }}
+                                                    Tk</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="text-muted">Delivery Fee</td>
+                                                <td class="text-end fw-semibold">{{ number_format($order->fee, 2) }} Tk
+                                                </td>
+                                            </tr>
+                                            @if ($order->discount > 0)
+                                                <tr>
+                                                    <td class="text-muted">Discount</td>
+                                                    <td class="text-end fw-semibold text-danger">
+                                                        -{{ number_format($order->discount, 2) }} Tk</td>
+                                                </tr>
+                                            @endif
+                                            <tr class="border-top">
+                                                <td class="fw-bold">Total Bill</td>
+                                                <td class="text-end fw-bold fs-5">{{ number_format($order->total, 2) }} Tk
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Status update -->
                     <div class="card shadow-sm mb-3">
                         <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-bold">Order Summary</h6>
+                            <h6 class="mb-0 fw-bold">Update Order Status</h6>
                         </div>
                         <div class="card-body">
-                            <table class="table table-borderless table-sm mb-0">
-                                <tbody>
-                                    <tr>
-                                        <td class="text-muted">Product Price</td>
-                                        <td class="text-end fw-semibold">{{ number_format($order->subtotal, 2) }} Tk</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="text-muted">Delivery Fee</td>
-                                        <td class="text-end fw-semibold">{{ number_format($order->fee, 2) }} Tk</td>
-                                    </tr>
-                                    @if ($order->discount > 0)
-                                        <tr>
-                                            <td class="text-muted">Discount</td>
-                                            <td class="text-end fw-semibold text-danger">
-                                                -{{ number_format($order->discount, 2) }} Tk</td>
-                                        </tr>
-                                    @endif
-                                    <tr class="border-top">
-                                        <td class="fw-bold">Total Bill</td>
-                                        <td class="text-end fw-bold fs-5">{{ number_format($order->total, 2) }} Tk</td>
-                                    </tr>
-                                </tbody>
-                            </table>
+                            <form action="{{ route('admin.orders.update', $order->id) }}" method="POST"
+                                class="row g-2 align-items-center">
+                                @csrf
+                                @method('PUT')
+                                <input type="hidden" name="order_id" value="{{ $order->id }}">
+                                <div class="col-sm-8 col-md-6">
+                                    <select name="status" id="status" class="form-select">
+                                        @foreach ([
+            'pending' => 'Pending',
+            'confirmed' => 'Confirmed',
+            'ready' => 'Ready',
+            'delivered' => 'Delivered',
+            'on_hold' => 'On Hold',
+            'in_review' => 'In Review',
+            'in_transit' => 'In Transit',
+            'processing' => 'Processing',
+            'delivery_in_review' => 'Delivery in Review',
+            'cancelled' => 'Cancelled',
+            'returned' => 'Returned',
+            'deleted' => 'Deleted',
+        ] as $value => $label)
+                                            <option value="{{ $value }}"
+                                                {{ $order->status == $value ? 'selected' : '' }}>{{ $label }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-sm-4 col-md-6">
+                                    <button type="submit" class="btn btn-primary">Update Status</button>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                        </div>
-                    </div>
+
 
                     <!-- Extra data -->
                     <div class="card shadow-sm mb-3">
