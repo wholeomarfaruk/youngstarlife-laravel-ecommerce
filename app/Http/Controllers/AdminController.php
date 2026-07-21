@@ -1012,7 +1012,7 @@ public function ordersDataTable(Request $request)
             $orderItem->product_id = $product->id;
             $orderItem->quantity = $quantity;
             $orderItem->price = $price;
-            $orderItem->options = json_encode(['size' => $line['size'] ?? null]);
+            $orderItem->options = ['size' => $line['size'] ?? null];
             $orderItem->save();
 
             $subtotal += $price * $quantity;

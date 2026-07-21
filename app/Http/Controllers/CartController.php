@@ -376,7 +376,7 @@ class CartController extends Controller
             $orderItem->quantity = $request->quantity;
             if ($request->has('size')) {
 
-                $orderItem->options = json_encode(['size' => $request->size ?? '']);
+                $orderItem->options = ['size' => $request->size ?? ''];
             }
             $orderItem->save();
 

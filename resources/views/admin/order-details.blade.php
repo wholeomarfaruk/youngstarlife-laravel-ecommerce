@@ -164,12 +164,19 @@
                                                 </td>
                                                 <td class="text-center">
                                                     @php
-                                                        $opts = is_array($item->options)
-                                                            ? array_filter($item->options)
-                                                            : [];
+                                                        $rawOpts = $item->options;
+                                                        if (is_string($rawOpts)) {
+                                                            $rawOpts = json_decode($rawOpts, true);
+                                                        }
+                                                        $opts = is_array($rawOpts) ? array_filter($rawOpts) : [];
                                                     @endphp
                                                     @if (!empty($opts))
-                                                        <pre class="mb-0 text-start small">{{ json_encode($opts, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                                                        @foreach ($opts as $key => $value)
+                                                            <div class="option-item">
+                                                                <strong class="option-key">{{ ucfirst($key) }}</strong>:
+                                                                <span class="option-value">{{ $value }}</span>
+                                                            </div>
+                                                        @endforeach
                                                     @else
                                                         <span class="text-muted">&mdash;</span>
                                                     @endif
