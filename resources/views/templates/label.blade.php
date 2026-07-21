@@ -7,7 +7,7 @@
     <style>
         @font-face {
             font-family: 'SolaimanLipi';
-            src: url('{{ public_path('fonts/SolaimanLipi.ttf') }}') format('truetype');
+            src: url('data:font/truetype;charset=utf-8;base64,{{ base64_encode(file_get_contents(public_path('fonts/SolaimanLipi.ttf'))) }}') format('truetype');
             font-weight: normal;
             font-style: normal;
         }
