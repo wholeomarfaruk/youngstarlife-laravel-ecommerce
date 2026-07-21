@@ -9,6 +9,15 @@ use Illuminate\Http\Request;
 class StickerController extends Controller
 {
 
+    protected static function parseOptions($options)
+    {
+        if (is_string($options)) {
+            $options = json_decode($options, true);
+        }
+
+        return is_array($options) ? $options : [];
+    }
+
     public static function generate(Request $request)
     {
 
@@ -26,17 +35,17 @@ class StickerController extends Controller
 
 
                     foreach ($order->Order_Item as $item) {
-                        $options = json_decode($item->options, true);
+                        $options = self::parseOptions($item->options);
                         $size = $options['size'] ?? '';
-                        $size2 = $options['size'] ? ' (' . $options['size'] . ') ' : '';
+                        $size2 = $size ? ' (' . $size . ') ' : '';
                         $items .= $item->product->name . $size2 . ' - ' . $item->quantity . " Qty ,\n";
                         if ($size) {
-                            $size .= $options['size'] . ', ';
+                            $size .= $size . ', ';
                         }
                     }
                 } elseif ($order->Order_Item->count() == 1) {
                     $firstItem = $order->Order_Item->first();
-                    $options = json_decode($firstItem->options, true);
+                    $options = self::parseOptions($firstItem->options);
                     $size = (isset($options['size']) && !empty($options['size'])) ? ' (' . $options['size'] . ') ' : '';
                     $items .= $firstItem->product->name . $size . ' x ' . $firstItem->quantity . ' Qty';
 
