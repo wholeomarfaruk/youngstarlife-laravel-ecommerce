@@ -167,12 +167,12 @@
                     <thead class="table-light">
                         <tr>
                             <th style="width:70px">OrderNo</th>
+                            <th class="text-center">Source</th>
                             <th class="text-center">Name</th>
                             <th class="text-center">Phone</th>
                             <th class="text-center">Consigment ID</th>
                             <th class="text-center">Total</th>
                             <th class="text-center">Status</th>
-                            <th class="text-center">Source</th>
                             <th class="text-center">Order Date</th>
                             <th class="text-center">Total Items</th>
                             <th class="text-center" style="width:120px">Actions</th>
@@ -182,10 +182,12 @@
                         @foreach ($orders as $order)
                             <tr>
                                 <td class="text-center" data-id="{{ $order->id }}">
-                                    <input type="checkbox" class="form-check-input select-item" name="ids[]"
+                                    <input type="checkbox" class="form-check-input select-item w-1" name="ids[]"
                                         value="{{ $order->id }}" style="display: none;">
                                     {{ $order->id }}
                                 </td>
+                                                                <td class="text-center text-capitalize">{{ $order->source ?? '-' }}</td>
+
                                 <td class="text-center">
                                     <span x-data="{ open: false }" class="position-relative d-inline-flex align-items-center gap-1">
                                         {{ $order->name }}
@@ -205,7 +207,6 @@
                                 <td class="text-center">{{ $order->consignment_id }}</td>
                                 <td class="text-center">৳{{ $order->total }}</td>
                                 <td class="text-center text-capitalize">{{ $order->status }}</td>
-                                <td class="text-center text-capitalize">{{ $order->source ?? '-' }}</td>
                                 <td class="text-center">{{ $order->created_at }}</td>
                                 <td class="text-center">{{ $order->Order_Item->count() }}</td>
                                 <td class="text-center">
