@@ -78,6 +78,7 @@
     <div class="page">
         @foreach ($stickers as $item)
             <div class="label">
+                <p style="text-align: center; margin: 0;"><strong>YOUNGSTAR Life</strong></p>
                 <div class="barcode">
                     {!! DNS1D::getBarcodeHTML($item['consignment_id'], 'C128', 1.2, 40) !!}
                 </div>
