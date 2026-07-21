@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class StickerController extends Controller
 {
@@ -38,7 +39,7 @@ class StickerController extends Controller
                         $options = self::parseOptions($item->options);
                         $size = $options['size'] ?? '';
                         $size2 = $size ? ' (' . $size . ') ' : '';
-                        $items .= $item->product->name . $size2 . ' - ' . $item->quantity . " Qty ,\n";
+                        $items .= Str::limit($item->product->name, 25) . $size2 . ' - ' . $item->quantity . " Qty ,\n";
                         if ($size) {
                             $size .= $size . ', ';
                         }
@@ -47,7 +48,7 @@ class StickerController extends Controller
                     $firstItem = $order->Order_Item->first();
                     $options = self::parseOptions($firstItem->options);
                     $size = (isset($options['size']) && !empty($options['size'])) ? ' (' . $options['size'] . ') ' : '';
-                    $items .= $firstItem->product->name . $size . ' x ' . $firstItem->quantity . ' Qty';
+                    $items .= Str::limit($firstItem->product->name, 25) . $size . ' x ' . $firstItem->quantity . ' Qty';
 
                 } else {
                     $items = 'No items';
