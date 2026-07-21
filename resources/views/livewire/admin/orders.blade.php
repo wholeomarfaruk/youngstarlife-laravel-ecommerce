@@ -40,6 +40,9 @@
         [x-cloak] {
             display: none !important;
         }
+        .orders-table input[type="checkbox"] {
+            display: inline-block;
+        }
     </style>
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
         <h3 class="mb-0">Orders</h3>
@@ -182,8 +185,8 @@
                         @foreach ($orders as $order)
                             <tr>
                                 <td class="text-center" data-id="{{ $order->id }}">
-                                    <input type="checkbox" class="form-check-input select-item w-1" name="ids[]"
-                                        value="{{ $order->id }}" style="display: none;">
+                                    <input type="checkbox" class="form-check-input select-item" name="ids[]"
+                                        value="{{ $order->id }}" style="display: none">
                                     {{ $order->id }}
                                 </td>
                                                                 <td class="text-center text-capitalize">{{ $order->source ?? '-' }}</td>
