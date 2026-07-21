@@ -135,6 +135,7 @@ Route::prefix('admin')->group(function () {
 
         Route::get('/orders/deleted', [AdminController::class, 'deletedOrders'])->name('admin.orders.deleted');
         Route::get('/orders/{id}/details', [AdminController::class, 'orderDetails'])->name('admin.orders.details');
+        Route::get('/orders/{id}/quick-view', [AdminController::class, 'orderQuickView'])->name('admin.orders.quick_view');
         Route::put('/orders/{id}/update-status', [AdminController::class, 'orderStatusUpdate'])->name('admin.orders.update');
         Route::delete('/orders/{id}/delete', [AdminController::class, 'deleteOrder'])->name('admin.orders.delete');
         Route::get('/orders/soft-delete/{id}', [AdminController::class, 'ordersoftdelete'])->name('admin.orders.delete.soft');

@@ -4,7 +4,7 @@
         .table th:last-child,
         .table td:last-child {
 
-            width: 204px !important;
+            width: 120px !important;
             padding: 0 10px;
         }
     </style>

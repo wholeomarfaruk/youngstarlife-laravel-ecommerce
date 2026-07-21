@@ -391,35 +391,7 @@
                                         <i class="icon-plus"></i> Add Item
                                     </button>
                                 </div>
-
-                                <div id="productPickerPanel" class="border rounded-3 p-3 mb-3 d-none">
-                                    <div class="d-flex align-items-center justify-content-between gap-2 mb-3">
-                                        <input type="text" id="productPickerSearch" class="form-control form-control-sm"
-                                            placeholder="Search products...">
-                                        <button type="button" class="btn-close flex-shrink-0" id="closeProductPicker"
-                                            aria-label="Close"></button>
-                                    </div>
-                                    <div id="productPickerGrid" class="row g-3" style="max-height:360px; overflow-y:auto;"></div>
-                                    <div id="productPickerEmpty" class="text-center text-muted small py-3 d-none">
-                                        No products found.
-                                    </div>
-                                </div>
                             </fieldset>
-
-                            <template id="productPickerCardTemplate">
-                                <div class="col-6 col-md-4 col-lg-3 product-picker-item">
-                                    <div class="border rounded-3 p-2 text-center h-100 product-picker-card d-flex flex-column"
-                                        style="cursor:pointer;">
-                                        <div class="d-flex align-items-center justify-content-center mb-2 bg-light rounded"
-                                            style="height:120px;">
-                                            <img src="" alt="" class="product-picker-image"
-                                                style="max-width:100%; max-height:100%; object-fit:contain;">
-                                        </div>
-                                        <div class="small fw-semibold product-picker-name text-truncate" title=""></div>
-                                        <div class="small text-muted product-picker-price mt-auto"></div>
-                                    </div>
-                                </div>
-                            </template>
 
                             <div id="editForm" class="mt-3">
                                 @if ($order->Order_Item->count() > 0)
@@ -532,6 +504,46 @@
             </div>
         </div>
 
+        <!-- Modal: Product Picker -->
+        <div class="modal fade" id="productPickerModal" tabindex="-1" aria-labelledby="productPickerModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="productPickerModalLabel">Add Item</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" id="productPickerSearch" class="form-control mb-3"
+                            placeholder="Search products...">
+                        <div id="productPickerGrid" class="row g-3"></div>
+                        <div id="productPickerEmpty" class="text-center text-muted small py-4 d-none">
+                            No products found.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <template id="productPickerCardTemplate">
+            <div class="col-6 col-md-4 product-picker-item">
+                <div class="border rounded-3 p-2 text-center h-100 product-picker-card d-flex flex-column position-relative"
+                    style="cursor:pointer;">
+                    <button type="button" class="btn btn-primary btn-sm rounded-circle position-absolute d-flex align-items-center justify-content-center product-picker-add"
+                        style="width:30px; height:30px; top:-8px; right:-8px; padding:0; line-height:1; z-index:1;"
+                        title="Add item">
+                        <i class="icon-plus"></i>
+                    </button>
+                    <div class="d-flex align-items-center justify-content-center mb-2 bg-light rounded"
+                        style="height:120px;">
+                        <img src="" alt="" class="product-picker-image"
+                            style="max-width:100%; max-height:100%; object-fit:contain;">
+                    </div>
+                    <div class="small fw-semibold product-picker-name text-truncate" title=""></div>
+                    <div class="small text-muted product-picker-price mt-auto"></div>
+                </div>
+            </div>
+        </template>
+
         <!-- Modal: Edit Shipping Details -->
         <div class="modal fade" id="orderDetails" tabindex="-1" aria-labelledby="orderDetailsLabel" aria-hidden="true">
             <div class="modal-dialog modal-xl modal-dialog-scrollable">
@@ -590,34 +602,47 @@
             const totalHint = document.getElementById('totalHint');
 
             const openProductPickerBtn = document.getElementById('openProductPicker');
-            const closeProductPickerBtn = document.getElementById('closeProductPicker');
-            const productPickerPanel = document.getElementById('productPickerPanel');
             const productPickerGrid = document.getElementById('productPickerGrid');
             const productPickerEmpty = document.getElementById('productPickerEmpty');
             const productPickerSearch = document.getElementById('productPickerSearch');
             const productPickerCardTemplate = document.getElementById('productPickerCardTemplate');
 
+            const exampleModalEl = document.getElementById('exampleModal');
+            const productPickerModalEl = document.getElementById('productPickerModal');
+            const exampleModal = bootstrap.Modal.getInstance(exampleModalEl) || new bootstrap.Modal(exampleModalEl);
+            const productPickerModal = bootstrap.Modal.getInstance(productPickerModalEl) || new bootstrap.Modal(productPickerModalEl);
+
             let lastCalculatedTotal = 0;
 
             let nextLineIndex = editForm.querySelectorAll('.product-item').length;
 
-            document.getElementById('exampleModal').addEventListener('shown.bs.modal', function() {
+            exampleModalEl.addEventListener('shown.bs.modal', function() {
                 attachQuantityListeners();
                 calculateTotal({ syncTotalInput: true });
             });
 
+            // Bootstrap modals aren't designed to stack directly, so the parent modal is
+            // hidden while the picker is open and re-shown once the picker closes.
             openProductPickerBtn.addEventListener('click', function() {
-                const isHidden = productPickerPanel.classList.contains('d-none');
-                productPickerPanel.classList.toggle('d-none', !isHidden);
-                if (isHidden) {
+                exampleModalEl.dataset.reopenPicker = '1';
+                exampleModal.hide();
+            });
+
+            exampleModalEl.addEventListener('hidden.bs.modal', function() {
+                if (exampleModalEl.dataset.reopenPicker === '1') {
+                    exampleModalEl.dataset.reopenPicker = '';
                     productPickerSearch.value = '';
                     renderProductPicker('');
-                    productPickerSearch.focus();
+                    productPickerModal.show();
                 }
             });
 
-            closeProductPickerBtn.addEventListener('click', function() {
-                productPickerPanel.classList.add('d-none');
+            productPickerModalEl.addEventListener('hidden.bs.modal', function() {
+                exampleModal.show();
+            });
+
+            productPickerModalEl.addEventListener('shown.bs.modal', function() {
+                productPickerSearch.focus();
             });
 
             productPickerSearch.addEventListener('input', function() {
@@ -627,10 +652,9 @@
             function renderProductPicker(query) {
                 productPickerGrid.innerHTML = '';
 
-                const available = allProducts.filter(p => !addedProductIds.has(p.id));
                 const filtered = query
-                    ? available.filter(p => p.name.toLowerCase().includes(query))
-                    : available;
+                    ? allProducts.filter(p => p.name.toLowerCase().includes(query))
+                    : allProducts;
 
                 if (filtered.length === 0) {
                     productPickerEmpty.classList.remove('d-none');
@@ -653,12 +677,28 @@
                     card.querySelector('.product-picker-price').textContent = `${price} Tk`;
 
                     const cardEl = card.querySelector('.product-picker-card');
-                    if (product.stock_status === 'out_of_stock') {
+                    const addBtn = card.querySelector('.product-picker-add');
+                    const addIcon = addBtn.querySelector('i');
+
+                    const alreadyAdded = addedProductIds.has(product.id);
+                    const outOfStock = product.stock_status === 'out_of_stock';
+
+                    if (alreadyAdded) {
                         cardEl.classList.add('opacity-50');
-                        cardEl.style.cursor = 'not-allowed';
+                        cardEl.title = 'Already added';
+                        addBtn.disabled = true;
+                        addBtn.classList.remove('btn-primary');
+                        addBtn.classList.add('btn-secondary');
+                        addIcon.className = 'icon-check';
+                    } else if (outOfStock) {
+                        cardEl.classList.add('opacity-50');
                         cardEl.title = 'Out of stock';
+                        addBtn.disabled = true;
                     } else {
-                        cardEl.addEventListener('click', () => addProductLine(product));
+                        addBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            addProductLine(product);
+                        });
                     }
 
                     productPickerGrid.appendChild(card);

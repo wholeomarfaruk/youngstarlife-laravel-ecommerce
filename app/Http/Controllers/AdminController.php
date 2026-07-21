@@ -882,6 +882,16 @@ public function ordersDataTable(Request $request)
         $products = products::all();
         return view('admin.order-details', compact('order', 'orderItems', 'products'))->with('title', 'Order Details');
     }
+
+    public function orderQuickView($id)
+    {
+        $order = Order::with('Order_Item.product', 'delivery_area')->find($id);
+        if (!$order) {
+            abort(404);
+        }
+
+        return view('admin.partials.order-quick-view', compact('order'));
+    }
     public function orderStatusUpdate(Request $request)
     {
 

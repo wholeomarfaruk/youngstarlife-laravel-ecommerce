@@ -37,6 +37,9 @@
             flex: 1 1 260px;
             min-width: 220px;
         }
+        [x-cloak] {
+            display: none !important;
+        }
     </style>
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
         <h3 class="mb-0">Orders</h3>
@@ -167,15 +170,12 @@
                             <th class="text-center">Name</th>
                             <th class="text-center">Phone</th>
                             <th class="text-center">Consigment ID</th>
-                            <th class="text-center">Subtotal</th>
-                            <th class="text-center">Discount</th>
-                            <th class="text-center">Delivery charge</th>
                             <th class="text-center">Total</th>
                             <th class="text-center">Status</th>
+                            <th class="text-center">Source</th>
                             <th class="text-center">Order Date</th>
                             <th class="text-center">Total Items</th>
-                            <th class="text-center">Delivered On</th>
-                            <th class="text-center" style="width:200px">Actions</th>
+                            <th class="text-center" style="width:120px">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -187,49 +187,57 @@
                                     {{ $order->id }}
                                 </td>
                                 <td class="text-center">
-                                    {{ $order->name }}
-                                    <span data-bs-toggle="tooltip" data-bs-html="true"
-                                        title="Address: {{ $order->address }}&nbsp;&nbsp;Note: {{ $order->note }}&nbsp;&nbsp;Order Items:
-                                                @foreach ($order->Order_Item as $item)
-                                                   {{ $item?->product?->name }} x {{ $item?->quantity }} @endforeach
-                                            ">
-                                        <i class="icon-info cursor-pointer"></i>
+                                    <span x-data="{ open: false }" class="position-relative d-inline-flex align-items-center gap-1">
+                                        {{ $order->name }}
+                                        <i class="icon-info cursor-pointer"
+                                            @mouseenter="open = true" @mouseleave="open = false"
+                                            @click="open = true; $dispatch('open-order-modal', { id: {{ $order->id }} })"></i>
+                                        <span x-show="open" x-cloak x-transition
+                                            class="position-absolute bg-dark text-white small rounded px-2 py-1"
+                                            style="bottom: 100%; left: 50%; transform: translateX(-50%); white-space: nowrap; z-index: 10;">
+                                            Click for order details
+                                        </span>
                                     </span>
                                 </td>
                                 <td class="text-center {{ $order?->customer?->isBlocked ? 'text-danger' : '' }}">
                                     {{ $order->phone }}
                                 </td>
                                 <td class="text-center">{{ $order->consignment_id }}</td>
-                                <td class="text-center">৳{{ $order->subtotal }}</td>
-                                <td class="text-center">৳{{ $order->discount }}</td>
-                                <td class="text-center">৳{{ $order->fee }}</td>
                                 <td class="text-center">৳{{ $order->total }}</td>
                                 <td class="text-center text-capitalize">{{ $order->status }}</td>
+                                <td class="text-center text-capitalize">{{ $order->source ?? '-' }}</td>
                                 <td class="text-center">{{ $order->created_at }}</td>
                                 <td class="text-center">{{ $order->Order_Item->count() }}</td>
-                                <td class="text-center">{{ $order->delivery_date }}</td>
                                 <td class="text-center">
-                                    <div class="d-flex justify-content-center align-items-center gap-2">
-                                        <a href="{{ route('admin.orders.details', $order->id) }}"
-                                            class="btn btn-sm btn-outline-secondary" title="View">
-                                            <i class="icon-eye"></i>
-                                        </a>
-                                        <a href="{{ route('admin.orders.delete.soft', $order->id) }}"
-                                            class="btn btn-sm btn-outline-danger" title="Delete">
-                                            <i class="icon-trash"></i>
-                                        </a>
-                                        <a class="send_courier btn btn-sm btn-outline-secondary" data-id="{{ $order->id }}"
-                                            href="{{ route('admin.steadfast.place_order', $order->id) }}" title="Send to courier">
-                                            <i class="icon-send"></i>
-                                        </a>
-                                        @if (!$order->customer || !$order->customer->isBlocked)
-                                            <a id="blockcustomer" href="javascript:void(0)"
-                                                onclick="blockcustomer({{ $order->id }})"
-                                                class="btn btn-danger btn-sm">Block</a>
-                                        @else
-                                            <a href="javascript:void(0)" class="btn btn-success btn-sm"
-                                                onclick="unblockCustomer({{ $order->id }})">Unblock</a>
-                                        @endif
+                                    <div x-data="{ open: false }" class="dropdown" @click.outside="open = false">
+                                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                            @click="open = !open">
+                                            Actions <i class="icon-chevron-down"></i>
+                                        </button>
+                                        <div x-show="open" x-cloak x-transition
+                                            class="dropdown-menu dropdown-menu-end show position-absolute"
+                                            style="right: 0; left: auto;">
+                                            <a href="{{ route('admin.orders.details', $order->id) }}"
+                                                class="dropdown-item">
+                                                <i class="icon-eye me-1"></i> View
+                                            </a>
+                                            <a href="{{ route('admin.orders.delete.soft', $order->id) }}"
+                                                class="dropdown-item text-danger">
+                                                <i class="icon-trash me-1"></i> Delete
+                                            </a>
+                                            <a class="send_courier dropdown-item" data-id="{{ $order->id }}"
+                                                href="{{ route('admin.steadfast.place_order', $order->id) }}">
+                                                <i class="icon-send me-1"></i> Send to courier
+                                            </a>
+                                            @if (!$order->customer || !$order->customer->isBlocked)
+                                                <a id="blockcustomer" href="javascript:void(0)"
+                                                    onclick="blockcustomer({{ $order->id }})"
+                                                    class="dropdown-item text-danger">Block</a>
+                                            @else
+                                                <a href="javascript:void(0)" class="dropdown-item text-success"
+                                                    onclick="unblockCustomer({{ $order->id }})">Unblock</a>
+                                            @endif
+                                        </div>
                                     </div>
                                 </td>
                             </tr>
@@ -239,6 +247,40 @@
             </div>
             <div class="d-flex justify-content-between flex-wrap gap-2 mt-3">
                 {{ $orders->links() }}
+            </div>
+        </div>
+    </div>
+
+    <div x-data="{
+            open: false,
+            loading: false,
+            content: '',
+            fetchOrder(id) {
+                this.open = true;
+                this.loading = true;
+                this.content = '';
+                fetch('{{ url('admin/orders') }}/' + id + '/quick-view')
+                    .then(r => r.text())
+                    .then(html => { this.content = html; this.loading = false; })
+                    .catch(() => { this.content = '<p class=\'text-danger\'>Failed to load order details.</p>'; this.loading = false; });
+            }
+         }"
+         @open-order-modal.window="fetchOrder($event.detail.id)"
+         x-show="open" x-cloak
+         class="modal-backdrop-custom position-fixed top-0 start-0 w-100 h-100 d-flex align-items-center justify-content-center"
+         style="z-index: 1055; background: rgba(0,0,0,.5);"
+         @click.self="open = false">
+        <div class="bg-white rounded shadow" style="width: 90%; max-width: 800px; max-height: 90vh; overflow-y: auto;"
+             @click.outside="open = false">
+            <div class="d-flex justify-content-between align-items-center border-bottom p-3">
+                <h5 class="mb-0">Order Details</h5>
+                <button type="button" class="btn-close" @click="open = false"></button>
+            </div>
+            <div class="p-3">
+                <div x-show="loading" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+                <div x-show="!loading" x-html="content"></div>
             </div>
         </div>
     </div>
