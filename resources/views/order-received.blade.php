@@ -118,7 +118,7 @@
                     quantity: '{{ $orderItems->first()->quantity }}' ?? 1, // Integer, required
                     item_category: "Pants", // String, optional but advised if available
                     item_brand: 'YoungStar Life', // String, optional, might be useful if you sell different brands
-                    item_variant: '{{json_decode($item?->options)?->size}}' // String, optional
+                    item_variant: '{{ $orderItems->first()?->size }}' // String, optional
                 }]
             },
             // user_data অবজেক্টে শুধুমাত্র সেই ডেটা রাখুন যা আপনার কাছে উপলব্ধ
