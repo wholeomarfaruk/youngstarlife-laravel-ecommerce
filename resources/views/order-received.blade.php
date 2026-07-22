@@ -39,7 +39,7 @@
                         <div class="">
                             <h5 class="order-product-name">{{$item->product->name}}</h5>
 
-                            <p class="order-product-size">Size: {{json_decode($item?->options)?->size}}</p>
+                            <p class="order-product-size">Size: {{$item?->size}}</p>
                         </div>
                         <p class="order-product-price ms-auto">{{$item->product->discount_price && $item->product->discount_price > 0 ? $item->product->discount_price : $item->product->price}} x {{$item->quantity}} = {{$item->subtotal}}  টাকা</p>
                     </div>

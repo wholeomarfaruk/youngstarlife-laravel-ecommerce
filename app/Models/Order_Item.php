@@ -23,4 +23,9 @@ class Order_Item extends Model
     protected $casts = [
         'options' => 'array',
     ];
+
+    public function getSizeAttribute()
+    {
+        return $this->options['size'] ?? null;
+    }
 }
