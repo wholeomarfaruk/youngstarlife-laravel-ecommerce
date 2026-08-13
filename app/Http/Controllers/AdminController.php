@@ -336,13 +336,6 @@ class AdminController extends Controller
                 if (!file_exists(public_path($path))) {
                     mkdir(public_path($path), 0777, true);
                 }
-                $old_media = $product->media()->where('category', 'product_images')->get();
-                foreach ($old_media as $media) {
-                    if (file_exists(public_path($media->path))) {
-                        unlink(public_path($media->path));
-                    }
-                    $media->delete();
-                }
 
                 foreach ($images as $key => $file) {
 
@@ -439,6 +432,20 @@ class AdminController extends Controller
         $product->delete();
         return redirect()->route('admin.products')->with('status', 'Product Deleted Successfully');
     }
+
+    public function productMediaDelete($id)
+    {
+        $media = Media::find($id);
+        if (!$media) {
+            return redirect()->back()->with('error', 'Image not found.');
+        }
+        if (file_exists(public_path($media->path))) {
+            unlink(public_path($media->path));
+        }
+        $media->delete();
+        return redirect()->back()->with('status', 'Image Deleted Successfully');
+    }
+
     public function coupons()
     {
         $coupons = Coupon::orderBy('created_at', 'desc')->paginate(10);

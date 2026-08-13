@@ -107,6 +107,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/products/edit/{id}', [AdminController::class, 'productEdit'])->name('admin.products.edit');
         Route::put('/products/update', [AdminController::class, 'productUpdate'])->name('admin.products.update');
         Route::delete('/products/{id}/delete', [AdminController::class, 'productDelete'])->name('admin.products.delete');
+        Route::delete('/products/media/{id}/delete', [AdminController::class, 'productMediaDelete'])->name('admin.products.media.delete');
         Route::get('products/add/{id}', [AdminController::class, 'productsAdd'])->name('admin.products.copy');
 
         // Coupons
