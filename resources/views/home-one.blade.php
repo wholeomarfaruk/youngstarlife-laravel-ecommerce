@@ -11,13 +11,19 @@
             font-weight: 600;
 
         }
+
         .sec-style-1 .sec-body {}
+
         .sec-style-1 .sec-body .sec-grid-box {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 20px;
         }
+
+
+
         .sec-style-1 .sec-body .sec-grid-box .sec-grid-item {}
+
         .p-card-1 {
             display: flex;
             flex-direction: column;
@@ -110,6 +116,26 @@
 
                 height: 250px;
 
+            }
+        }
+
+        @media (max-width: 500px) {
+            .sec-style-1 .sec-body .sec-grid-box {
+                gap: 10px;
+            }
+
+            .p-card-1 .p-img-box img {
+
+                height: 200px;
+
+            }
+
+            .p-card-1 .p-info .p-title {
+                font-size: 13px;
+            }
+
+            .p-card-1 .p-info .p-description {
+                font-size: 14px;
             }
         }
     </style>
@@ -237,7 +263,8 @@
                 <div class="sec-header">
                     <div class="d-flex justify-content-between">
                         <div class="">
-                            <h2 class="sec-title text-primary-color">{{ $total }} Customer Reviews - কাস্টমার রিভিউ</h2>
+                            <h2 class="sec-title text-primary-color">{{ $total }} Customer Reviews - কাস্টমার রিভিউ
+                            </h2>
                         </div>
                         <div class="text-right">
                             <a href="{{ route('reviews') }}" class="sec-title text-primary-color">See all</a>
@@ -363,32 +390,36 @@
 @endsection
 
 
-    @push('scripts')
-            <script>
-                function initReviewsSwiper() {
-                    var el = document.querySelector('.sec-reviews .reviewsSwiper');
-                    if (!el || el.dataset.swiperInit || typeof Swiper === 'undefined') return;
-                    el.dataset.swiperInit = '1';
-                    new Swiper(el, {
-                        spaceBetween: 15,
-                        slidesPerView: 2, // mobile
-                        grabCursor: true,
-                        loop: true,
-                        autoplay: {
-                            delay: 2500,
-                            disableOnInteraction: false,
-                            pauseOnMouseEnter: true,
-                        },
-                        pagination: {
-                            el: ".sec-reviews .swiper-pagination",
-                            clickable: true,
-                        },
-                        breakpoints: {
-                            768: { slidesPerView: 3 }, // tablet
-                            992: { slidesPerView: 4 }, // desktop
-                        },
-                    });
-                }
-                initReviewsSwiper();
-            </script>
-        @endpush
+@push('scripts')
+    <script>
+        function initReviewsSwiper() {
+            var el = document.querySelector('.sec-reviews .reviewsSwiper');
+            if (!el || el.dataset.swiperInit || typeof Swiper === 'undefined') return;
+            el.dataset.swiperInit = '1';
+            new Swiper(el, {
+                spaceBetween: 15,
+                slidesPerView: 2, // mobile
+                grabCursor: true,
+                loop: true,
+                autoplay: {
+                    delay: 2500,
+                    disableOnInteraction: false,
+                    pauseOnMouseEnter: true,
+                },
+                pagination: {
+                    el: ".sec-reviews .swiper-pagination",
+                    clickable: true,
+                },
+                breakpoints: {
+                    768: {
+                        slidesPerView: 3
+                    }, // tablet
+                    992: {
+                        slidesPerView: 4
+                    }, // desktop
+                },
+            });
+        }
+        initReviewsSwiper();
+    </script>
+@endpush
