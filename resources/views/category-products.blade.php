@@ -116,6 +116,25 @@
 
             }
         }
+            @media (max-width: 500px) {
+            .sec-style-1 .sec-body .sec-grid-box {
+                gap: 10px;
+            }
+
+            .p-card-1 .p-img-box img {
+
+                height: 200px;
+
+            }
+
+            .p-card-1 .p-info .p-title {
+                font-size: 13px;
+            }
+
+            .p-card-1 .p-info .p-description {
+                font-size: 14px;
+            }
+        }
     </style>
 
     <section class="sec-style-1 my-3">
