@@ -124,7 +124,7 @@
                         </li>
                         <li class="nav-item fs-5">
                             <a class="nav-link {{ Request::is('category/joggers-pant') ? 'active' : '' }}"
-                                href="/category/joggers-pant">Joggers</a>
+                                href="/category/denim-pants">Denim</a>
                         </li>
                         <li class="nav-item fs-5">
                             <a class="nav-link {{ Request::is('category/cargo-pants') ? 'active' : '' }}"
