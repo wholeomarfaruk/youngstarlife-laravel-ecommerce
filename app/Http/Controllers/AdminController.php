@@ -81,12 +81,17 @@ class AdminController extends Controller
     public function productStore(Request $request)
     {
         // return $request->all();
+        $thumbnailMimes = 'jpg,jpeg,png,gif,webp,bmp,avif'; // must be rasterizable (used for thumbnail generation)
+        $imageMimes = $thumbnailMimes . ',svg';
+
         $request->validate([
             'name' => 'required',
             'price' => 'required|numeric',
             'stock_status' => 'required|in:in_stock,out_of_stock',
             'quantity' => 'required|integer',
-            'image' => 'mimes:jpg,jpeg,png,webp|max:2048',
+            'image' => 'mimes:' . $thumbnailMimes . '|max:4096',
+            'images.*' => 'mimes:' . $imageMimes . '|max:4096',
+            'sizechart' => 'mimes:' . $imageMimes . '|max:4096',
         ]);
         try {
             //code...

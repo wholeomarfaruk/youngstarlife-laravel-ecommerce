@@ -190,7 +190,7 @@
                                 </label>
                             </div>
                         </div>
-                        @error('image')
+                        @error('images.*')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
@@ -215,7 +215,7 @@
                                 </label>
                             </div>
                         </div>
-                        @error('image')
+                        @error('sizechart')
                             <span class="invalid-feedback" role="alert">
                                 <strong>{{ $message }}</strong>
                             </span>
