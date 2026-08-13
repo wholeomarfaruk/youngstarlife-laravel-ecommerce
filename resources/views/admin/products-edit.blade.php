@@ -197,16 +197,11 @@
                             @foreach ($product->media()->where('category', 'product_images')->get() as $image)
                                 <div class="item" style="position: relative;">
                                     <img src="{{ asset($image->path) }}" class="effect8" alt="">
-                                    <form action="{{ route('admin.products.media.delete', $image->id) }}" method="POST"
-                                        onsubmit="return confirm('Delete this image?');"
-                                        style="position: absolute; top: 4px; right: 4px; margin: 0;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" title="Delete image"
-                                            style="background: #dc3545; color: #fff; border: none; border-radius: 50%; width: 24px; height: 24px; line-height: 1; cursor: pointer;">
-                                            &times;
-                                        </button>
-                                    </form>
+                                    <button type="button" title="Delete image" class="js-delete-gallery-image"
+                                        data-url="{{ route('admin.products.media.delete', $image->id) }}"
+                                        style="position: absolute; top: 4px; right: 4px; margin: 0; background: #dc3545; color: #fff; border: none; border-radius: 50%; width: 24px; height: 24px; line-height: 1; cursor: pointer;">
+                                        &times;
+                                    </button>
                                 </div>
                             @endforeach
                             <div id="upload-files" class="item up-load">
@@ -306,6 +301,10 @@
                 </div>
             </form>
             <!-- /form-add-product -->
+            <form id="deleteGalleryImageForm" method="POST" style="display:none;">
+                @csrf
+                @method('DELETE')
+            </form>
         </div>
         <!-- /main-content-wrap -->
     </div>
@@ -332,6 +331,14 @@
     @endif
     <script>
         $(function() {
+            $('.js-delete-gallery-image').on('click', function() {
+                if (!confirm('Delete this image?')) {
+                    return;
+                }
+                var form = $('#deleteGalleryImageForm');
+                form.attr('action', $(this).data('url'));
+                form.trigger('submit');
+            });
             $('#myFile').on('change', function() {
                 var reader = new FileReader();
                 reader.onload = function(e) {
