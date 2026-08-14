@@ -3,7 +3,7 @@
 @push('styles')
     <style>
         .mySwiper2 .swiper-slide {
-            height: auto;
+            height: 670px;
 
             text-align: center;
         }
@@ -29,6 +29,14 @@
         .navigation .swiper-slide img {
             height: 100%;
             width: cover;
+        }
+        @media (max-width:500px){
+             .mySwiper2 .swiper-slide {
+            height: auto;
+            width:100%;
+
+            text-align: center;
+        }
         }
     </style>
 @endpush
