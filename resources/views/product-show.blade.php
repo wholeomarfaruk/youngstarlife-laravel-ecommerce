@@ -3,7 +3,7 @@
 @push('styles')
     <style>
         .mySwiper2 .swiper-slide {
-            height: 670px;
+            height: auto;
 
             text-align: center;
         }
