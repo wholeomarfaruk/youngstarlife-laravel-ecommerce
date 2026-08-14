@@ -3,14 +3,14 @@
 @push('styles')
     <style>
         .mySwiper2 .swiper-slide {
-            height: 670px;
+            height: auto;
 
             text-align: center;
         }
 
         .mySwiper2 .swiper-slide img {
             height: 100%;
-            width: auto;
+            width: 100%;
             margin: 0 auto;
             object-fit: contain;
 
