@@ -16,7 +16,7 @@
     <link rel="stylesheet" type="text/css" href="{{ asset('lib/flatpickr/flatpickr.min.css') }}?v=1.0">
 
 
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/style.css') }}?v=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/style.css') }}?v=1.1">
     <link rel="stylesheet" href="{{ asset('admin-resource/font/fonts.css') }}?v=1.0">
     <link rel="stylesheet" href="{{ asset('admin-resource/icon/style.css') }}?v=1.0">
     <link rel="shortcut icon" href="{{ asset('admin-resource/images/favicon.ico') }}">
@@ -26,7 +26,7 @@
         href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-treeview/1.2.0/bootstrap-treeview.min.css"
         integrity="sha512-A81ejcgve91dAWmCGseS60zjrAdohm7PTcAjjiDWtw3Tcj91PNMa1gJ/ImrhG+DbT5V+JQ5r26KT5+kgdVTb5w=="
         crossorigin="anonymous" referrerpolicy="no-referrer" />
-    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/custom.css') }}?v=1.0">
+    <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/custom.css') }}?v=1.1">
       @livewireStyles
     @stack('styles')
 </head>
