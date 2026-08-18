@@ -197,9 +197,9 @@
                                                     @endphp
                                                     @if (!empty($opts))
                                                         @foreach ($opts as $key => $value)
-                                                            <div class="option-item">
-                                                                <strong class="option-key">{{ ucfirst($key) }}</strong>:
-                                                                <span class="option-value">{{ $value }}</span>
+                                                            <div class="small">
+                                                                <strong>{{ ucfirst($key) }}</strong>:
+                                                                <span>{{ $value }}</span>
                                                             </div>
                                                         @endforeach
                                                     @else
@@ -215,8 +215,7 @@
                                                         <input type="number" name="returned_quantity"
                                                             value="{{ $item->returned_quantity }}" min="0"
                                                             max="{{ $item->quantity }}"
-                                                            class="form-control form-control-sm text-center"
-                                                            style="width: 60px;">
+                                                            class="form-control form-control-sm text-center">
                                                         <button type="submit" class="btn btn-sm btn-outline-primary">
                                                             Save
                                                         </button>
