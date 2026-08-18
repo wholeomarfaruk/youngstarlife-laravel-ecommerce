@@ -5,12 +5,24 @@
     <title>Orders Export</title>
     <style>
         body { font-family: 'solaimanlipi', DejaVu Sans, sans-serif; font-size: 7px; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ccc; padding: 2px 3px; text-align: left; }
+        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        th, td { border: 1px solid #ccc; padding: 2px 3px; text-align: left; word-wrap: break-word; }
         th { background-color: #f2f2f2; }
         tfoot td { font-weight: bold; }
         h1 { margin: 0 0 3px; font-size: 14px; }
         p.export-date { margin: 0 0 8px; font-style: italic; color: #555; font-size: 8px; }
+
+        .col-date { width: 6%; }
+        .col-id { width: 4%; }
+        .col-name { width: 10%; }
+        .col-address { width: 12%; }
+        .col-phone { width: 7%; }
+        .col-total { width: 5%; }
+        .col-status { width: 10%; }
+        .col-consignment { width: 9%; }
+        .col-courier-status { width: 10%; }
+        .col-item { width: 15%; }
+        .col-size { width: 12%; }
     </style>
 </head>
 <body>
@@ -19,17 +31,17 @@
     <table>
         <thead>
             <tr>
-                <th>Date</th>
-                <th>ID</th>
-                <th>Customer Name</th>
-                <th>Address</th>
-                <th>Phone</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Consignment ID</th>
-                <th>Courier Status</th>
-                <th>Item Description</th>
-                <th>Size</th>
+                <th class="col-date">Date</th>
+                <th class="col-id">ID</th>
+                <th class="col-name">Customer Name</th>
+                <th class="col-address">Address</th>
+                <th class="col-phone">Phone</th>
+                <th class="col-total">Total</th>
+                <th class="col-status">Status</th>
+                <th class="col-consignment">Consignment ID</th>
+                <th class="col-courier-status">Courier Status</th>
+                <th class="col-item">Item Description</th>
+                <th class="col-size">Size</th>
             </tr>
         </thead>
         <tbody>
@@ -45,17 +57,17 @@
                     $totalSum += (float) $order->total;
                 @endphp
                 <tr>
-                    <td>{{ $order->updated_at }}</td>
-                    <td>{{ $order->id }}</td>
-                    <td>{{ $order->name }}</td>
-                    <td>{{ $order->address }}</td>
-                    <td>{{ $order->phone }}</td>
-                    <td>{{ $order->total }}</td>
-                    <td>{{ $order->status ? str_replace('_', ' ', $order->status) : '' }}</td>
-                    <td>{{ $order->consignment_id ?: '' }}</td>
-                    <td>{{ $order->courier_status ? str_replace('_', ' ', $order->courier_status->value) : '' }}</td>
-                    <td>{{ $firstItem ? $productName : '' }}</td>
-                    <td>{{ $firstItem ? $size : '' }}</td>
+                    <td class="col-date">{{ $order->updated_at }}</td>
+                    <td class="col-id">{{ $order->id }}</td>
+                    <td class="col-name">{{ $order->name }}</td>
+                    <td class="col-address">{{ $order->address }}</td>
+                    <td class="col-phone">{{ $order->phone }}</td>
+                    <td class="col-total">{{ $order->total }}</td>
+                    <td class="col-status">{{ $order->status ? str_replace('_', ' ', $order->status) : '' }}</td>
+                    <td class="col-consignment">{{ $order->consignment_id ?: '' }}</td>
+                    <td class="col-courier-status">{{ $order->courier_status ? str_replace('_', ' ', $order->courier_status->value) : '' }}</td>
+                    <td class="col-item">{{ $firstItem ? $productName : '' }}</td>
+                    <td class="col-size">{{ $firstItem ? $size : '' }}</td>
                 </tr>
             @endforeach
         </tbody>
