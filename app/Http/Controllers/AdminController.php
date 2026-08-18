@@ -1006,6 +1006,11 @@ public function ordersDataTable(Request $request)
             $orders = $export->collection();
 
             $pdf = Pdf::loadView('admin.exports.orders-pdf', ['orders' => $orders]);
+            $pdf->getDomPDF()->getFontMetrics()->registerFont(
+                ['family' => 'solaimanlipi', 'style' => 'normal', 'weight' => 'normal'],
+                public_path('fonts/SolaimanLipi.ttf')
+            );
+            $pdf->setPaper('a4', 'landscape');
 
             return $pdf->download($baseName . '_' . $timestamp . '.pdf');
         }

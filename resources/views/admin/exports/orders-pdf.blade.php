@@ -4,13 +4,13 @@
     <meta charset="utf-8">
     <title>Orders Export</title>
     <style>
-        body { font-family: DejaVu Sans, sans-serif; font-size: 11px; }
+        body { font-family: 'solaimanlipi', DejaVu Sans, sans-serif; font-size: 7px; }
         table { width: 100%; border-collapse: collapse; }
-        th, td { border: 1px solid #ccc; padding: 5px 6px; text-align: left; }
+        th, td { border: 1px solid #ccc; padding: 2px 3px; text-align: left; }
         th { background-color: #f2f2f2; }
         tfoot td { font-weight: bold; }
-        h1 { margin: 0 0 4px; font-size: 20px; }
-        p.export-date { margin: 0 0 14px; font-style: italic; color: #555; }
+        h1 { margin: 0 0 3px; font-size: 14px; }
+        p.export-date { margin: 0 0 8px; font-style: italic; color: #555; font-size: 8px; }
     </style>
 </head>
 <body>
