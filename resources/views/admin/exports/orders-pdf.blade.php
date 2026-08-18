@@ -12,6 +12,7 @@
         h1 { margin: 0 0 3px; font-size: 14px; }
         p.export-date { margin: 0 0 8px; font-style: italic; color: #555; font-size: 8px; }
 
+        .col-sl { width: 3%; }
         .col-date { width: 6%; }
         .col-id { width: 4%; }
         .col-name { width: 10%; }
@@ -31,6 +32,7 @@
     <table>
         <thead>
             <tr>
+                <th class="col-sl">SL</th>
                 <th class="col-date">Date</th>
                 <th class="col-id">ID</th>
                 <th class="col-name">Customer Name</th>
@@ -59,6 +61,7 @@
                     $totalSum += (float) $order->total;
                 @endphp
                 <tr>
+                    <td class="col-sl">{{ $loop->iteration }}</td>
                     <td class="col-date">{{ $order->updated_at }}</td>
                     <td class="col-id">{{ $order->id }}</td>
                     <td class="col-name">{{ $order->name }}</td>
@@ -75,7 +78,7 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="4"></td>
+                <td colspan="5"></td>
                 <td>Total</td>
                 <td>{{ number_format($totalSum, 2) }}</td>
                 <td colspan="5"></td>

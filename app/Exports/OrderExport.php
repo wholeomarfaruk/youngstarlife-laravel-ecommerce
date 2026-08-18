@@ -13,6 +13,7 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
 {
     protected $status;
     protected $totalSum = 0;
+    protected $serial = 0;
 
     // Accept status in constructor
     public function __construct($status = null)
@@ -60,8 +61,10 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
         });
 
         $this->totalSum += (float) $order->total;
+        $this->serial++;
 
         return [
+            $this->serial,
             $order->updated_at,
             $order->id,
             $order->name,
@@ -83,7 +86,7 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
      */
     public function headings(): array
     {
-        return ['Date', 'ID', 'Customer Name', 'Address', 'Phone', 'Total', 'Status', 'Consignment ID', 'Courier Status', 'Item Description', 'Note'];
+        return ['SL', 'Date', 'ID', 'Customer Name', 'Address', 'Phone', 'Total', 'Status', 'Consignment ID', 'Courier Status', 'Item Description', 'Note'];
     }
 
     public function registerEvents(): array
@@ -96,19 +99,19 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
                 $sheet->insertNewRowBefore(1, 2);
 
                 $sheet->setCellValue('A1', 'YoungStar Life');
-                $sheet->mergeCells('A1:K1');
+                $sheet->mergeCells('A1:L1');
                 $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
 
                 $sheet->setCellValue('A2', 'Export date: ' . now()->format('d M Y, h:i A'));
-                $sheet->mergeCells('A2:K2');
+                $sheet->mergeCells('A2:L2');
                 $sheet->getStyle('A2')->getFont()->setItalic(true);
 
                 $lastRow = $sheet->getHighestRow();
                 $sumRow = $lastRow + 1;
 
-                $sheet->setCellValue("E{$sumRow}", 'Total');
-                $sheet->setCellValue("F{$sumRow}", $this->totalSum);
-                $sheet->getStyle("E{$sumRow}:F{$sumRow}")->getFont()->setBold(true);
+                $sheet->setCellValue("F{$sumRow}", 'Total');
+                $sheet->setCellValue("G{$sumRow}", $this->totalSum);
+                $sheet->getStyle("F{$sumRow}:G{$sumRow}")->getFont()->setBold(true);
             },
         ];
     }
