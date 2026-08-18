@@ -15,14 +15,14 @@
         .col-date { width: 6%; }
         .col-id { width: 4%; }
         .col-name { width: 10%; }
-        .col-address { width: 12%; }
+        .col-address { width: 16%; }
         .col-phone { width: 7%; }
         .col-total { width: 5%; }
         .col-status { width: 10%; }
         .col-consignment { width: 9%; }
         .col-courier-status { width: 10%; }
         .col-item { width: 15%; }
-        .col-size { width: 12%; }
+        .col-size { width: 6%; }
     </style>
 </head>
 <body>
