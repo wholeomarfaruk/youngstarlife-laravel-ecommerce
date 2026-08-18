@@ -974,6 +974,19 @@ public function ordersDataTable(Request $request)
         return redirect()->route('admin.orders.details', $order->id)->with('status', 'Courier Status Updated Successfully');
     }
 
+    public function orderItemReturnUpdate(Request $request, $id)
+    {
+        $item = Order_Item::findOrFail($id);
+
+        $returnedQuantity = max(0, min((int) $request->returned_quantity, (int) $item->quantity));
+
+        $item->returned_quantity = $returnedQuantity;
+        $item->rstatus = $returnedQuantity > 0;
+        $item->save();
+
+        return redirect()->route('admin.orders.details', $item->order_id)->with('status', 'Item Return Updated Successfully');
+    }
+
     public function ordersoftdelete($id)
     {
         $order = Order::find($id);

@@ -207,11 +207,29 @@
                                                     @endif
                                                 </td>
                                                 <td class="text-center">
-                                                    @if ($item->rstatus)
-                                                        <span class="badge bg-warning text-dark">Returned</span>
-                                                    @else
-                                                        <span class="badge bg-light text-muted border">No</span>
-                                                    @endif
+                                                    <form action="{{ route('admin.order_items.return', $item->id) }}"
+                                                        method="POST"
+                                                        class="d-flex align-items-center justify-content-center gap-1">
+                                                        @csrf
+                                                        @method('PUT')
+                                                        <input type="number" name="returned_quantity"
+                                                            value="{{ $item->returned_quantity }}" min="0"
+                                                            max="{{ $item->quantity }}"
+                                                            class="form-control form-control-sm text-center"
+                                                            style="width: 60px;">
+                                                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                                                            Save
+                                                        </button>
+                                                    </form>
+                                                    <div class="mt-1">
+                                                        @if ($item->returned_quantity > 0)
+                                                            <span class="badge bg-warning text-dark">
+                                                                Returned {{ $item->returned_quantity }}/{{ $item->quantity }}
+                                                            </span>
+                                                        @else
+                                                            <span class="badge bg-light text-muted border">No</span>
+                                                        @endif
+                                                    </div>
                                                 </td>
                                             </tr>
                                         @empty
