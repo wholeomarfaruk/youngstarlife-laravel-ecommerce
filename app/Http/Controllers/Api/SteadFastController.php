@@ -86,16 +86,20 @@ class SteadFastController extends Controller
         }
         if ($notificationType === 'tracking_update') {
 
-           $trackingMessage = $request->input('tracking_message') ?? null;
+            $trackingMessage = $request->input('tracking_message') ?? null;
 
-            $message = strtolower($trackingMessage);
+            if (!$trackingMessage) {
 
-            if (
-                str_contains($message, 'assigned') ||
-                str_contains($message, 'rider') ||
-                str_contains($message, 'delivery')
-            ) {
-                $order->courier_status = CourierStatus::RiderAssigned;
+
+                $message = strtolower($trackingMessage);
+
+                if (
+                    str_contains($message, 'assigned') ||
+                    str_contains($message, 'rider') ||
+                    str_contains($message, 'delivery')
+                ) {
+                    $order->courier_status = CourierStatus::RiderAssigned;
+                }
             }
         }
 
