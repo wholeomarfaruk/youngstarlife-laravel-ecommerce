@@ -28,23 +28,23 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
 
             return Order::with('Order_Item')
                 ->where('consignment_id', '!=', '')
-                ->select('id', 'name', 'address','phone', 'total', 'updated_at')
+                ->select('id', 'name', 'address','phone', 'total', 'status', 'consignment_id', 'courier_status', 'updated_at')
                 ->get();
 
         }elseif($this->status &&  $this->status == 'courier_not_entered'){
 
             return Order::with('Order_Item')
                 ->where('consignment_id', null)
-                ->select('id', 'name', 'address','phone', 'total', 'updated_at')
+                ->select('id', 'name', 'address','phone', 'total', 'status', 'consignment_id', 'courier_status', 'updated_at')
                 ->get();
         }
         if ($this->status) {
             return Order::with('Order_Item')
                 ->where('status', $this->status)
-                ->select('id', 'name', 'address','phone', 'total', 'updated_at')
+                ->select('id', 'name', 'address','phone', 'total', 'status', 'consignment_id', 'courier_status', 'updated_at')
                 ->get();
         }else{
-            return Order::with('Order_Item')->select('id', 'name','phone', 'address', 'total', 'updated_at')->get();
+            return Order::with('Order_Item')->select('id', 'name','phone', 'address', 'total', 'status', 'consignment_id', 'courier_status', 'updated_at')->get();
         }
     }
 
@@ -66,6 +66,9 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
             $order->address,
             $order->phone,
             $order->total,
+            $order->status ? str_replace('_', ' ', $order->status) : '',
+            $order->consignment_id ?: '',
+            $order->courier_status ? str_replace('_', ' ', $order->courier_status->value) : '',
             $firstItem ? $productName : '',        // Item Description
             $firstItem ? $size : '',     // Size
         ];
@@ -78,7 +81,7 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
      */
     public function headings(): array
     {
-        return ['Date', 'ID', 'Customer Name', 'Address','Phone', 'Total', 'Item Description', 'Size'];
+        return ['Date', 'ID', 'Customer Name', 'Address', 'Phone', 'Total', 'Status', 'Consignment ID', 'Courier Status', 'Item Description', 'Size'];
     }
 
     public function registerEvents(): array
@@ -91,11 +94,11 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
                 $sheet->insertNewRowBefore(1, 2);
 
                 $sheet->setCellValue('A1', 'YoungStar Life');
-                $sheet->mergeCells('A1:H1');
+                $sheet->mergeCells('A1:K1');
                 $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
 
                 $sheet->setCellValue('A2', 'Export date: ' . now()->format('d M Y, h:i A'));
-                $sheet->mergeCells('A2:H2');
+                $sheet->mergeCells('A2:K2');
                 $sheet->getStyle('A2')->getFont()->setItalic(true);
 
                 $lastRow = $sheet->getHighestRow();

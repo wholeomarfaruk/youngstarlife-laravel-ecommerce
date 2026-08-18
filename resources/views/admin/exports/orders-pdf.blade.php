@@ -25,6 +25,9 @@
                 <th>Address</th>
                 <th>Phone</th>
                 <th>Total</th>
+                <th>Status</th>
+                <th>Consignment ID</th>
+                <th>Courier Status</th>
                 <th>Item Description</th>
                 <th>Size</th>
             </tr>
@@ -48,6 +51,9 @@
                     <td>{{ $order->address }}</td>
                     <td>{{ $order->phone }}</td>
                     <td>{{ $order->total }}</td>
+                    <td>{{ $order->status ? str_replace('_', ' ', $order->status) : '' }}</td>
+                    <td>{{ $order->consignment_id ?: '' }}</td>
+                    <td>{{ $order->courier_status ? str_replace('_', ' ', $order->courier_status->value) : '' }}</td>
                     <td>{{ $firstItem ? $productName : '' }}</td>
                     <td>{{ $firstItem ? $size : '' }}</td>
                 </tr>
@@ -58,7 +64,7 @@
                 <td colspan="4"></td>
                 <td>Total</td>
                 <td>{{ number_format($totalSum, 2) }}</td>
-                <td colspan="2"></td>
+                <td colspan="5"></td>
             </tr>
         </tfoot>
     </table>
