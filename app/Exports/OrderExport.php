@@ -86,6 +86,18 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
+
+                // Make room for the two headline rows above the header row.
+                $sheet->insertNewRowBefore(1, 2);
+
+                $sheet->setCellValue('A1', 'YoungStar Life');
+                $sheet->mergeCells('A1:H1');
+                $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
+
+                $sheet->setCellValue('A2', 'Export date: ' . now()->format('d M Y, h:i A'));
+                $sheet->mergeCells('A2:H2');
+                $sheet->getStyle('A2')->getFont()->setItalic(true);
+
                 $lastRow = $sheet->getHighestRow();
                 $sumRow = $lastRow + 1;
 

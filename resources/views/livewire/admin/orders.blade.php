@@ -65,7 +65,7 @@
                     </span>
                 </div>
 
-                <form class="d-flex gap-2" method="GET" action="{{ route('admin.orders.export') }}">
+                <form class="d-flex gap-2" method="GET" action="{{ route('admin.orders.export') }}" id="export-form">
                     <select name="order_status" class="form-select">
                         <option value="">Select Status</option>
                         @foreach ($status_group as $sg)
@@ -74,9 +74,24 @@
                         <option value="courier_not_entered">Courier Not Entered</option>
                         <option value="courier_entered">Courier Entered</option>
                     </select>
-                    <button class="btn btn-outline-secondary text-nowrap" type="submit">
-                        <i class="icon-search"></i> Export
-                    </button>
+                    <input type="hidden" name="format" id="export-format" value="excel">
+                    <div x-data="{ open: false }" class="dropdown" @click.outside="open = false">
+                        <button type="button" class="btn btn-outline-secondary text-nowrap dropdown-toggle"
+                            @click="open = !open">
+                            <i class="icon-download"></i> Export
+                        </button>
+                        <div x-show="open" x-cloak x-transition
+                            class="dropdown-menu dropdown-menu-end show position-absolute">
+                            <button type="submit" class="dropdown-item"
+                                @click="document.getElementById('export-format').value = 'excel'">
+                                <i class="icon-file-text me-1"></i> Excel
+                            </button>
+                            <button type="submit" class="dropdown-item"
+                                @click="document.getElementById('export-format').value = 'pdf'">
+                                <i class="icon-file me-1"></i> PDF
+                            </button>
+                        </div>
+                    </div>
                 </form>
 
                 <a class="btn btn-primary text-nowrap" href="{{ route('admin.orders.add') }}">

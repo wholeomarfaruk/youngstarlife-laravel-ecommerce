@@ -29,6 +29,7 @@ use Illuminate\Support\Str;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Support\Facades\File;
 use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 use ShahariarAhmad\CourierFraudCheckerBd\Facade\CourierFraudCheckerBd;
 use Yajra\DataTables\DataTables;
 
@@ -996,14 +997,20 @@ public function ordersDataTable(Request $request)
     public function exportOrders(Request $request)
     {
         $order_status = $request->order_status ?? null;
-        if ($request->has('order_status')) {
+        $format = $request->format ?? 'excel';
+        $baseName = $request->has('order_status') ? $order_status . '_orders' : 'orders';
+        $timestamp = Carbon::now()->format('Y_m_d_H_i_s');
 
-            $fileName = $order_status . '_orders_' . Carbon::now()->format('Y_m_d_H_i_s') . '.xlsx';
-        } else {
-            $fileName = 'orders_' . Carbon::now()->format('Y_m_d_H_i_s') . '.xlsx';
+        if ($format === 'pdf') {
+            $export = new OrderExport($order_status);
+            $orders = $export->collection();
+
+            $pdf = Pdf::loadView('admin.exports.orders-pdf', ['orders' => $orders]);
+
+            return $pdf->download($baseName . '_' . $timestamp . '.pdf');
         }
 
-        return Excel::download(new OrderExport($order_status), $fileName);
+        return Excel::download(new OrderExport($order_status), $baseName . '_' . $timestamp . '.xlsx');
     }
     public function updateOrder(Request $request, $id)
     {
