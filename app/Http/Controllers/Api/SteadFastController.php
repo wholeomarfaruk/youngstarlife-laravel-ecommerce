@@ -84,7 +84,7 @@ class SteadFastController extends Controller
                 $order->courier_status = CourierStatus::InTransit;
             }
         }
-        if ($notificationType === 'return_status') {
+        if ($notificationType === 'tracking_update') {
 
            $trackingMessage = $request->input('tracking_message') ?? null;
 
