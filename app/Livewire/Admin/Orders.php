@@ -13,6 +13,7 @@ class Orders extends Component
     use WithPagination;
     public $search = '';
     public $order_status;
+    public $courier_status;
     public $daterange;
     protected $paginationTheme = 'bootstrap';
 
@@ -28,6 +29,7 @@ class Orders extends Component
     {
         $this->search = request()->query('search', '');
         $this->order_status = request()->query('order_status', '');
+        $this->courier_status = request()->query('courier_status', '');
 
         $pendingOrders = Order::where('status', 'pending')
             ->with('Order_Item')
@@ -53,6 +55,9 @@ class Orders extends Component
             ->where('status', '!=', 'deleted')
             ->when($this->order_status, function ($query) {
                 $query->where('status', $this->order_status);
+            })
+            ->when($this->courier_status, function ($query) {
+                $query->where('courier_status', $this->courier_status);
             })
             ->when($this->search, function ($query) {
                 $search = $this->search;

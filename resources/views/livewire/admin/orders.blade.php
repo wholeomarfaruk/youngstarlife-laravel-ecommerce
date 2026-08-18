@@ -65,6 +65,13 @@
                     </span>
                 </div>
 
+                <select wire:model.live="courier_status" class="form-select" style="width: auto;">
+                    <option value="">All Courier Status</option>
+                    @foreach (\App\Enums\CourierStatus::cases() as $case)
+                        <option value="{{ $case->value }}">{{ ucfirst(str_replace('_', ' ', $case->value)) }}</option>
+                    @endforeach
+                </select>
+
                 <form class="d-flex gap-2" method="GET" action="{{ route('admin.orders.export') }}" id="export-form">
                     <select name="order_status" class="form-select">
                         <option value="">Select Status</option>
