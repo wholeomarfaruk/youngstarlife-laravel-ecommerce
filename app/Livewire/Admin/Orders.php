@@ -15,7 +15,13 @@ class Orders extends Component
     public $order_status;
     public $courier_status;
     public $daterange;
+    public $perPage = 30;
     protected $paginationTheme = 'bootstrap';
+
+    public function updatingPerPage()
+    {
+        $this->resetPage();
+    }
 
         protected $queryString = [
         'search' => ['except' => '']
@@ -87,7 +93,7 @@ class Orders extends Component
                 }
             })
             ->orderBy('created_at', 'desc')
-            ->paginate(20);
+            ->paginate($this->perPage);
 
 
         $status_group = Order::whereNot('status', 'deleted')->select('status')

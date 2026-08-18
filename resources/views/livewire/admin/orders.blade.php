@@ -72,6 +72,12 @@
                     @endforeach
                 </select>
 
+                <select wire:model.live="perPage" class="form-select" style="width: auto;">
+                    @foreach ([30, 50, 100, 200, 300, 500] as $count)
+                        <option value="{{ $count }}">{{ $count }} / page</option>
+                    @endforeach
+                </select>
+
                 <form class="d-flex gap-2" method="GET" action="{{ route('admin.orders.export') }}" id="export-form">
                     <select name="order_status" class="form-select">
                         <option value="">Select Status</option>
