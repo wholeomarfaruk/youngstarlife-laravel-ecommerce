@@ -4,10 +4,12 @@ namespace App\Exports;
 
 use App\Models\Order;
 use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Events\AfterSheet;
 
-class OrderExport implements FromCollection, WithHeadings, WithMapping
+class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMapping
 {
     protected $status;
 
@@ -48,7 +50,7 @@ class OrderExport implements FromCollection, WithHeadings, WithMapping
     public function map($order): array
     {
         $firstItem = $order->order_item->first();
-        $size = $firstItem ? json_decode($firstItem->options, true)['size'] ?? '' : '';
+        $size = $firstItem ? ($firstItem->options['size'] ?? '') : '';
         $productName = $firstItem ? $firstItem->product->name : '';
         if ($size) {
             $productName .= " ($size)";
@@ -74,5 +76,20 @@ class OrderExport implements FromCollection, WithHeadings, WithMapping
     public function headings(): array
     {
         return ['Date', 'ID', 'Customer Name', 'Address','Phone', 'Total', 'Item Description', 'Size'];
+    }
+
+    public function registerEvents(): array
+    {
+        return [
+            AfterSheet::class => function (AfterSheet $event) {
+                $sheet = $event->sheet->getDelegate();
+                $lastRow = $sheet->getHighestRow();
+                $sumRow = $lastRow + 1;
+
+                $sheet->setCellValue("E{$sumRow}", 'Total');
+                $sheet->setCellValue("F{$sumRow}", "=SUM(F2:F{$lastRow})");
+                $sheet->getStyle("E{$sumRow}:F{$sumRow}")->getFont()->setBold(true);
+            },
+        ];
     }
 }
