@@ -72,7 +72,7 @@ class SteadFastController extends Controller
                 $order->status = 'partial_delivered';
                 $order->delivery_date = now();
             } elseif (Str::lower($status) === 'cancelled') {
-                $order->status = 'cancelled';
+                $order->status = 'returning';
                 $order->cancelled_date = now();
             } elseif (Str::lower($status) === 'pending') {
                 $order->status = 'in_transit';
