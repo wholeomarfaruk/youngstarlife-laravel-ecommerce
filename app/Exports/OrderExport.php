@@ -12,6 +12,7 @@ use Maatwebsite\Excel\Events\AfterSheet;
 class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMapping
 {
     protected $status;
+    protected $totalSum = 0;
 
     // Accept status in constructor
     public function __construct($status = null)
@@ -56,6 +57,8 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
             $productName .= " ($size)";
         }
 
+        $this->totalSum += (float) $order->total;
+
         return [
             $order->updated_at,
             $order->id,
@@ -87,7 +90,7 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
                 $sumRow = $lastRow + 1;
 
                 $sheet->setCellValue("E{$sumRow}", 'Total');
-                $sheet->setCellValue("F{$sumRow}", "=SUM(F2:F{$lastRow})");
+                $sheet->setCellValue("F{$sumRow}", $this->totalSum);
                 $sheet->getStyle("E{$sumRow}:F{$sumRow}")->getFont()->setBold(true);
             },
         ];
