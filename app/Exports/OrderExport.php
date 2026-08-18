@@ -28,34 +28,36 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
 
             return Order::with('Order_Item')
                 ->where('consignment_id', '!=', '')
-                ->select('id', 'name', 'address','phone', 'total', 'status', 'consignment_id', 'courier_status', 'updated_at')
+                ->select('id', 'name', 'address','phone', 'total', 'status', 'consignment_id', 'courier_status', 'notes', 'updated_at')
                 ->get();
 
         }elseif($this->status &&  $this->status == 'courier_not_entered'){
 
             return Order::with('Order_Item')
                 ->where('consignment_id', null)
-                ->select('id', 'name', 'address','phone', 'total', 'status', 'consignment_id', 'courier_status', 'updated_at')
+                ->select('id', 'name', 'address','phone', 'total', 'status', 'consignment_id', 'courier_status', 'notes', 'updated_at')
                 ->get();
         }
         if ($this->status) {
             return Order::with('Order_Item')
                 ->where('status', $this->status)
-                ->select('id', 'name', 'address','phone', 'total', 'status', 'consignment_id', 'courier_status', 'updated_at')
+                ->select('id', 'name', 'address','phone', 'total', 'status', 'consignment_id', 'courier_status', 'notes', 'updated_at')
                 ->get();
         }else{
-            return Order::with('Order_Item')->select('id', 'name','phone', 'address', 'total', 'status', 'consignment_id', 'courier_status', 'updated_at')->get();
+            return Order::with('Order_Item')->select('id', 'name','phone', 'address', 'total', 'status', 'consignment_id', 'courier_status', 'notes', 'updated_at')->get();
         }
     }
 
     public function map($order): array
     {
-        $firstItem = $order->order_item->first();
-        $size = $firstItem ? ($firstItem->options['size'] ?? '') : '';
-        $productName = $firstItem ? $firstItem->product->name : '';
-        if ($size) {
-            $productName .= " ($size)";
-        }
+        $itemLines = $order->order_item->map(function ($item) {
+            $size = $item->options['size'] ?? null;
+            $line = $item->product->name;
+            if ($size) {
+                $line .= " (size: {$size})";
+            }
+            return $line . ' x ' . $item->quantity . 'pcs';
+        });
 
         $this->totalSum += (float) $order->total;
 
@@ -69,8 +71,8 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
             $order->status ? str_replace('_', ' ', $order->status) : '',
             $order->consignment_id ?: '',
             $order->courier_status ? str_replace('_', ' ', $order->courier_status->value) : '',
-            $firstItem ? $productName : '',        // Item Description
-            $firstItem ? $size : '',     // Size
+            $itemLines->implode(', '),        // Item Description
+            $order->notes ?: '',
         ];
     }
 
@@ -81,7 +83,7 @@ class OrderExport implements FromCollection, WithEvents, WithHeadings, WithMappi
      */
     public function headings(): array
     {
-        return ['Date', 'ID', 'Customer Name', 'Address', 'Phone', 'Total', 'Status', 'Consignment ID', 'Courier Status', 'Item Description', 'Size'];
+        return ['Date', 'ID', 'Customer Name', 'Address', 'Phone', 'Total', 'Status', 'Consignment ID', 'Courier Status', 'Item Description', 'Note'];
     }
 
     public function registerEvents(): array

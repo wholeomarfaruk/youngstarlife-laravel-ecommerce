@@ -22,7 +22,7 @@
         .col-consignment { width: 9%; }
         .col-courier-status { width: 10%; }
         .col-item { width: 15%; }
-        .col-size { width: 6%; }
+        .col-note { width: 8%; }
     </style>
 </head>
 <body>
@@ -41,7 +41,7 @@
                 <th class="col-consignment">Consignment ID</th>
                 <th class="col-courier-status">Courier Status</th>
                 <th class="col-item">Item Description</th>
-                <th class="col-size">Size</th>
+                <th class="col-note">Note</th>
             </tr>
         </thead>
         <tbody>
@@ -49,9 +49,13 @@
             @foreach ($orders as $order)
                 @php
                     $itemLines = $order->order_item->map(function ($item) {
-                        return $item->product->name . ' x ' . $item->quantity . 'pcs';
+                        $size = $item->options['size'] ?? null;
+                        $line = $item->product->name;
+                        if ($size) {
+                            $line .= " (size: {$size})";
+                        }
+                        return $line . ' x ' . $item->quantity . 'pcs';
                     });
-                    $sizes = $order->order_item->map(fn($item) => $item->options['size'] ?? null)->filter();
                     $totalSum += (float) $order->total;
                 @endphp
                 <tr>
@@ -65,7 +69,7 @@
                     <td class="col-consignment">{{ $order->consignment_id ?: '' }}</td>
                     <td class="col-courier-status">{{ $order->courier_status ? str_replace('_', ' ', $order->courier_status->value) : '' }}</td>
                     <td class="col-item">{{ $itemLines->implode(', ') }}</td>
-                    <td class="col-size">{{ $sizes->implode(', ') }}</td>
+                    <td class="col-note">{{ $order->notes ?: '' }}</td>
                 </tr>
             @endforeach
         </tbody>
