@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Enums\CourierStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\Request;
@@ -62,20 +63,39 @@ class SteadFastController extends Controller
         // You can process/save data to DB here...
         // Example: handle delivery status
         if ($notificationType === 'delivery_status') {
+
+
             // Do something with $consignmentId, $status etc.
 
             if (Str::lower($status) === 'delivered') {
                 $order->status = 'delivered';
+                $order->courier_status = CourierStatus::Delivered;
                 $order->delivery_date = now();
 
             } elseif (Str::lower($status) === 'partial_delivered') {
                 $order->status = 'partial_delivered';
+                $order->courier_status = CourierStatus::Returning;
                 $order->delivery_date = now();
             } elseif (Str::lower($status) === 'cancelled') {
                 $order->status = 'returning';
                 $order->cancelled_date = now();
             } elseif (Str::lower($status) === 'pending') {
                 $order->status = 'in_transit';
+                $order->courier_status = CourierStatus::InTransit;
+            }
+        }
+        if ($notificationType === 'return_status') {
+
+           $trackingMessage = $request->input('tracking_message') ?? null;
+
+            $message = strtolower($trackingMessage);
+
+            if (
+                str_contains($message, 'assigned') ||
+                str_contains($message, 'rider') ||
+                str_contains($message, 'delivery')
+            ) {
+                $order->courier_status = CourierStatus::RiderAssigned;
             }
         }
 
@@ -152,7 +172,7 @@ class SteadFastController extends Controller
         $orders = Order::whereIn('id', $request->input('order_ids'))->get();
         $orderData = [];
         foreach ($orders as $order) {
-            if (!$order->consignment_id && $order->name && $order->phone && $order->address && $order->total > 0  && strlen($order->phone) == 11) {
+            if (!$order->consignment_id && $order->name && $order->phone && $order->address && $order->total > 0 && strlen($order->phone) == 11) {
                 $orderData[] = [
                     'invoice' => $order->id,
                     'recipient_name' => $order->name,

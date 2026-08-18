@@ -138,6 +138,7 @@ Route::prefix('admin')->group(function () {
         Route::get('/orders/{id}/details', [AdminController::class, 'orderDetails'])->name('admin.orders.details');
         Route::get('/orders/{id}/quick-view', [AdminController::class, 'orderQuickView'])->name('admin.orders.quick_view');
         Route::put('/orders/{id}/update-status', [AdminController::class, 'orderStatusUpdate'])->name('admin.orders.update');
+        Route::put('/orders/{id}/update-courier-status', [AdminController::class, 'orderCourierStatusUpdate'])->name('admin.orders.update.courier_status');
         Route::delete('/orders/{id}/delete', [AdminController::class, 'deleteOrder'])->name('admin.orders.delete');
         Route::get('/orders/soft-delete/{id}', [AdminController::class, 'ordersoftdelete'])->name('admin.orders.delete.soft');
         Route::get('/orders/export', [AdminController::class, 'exportOrders'])->name('admin.orders.export');

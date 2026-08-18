@@ -174,6 +174,7 @@
                             <th class="text-center">Name</th>
                             <th class="text-center">Phone</th>
                             <th class="text-center">Consigment ID</th>
+                            <th class="text-center">Courier Status</th>
                             <th class="text-center">Total</th>
                             <th class="text-center">Status</th>
                             <th class="text-center">Order Date</th>
@@ -208,6 +209,24 @@
                                     {{ $order->phone }}
                                 </td>
                                 <td class="text-center">{{ $order->consignment_id }}</td>
+                                <td class="text-center">
+                                    @php
+                                        $courierStatusColors = [
+                                            'delivered' => 'success',
+                                            'rider_assigned' => 'info text-dark',
+                                            'in_transit' => 'info text-dark',
+                                            'returning' => 'warning text-dark',
+                                            'returned' => 'danger',
+                                        ];
+                                        $courierStatusColor = $courierStatusColors[$order->courier_status?->value] ?? 'secondary';
+                                    @endphp
+                                    @if ($order->courier_status)
+                                        <span
+                                            class="badge rounded-pill bg-{{ $courierStatusColor }} text-capitalize">{{ str_replace('_', ' ', $order->courier_status->value) }}</span>
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
                                 <td class="text-center">৳{{ $order->total }}</td>
                                 <td class="text-center text-capitalize">{{ $order->status }}</td>
                                 <td class="text-center">{{ $order->created_at }}</td>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use ShahariarAhmad\CourierFraudCheckerBd\Services\PathaoService;
 use ShahariarAhmad\CourierFraudCheckerBd\Services\SteadfastService;
+use App\Enums\CourierStatus;
 use App\Exports\OrderExport;
 use App\Models\Analytic;
 use App\Models\AutoSaveOrder;
@@ -961,6 +962,15 @@ public function ordersDataTable(Request $request)
 
 
         return redirect()->route('admin.orders.details', $order->id)->with('status', 'Order Status Updated Successfully');
+    }
+
+    public function orderCourierStatusUpdate(Request $request, $id)
+    {
+        $order = Order::find($id);
+        $order->courier_status = $request->courier_status ? CourierStatus::from($request->courier_status) : null;
+        $order->save();
+
+        return redirect()->route('admin.orders.details', $order->id)->with('status', 'Courier Status Updated Successfully');
     }
 
     public function ordersoftdelete($id)

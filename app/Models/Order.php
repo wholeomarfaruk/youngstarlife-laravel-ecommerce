@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Enums\CourierStatus;
 use App\Models\Order_Item;
 use App\Models\delivery_areas;
 use Illuminate\Notifications\Notifiable;
@@ -34,9 +35,11 @@ class Order extends Model
         'tracking_number',
         'tracking_url',
         'consignment_id',
+        'courier_status',
       ];
       protected $casts = [
         'json_data' => 'array', // automatically converts to/from JSON
+        'courier_status' => CourierStatus::class,
     ];
     public function Order_Item()
     {

@@ -61,6 +61,20 @@
                                 @if ($order->is_paid)
                                     <span class="badge bg-success fs-6">Paid</span>
                                 @endif
+                                @if ($order->courier_status)
+                                    @php
+                                        $courierStatusColors = [
+                                            'delivered' => 'success',
+                                            'rider_assigned' => 'info text-dark',
+                                            'in_transit' => 'info text-dark',
+                                            'returning' => 'warning text-dark',
+                                            'returned' => 'danger',
+                                        ];
+                                        $courierStatusColor = $courierStatusColors[$order->courier_status->value] ?? 'secondary';
+                                    @endphp
+                                    <span
+                                        class="badge rounded-pill bg-{{ $courierStatusColor }} fs-6 text-capitalize">Courier: {{ str_replace('_', ' ', $order->courier_status->value) }}</span>
+                                @endif
                             </div>
                             <div class="text-muted">
                                 Placed {{ $order->created_at?->format('d M Y, h:i A') }}
@@ -114,6 +128,17 @@
                                             <td class="fw-semibold">{{ $order->courier_partner ?: '-' }}</td>
                                             <td class="text-muted">Tracking No</td>
                                             <td class="fw-semibold">{{ $order->tracking_number ?: '-' }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td class="text-muted">Courier Status</td>
+                                            <td class="fw-semibold" colspan="3">
+                                                @if ($order->courier_status)
+                                                    <span
+                                                        class="badge rounded-pill bg-{{ $courierStatusColor }} text-capitalize">{{ str_replace('_', ' ', $order->courier_status->value) }}</span>
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -344,6 +369,33 @@
                                 </div>
                                 <div class="col-sm-4 col-md-6">
                                     <button type="submit" class="btn btn-primary">Update Status</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Courier status update -->
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0 fw-bold">Update Courier Status</h6>
+                        </div>
+                        <div class="card-body">
+                            <form action="{{ route('admin.orders.update.courier_status', $order->id) }}" method="POST"
+                                class="row g-2 align-items-center">
+                                @csrf
+                                @method('PUT')
+                                <div class="col-sm-8 col-md-6">
+                                    <select name="courier_status" id="courier_status" class="form-select">
+                                        <option value="">-- None --</option>
+                                        @foreach (\App\Enums\CourierStatus::cases() as $case)
+                                            <option value="{{ $case->value }}"
+                                                {{ $order->courier_status === $case ? 'selected' : '' }}>{{ ucfirst(str_replace('_', ' ', $case->value)) }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="col-sm-4 col-md-6">
+                                    <button type="submit" class="btn btn-primary">Update Courier Status</button>
                                 </div>
                             </form>
                         </div>
