@@ -48,12 +48,10 @@
             @php $totalSum = 0; @endphp
             @foreach ($orders as $order)
                 @php
-                    $firstItem = $order->order_item->first();
-                    $size = $firstItem ? ($firstItem->options['size'] ?? '') : '';
-                    $productName = $firstItem ? $firstItem->product->name : '';
-                    if ($size) {
-                        $productName .= " ($size)";
-                    }
+                    $itemLines = $order->order_item->map(function ($item) {
+                        return $item->product->name . ' x ' . $item->quantity . 'pcs';
+                    });
+                    $sizes = $order->order_item->map(fn($item) => $item->options['size'] ?? null)->filter();
                     $totalSum += (float) $order->total;
                 @endphp
                 <tr>
@@ -66,8 +64,8 @@
                     <td class="col-status">{{ $order->status ? str_replace('_', ' ', $order->status) : '' }}</td>
                     <td class="col-consignment">{{ $order->consignment_id ?: '' }}</td>
                     <td class="col-courier-status">{{ $order->courier_status ? str_replace('_', ' ', $order->courier_status->value) : '' }}</td>
-                    <td class="col-item">{{ $firstItem ? $productName : '' }}</td>
-                    <td class="col-size">{{ $firstItem ? $size : '' }}</td>
+                    <td class="col-item">{{ $itemLines->implode(', ') }}</td>
+                    <td class="col-size">{{ $sizes->implode(', ') }}</td>
                 </tr>
             @endforeach
         </tbody>
