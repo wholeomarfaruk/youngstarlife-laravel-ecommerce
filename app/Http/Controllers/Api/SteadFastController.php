@@ -123,7 +123,7 @@ class SteadFastController extends Controller
             'recipient_phone' => $order->phone,
             'recipient_address' => $order->address,
             'cod_amount' => floatval($order->total),
-            'note' => 'Delivery charge must nite hobe. Inside Dhaka-70tk, outside dhaka-130, size problem hole marchent er sathe must kotha bolte hobe customer er samne.',
+            'note' => 'Delivery charge must nite hobe. Inside Dhaka-80tk, outside dhaka-140, size problem hole marchent er sathe must kotha bolte hobe customer er samne.',
             'item_description' => $item_descriptions
         ];
 
