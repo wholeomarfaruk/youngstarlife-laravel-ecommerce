@@ -123,8 +123,12 @@
                                 href="/category/combo-offer">Combo Offer</a>
                         </li>
                         <li class="nav-item fs-5">
-                            <a class="nav-link {{ Request::is('category/joggers-pant') ? 'active' : '' }}"
-                                href="/category/denim-pants">Denim</a>
+                            <a class="nav-link {{ Request::is('category/denim-pants') ? 'active' : '' }}"
+                                href="/category/denim-pants">Denim 6 Pocket</a>
+                        </li>
+                        <li class="nav-item fs-5">
+                            <a class="nav-link {{ Request::is('category/denim-4-pocket-pants') ? 'active' : '' }}"
+                                href="/category/denim-4-pocket-pants">Denim 4 Pocket</a>
                         </li>
                         <li class="nav-item fs-5">
                             <a class="nav-link {{ Request::is('category/cargo-pants') ? 'active' : '' }}"
