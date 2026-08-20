@@ -147,10 +147,7 @@
     </header>
     <aside id="sidebar"></aside>
     <main id="Content-body" class="py-3">
-        
         @yield('content')
-
-
     </main>
     <footer id="footer-area" class="border-top">
         <div class="container py-3">
