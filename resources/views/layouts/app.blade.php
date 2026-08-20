@@ -147,16 +147,7 @@
     </header>
     <aside id="sidebar"></aside>
     <main id="Content-body" class="py-3">
-        <section>
-            <div class="container p-0">
-                <a href="https://wa.me/8801613046803?text=আমি%20বড়%20সাইজের%20জন্য%20কাস্টোমাইজ%20করতে%20চাচ্ছি"
-                    style="text-decoration: none;">
-                    <h3 class="text-center" style="color: #2c742c; font-weight: bold;"> কাস্টোমাইজ বড় সাইজের জন্য
-                        ওয়াটসএপ এ মেসেজ
-                        করুন</h3>
-                </a>
-            </div>
-        </section>
+        
         @yield('content')
 
 
