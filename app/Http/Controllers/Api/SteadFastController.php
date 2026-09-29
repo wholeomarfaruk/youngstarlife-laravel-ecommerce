@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Enums\CourierStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Support\Phone;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -132,7 +133,8 @@ class SteadFastController extends Controller
         }
         $item_descriptions = '';
         foreach ($order->Order_Item as $item) {
-            $item_descriptions .= $item->product->name . ' x ' . $item->quantity . ', ';
+            // product may have been deleted after the order was placed
+            $item_descriptions .= ($item->product?->name ?? 'Item') . ' x ' . $item->quantity . ', ';
         }
         if ($order->consignment_id) {
             return response()->json([
@@ -144,9 +146,7 @@ class SteadFastController extends Controller
 
         $orderData = [
             'invoice' => $order->id,
-            'recipient_name' => $order->name,
-            'recipient_phone' => $order->phone,
-            'recipient_address' => $order->address,
+            ...$this->recipient($order),
             'cod_amount' => floatval($order->total),
             'note' => 'Delivery charge must nite hobe. Inside Dhaka-80tk, outside dhaka-140, size problem hole marchent er sathe must kotha bolte hobe customer er samne.',
             'item_description' => $item_descriptions
@@ -177,12 +177,11 @@ class SteadFastController extends Controller
         $orders = Order::whereIn('id', $request->input('order_ids'))->get();
         $orderData = [];
         foreach ($orders as $order) {
-            if (!$order->consignment_id && $order->name && $order->phone && $order->address && $order->total > 0 && strlen($order->phone) == 11) {
+            // old orders may still have 8801.../+880... phones: normalize instead of silently skipping them
+            if (!$order->consignment_id && $order->name && $order->address && $order->total > 0 && Phone::normalize($order->phone)) {
                 $orderData[] = [
                     'invoice' => $order->id,
-                    'recipient_name' => $order->name,
-                    'recipient_phone' => $order->phone,
-                    'recipient_address' => $order->address,
+                    ...$this->recipient($order),
                     'cod_amount' => floatval($order->total),
                     'note' => '',
                     'item_description' => $order?->Order_Item?->pluck('product.name')->implode(', ')
@@ -203,5 +202,20 @@ class SteadFastController extends Controller
             'message' => 'Orders Placed Successfully.',
             'response' => $response
         ], 200);
+    }
+
+    /**
+     * Steadfast API limits: recipient_name <= 100 chars, recipient_address <= 250 chars,
+     * recipient_phone exactly 11 digits. The full values stay on the order in admin.
+     */
+    private function recipient(Order $order): array
+    {
+        $squash = fn($value) => trim(preg_replace('/\s+/u', ' ', (string) $value));
+
+        return [
+            'recipient_name' => mb_substr($squash($order->name), 0, 100),
+            'recipient_phone' => Phone::normalize($order->phone) ?? $order->phone,
+            'recipient_address' => mb_substr($squash($order->address), 0, 250),
+        ];
     }
 }

@@ -547,12 +547,23 @@
 @endsection
 
 @push('scripts')
+    {{-- phone errors show under the field; any other server-side validation error goes in a popup --}}
+    @if ($errors->any() && !$errors->has('phone'))
+        <script>
+            Swal.fire({
+                icon: 'warning',
+                title: 'দুঃখিত!',
+                text: @json($errors->first()),
+                confirmButtonText: 'ঠিক আছে',
+            });
+        </script>
+    @endif
     @if (session('status') == 'error')
         <script>
             Swal.fire({
                 icon: "{{ session('status') == 'error' ? 'error' : 'success' }}",
                 title: "{{ session('status') == 'error' ? 'দুঃখিত!' : 'সফল!' }}",
-                text: "{{ session('message') }}",
+                text: @json(session('message')),
                 confirmButtonText: 'ঠিক আছে',
                 timer: 4000, // Auto close after 4 seconds
                 timerProgressBar: true,
@@ -563,7 +574,7 @@
             Swal.fire({
                 icon: "{{ session('status') == 'error' ? 'error' : 'success' }}",
                 title: "{{ session('status') == 'error' ? 'দুঃখিত!' : 'সফল!' }}",
-                text: "{{ session('message') }}",
+                text: @json(session('message')),
                 confirmButtonText: 'ঠিক আছে',
                 timer: 4000, // Auto close after 4 seconds
                 timerProgressBar: true,
@@ -572,7 +583,7 @@
     @endif
 
     <script>
-        console.log("Session: " + "{{ session('status') ? session('message') : 'null' }}");
+        console.log("Session: " + @json(session('status') ? session('message') : 'null'));
         $(document).ready(function() {
 
             function calculateTotal() {

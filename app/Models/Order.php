@@ -10,7 +10,17 @@ use Illuminate\Notifications\Notifiable;
 
 class Order extends Model
 {
-      use Notifiable;
+      use Notifiable, Concerns\LimitsStringLength;
+
+      /** VARCHAR(255) columns fed by customers, AI extraction or the courier API */
+      protected array $stringLimits = [
+        'name' => 255,
+        'phone' => 255,
+        'source' => 255,
+        'courier_partner' => 255,
+        'tracking_number' => 255,
+        'consignment_id' => 255,
+      ];
       protected $fillable = [
         'subtotal',
         'discount',

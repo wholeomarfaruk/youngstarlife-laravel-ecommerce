@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Notifications\NewOrderPushNotification;
 use App\Support\Attribution;
 use App\Support\Phone;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -276,16 +277,29 @@ class CartController extends Controller
         // Accept however the customer typed it (+880..., 880..., 1684..., spaces, dashes, Bangla digits)
         $phone = Phone::normalize($request->phone);
 
+        // Server-side limits: anything outside these would otherwise hit a DB error (strict mode)
+        // or a PHP error (missing product/area). Quantity cap keeps totals inside DECIMAL(8,2).
         $validated = $request->validate([
-            'name' => 'required',
+            'name' => 'required|string',
             'phone' => ['required', function ($attribute, $value, $fail) use ($phone) {
                 if (!$phone) {
                     $fail('সঠিক মোবাইল নম্বর দিন (যেমন 01XXXXXXXXX)');
                 }
             }],
-            'address' => 'required',
-            'delivery_area' => 'required',
+            'address' => 'required|string',
+            'delivery_area' => 'required|integer|exists:delivery_areas,id',
+            'product_id' => 'required|integer|exists:products,id',
+            'quantity' => 'nullable|integer|min:1|max:50',
+            'size' => 'nullable|string|max:50',
+        ], [
+            'name.required' => 'আপনার নাম লিখুন',
+            'address.required' => 'আপনার ঠিকানা লিখুন',
+            'delivery_area.*' => 'ডেলিভারি এরিয়া নির্বাচন করুন',
+            'product_id.*' => 'প্রোডাক্টটি পাওয়া যায়নি, পেজটি রিফ্রেশ করে আবার চেষ্টা করুন',
+            'quantity.*' => 'পরিমাণ ১ থেকে ৫০ এর মধ্যে দিন',
+            'size.*' => 'সঠিক সাইজ নির্বাচন করুন',
         ]);
+        $quantityOrdered = (int) ($request->quantity ?: 1);
         $customer_check = Customer::where('phone', $phone)->first();
         $device_check = Device::where('user_agent', $request->userAgent())->first();
         if($customer_check && $customer_check->is_blocked){
@@ -337,7 +351,7 @@ class CartController extends Controller
             // Convert price and delivery charge to float for calculation
             // same rule as the price shown on the product page (a 0 discount means no discount)
             $price = (float) ((float) $product->discount_price > 0 ? $product->discount_price : $product->price);
-            $quantity = (float) $request->quantity;
+            $quantity = (float) $quantityOrdered;
             $delivery = (float) $deliveryCharge;
 
             // Calculate total
@@ -375,30 +389,39 @@ class CartController extends Controller
             } catch (\Throwable $th) {
                 Log::warning('Order attribution failed: ' . $th->getMessage());
             }
-            $order->save();
+            // order + item together: never leave an order without its item
+            DB::transaction(function () use ($order, $request, $price, $quantityOrdered) {
+                $order->save();
 
-            $orderItem = new Order_Item();
-            $orderItem->order_id = $order->id;
-            $orderItem->product_id = $request->product_id;
-            $orderItem->price = $price;
-            $orderItem->quantity = $request->quantity;
-            if ($request->has('size')) {
+                $orderItem = new Order_Item();
+                $orderItem->order_id = $order->id;
+                $orderItem->product_id = $request->product_id;
+                $orderItem->price = $price;
+                $orderItem->quantity = $quantityOrdered;
+                if ($request->has('size')) {
 
-                $orderItem->options = ['size' => $request->size ?? ''];
-            }
-            $orderItem->save();
+                    $orderItem->options = ['size' => $request->size ?? ''];
+                }
+                $orderItem->save();
+            });
 
-            if (!$order->customer && strlen($phone) == 11) {
-                $customer = $order->customer()->create([
-                    'name' => $request->name,
-                    'phone' => $phone
-                ]);
+            // The order is saved; customer/device bookkeeping must not turn it into an error page
+            // (the customer would retry and hit the 30 minute duplicate check).
+            try {
+                if (!$order->customer && strlen($phone) == 11) {
+                    $customer = $order->customer()->create([
+                        'name' => $request->name,
+                        'phone' => $phone
+                    ]);
 
-                $customer->devices()->create([
-                    'user_agent' => $request->server('HTTP_USER_AGENT'),
-                    'ip_address' => $request->server('REMOTE_ADDR'),
-                ]);
+                    $customer->devices()->create([
+                        'user_agent' => $request->server('HTTP_USER_AGENT'),
+                        'ip_address' => $request->server('REMOTE_ADDR'),
+                    ]);
 
+                }
+            } catch (\Throwable $th) {
+                Log::warning("Customer record for order #{$order->id} failed: " . $th->getMessage());
             }
             // Housekeeping + admin push run after the redirect is sent, so the customer
             // reaches the order received page (and its purchase event) without waiting.
@@ -431,8 +454,16 @@ class CartController extends Controller
 
             return redirect()->route('order.received', ['order' => $order->id]);
         } catch (\Throwable $th) {
-            //throw $th;
-            return redirect()->back()->with(['status' => 'error', 'message' => $th->getMessage()]);
+            // full details for us, a friendly message for the customer (never raw SQL/PHP errors)
+            Log::error('place_order failed: ' . $th->getMessage(), [
+                'phone' => $phone,
+                'product_id' => $request->product_id,
+                'exception' => $th,
+            ]);
+            return redirect()->back()->withInput()->with([
+                'status' => 'error',
+                'message' => 'দুঃখিত, অর্ডারটি সম্পন্ন করা যায়নি। আবার চেষ্টা করুন অথবা 01613046803 নাম্বারে WhatsApp করুন।',
+            ]);
         }
     }
     public function orderAutosave(Request $request)
@@ -475,7 +506,7 @@ class CartController extends Controller
             // Convert price and delivery charge to float for calculation
             // same rule as the price shown on the product page (a 0 discount means no discount)
             $price = (float) ((float) $product->discount_price > 0 ? $product->discount_price : $product->price);
-            $quantity = (float) ($request->quantity ?: 1);
+            $quantity = (float) max(1, min(50, (int) $request->quantity)); // same range as place_order
             $delivery = (float) $deliveryCharge;
 
             // Calculate total

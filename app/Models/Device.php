@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Device extends Model
 {
+    use Concerns\LimitsStringLength;
+
+    protected array $stringLimits = ['name' => 255, 'status' => 255];
+
     protected $fillable = [
         'name', 'model', 'user_agent', 'ip_address',
         'status', 'customer_id', 'last_seen'

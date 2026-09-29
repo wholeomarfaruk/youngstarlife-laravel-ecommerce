@@ -6,6 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class Customer extends Model
 {
+    use Concerns\LimitsStringLength;
+
+    protected array $stringLimits = ['name' => 255, 'phone' => 255, 'email' => 255];
+
     protected $fillable = [
         'name', 'phone', 'email', 'status', 'user_id'
     ];

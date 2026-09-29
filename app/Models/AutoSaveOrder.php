@@ -6,7 +6,12 @@ use Illuminate\Database\Eloquent\Model;
 
 class AutoSaveOrder extends Model
 {
+    use Concerns\LimitsStringLength;
+
     protected $table = 'auto_save_orders';
+
+    // address is TEXT since 2026_09_30_000002; these are still VARCHAR(255)
+    protected array $stringLimits = ['name' => 255, 'phone' => 255, 'delivery_area_id' => 255, 'status' => 255, 'payment_method' => 255];
 
     protected $fillable = [
         'subtotal',

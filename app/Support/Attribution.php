@@ -66,12 +66,36 @@ class Attribution
             return null; // internal navigation / direct visit: keep what we already have
         }
 
-        return [
+        return self::fitCookie([
             'params' => $params,
-            'landing_page' => mb_substr($request->fullUrl(), 0, 500),
-            'referrer' => $externalReferrer ? mb_substr($referrer, 0, 300) : null,
+            // params are stored separately, so the URL without its query string is enough
+            'landing_page' => mb_substr($request->url(), 0, 300),
+            // host + path only: l.facebook.com/l.php?u=...&h=... style query strings are huge
+            'referrer' => $externalReferrer
+                ? mb_substr(strtok($referrer, '?#'), 0, 200)
+                : null,
             'at' => now()->getTimestampMs(),
-        ];
+        ]);
+    }
+
+    /**
+     * Browsers silently drop cookies over ~4 KB, and Laravel's encryption roughly doubles the size.
+     * Keep the JSON under budget by halving the longest parameter (long Bangla names are 3 bytes/char).
+     */
+    private static function fitCookie(array $touch): array
+    {
+        $budget = 1800;
+        while (strlen(json_encode($touch, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)) > $budget) {
+            $longest = collect($touch['params'])->sortByDesc(fn($v) => strlen($v))->keys()->first();
+            if ($longest === null || mb_strlen($touch['params'][$longest]) <= 20) {
+                $touch['landing_page'] = mb_substr((string) $touch['landing_page'], 0, 100);
+                $touch['referrer'] = $touch['referrer'] ? mb_substr($touch['referrer'], 0, 100) : null;
+                break;
+            }
+            $touch['params'][$longest] = mb_substr($touch['params'][$longest], 0, (int) (mb_strlen($touch['params'][$longest]) / 2));
+        }
+
+        return $touch;
     }
 
     /** False until the attribution migration has run, so deploying code first can't break checkout. */

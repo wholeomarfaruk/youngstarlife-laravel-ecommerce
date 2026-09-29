@@ -18,11 +18,13 @@ class Phone
      *
      * Returns null when the input is not a valid BD mobile number.
      */
-    public static function normalize(?string $input): ?string
+    public static function normalize(mixed $input): ?string
     {
-        if ($input === null) {
+        // request input can be anything (phone[]=... from a bot): not a phone, not a crash
+        if (!is_string($input) && !is_int($input)) {
             return null;
         }
+        $input = (string) $input;
 
         $digits = preg_replace('/\D/', '', strtr($input, self::LOCAL_DIGITS));
         if (strlen($digits) < 10) {
@@ -46,7 +48,7 @@ class Phone
      * Meta's pixel strips leading zeros and only trusts a country code when the number starts with "+"
      * (otherwise it guesses one from the browser language, which has no BD entry); Google requires E.164.
      */
-    public static function toE164(?string $input): ?string
+    public static function toE164(mixed $input): ?string
     {
         $local = self::normalize($input);
 
@@ -54,8 +56,8 @@ class Phone
     }
 
     /** Normalized number, or the input unchanged when it can't be normalized (for admin-entered data). */
-    public static function normalizeOrKeep(?string $input): ?string
+    public static function normalizeOrKeep(mixed $input): ?string
     {
-        return self::normalize($input) ?? $input;
+        return self::normalize($input) ?? (is_string($input) ? $input : null);
     }
 }
