@@ -18,8 +18,6 @@
     <link rel="stylesheet" href="{{ asset('frontend/library/swiper/swiper-bundle.min.css') }}">
     <!-- Fancy Box css -->
     <link rel="stylesheet" href="{{ asset('frontend/library/fancybox/fancybox.css') }}">
-    <script src="https://unpkg.com/@lottiefiles/dotlottie-wc@0.8.1/dist/dotlottie-wc.js" type="module"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Custom Css  -->
     <style>
         @font-face {
@@ -27,6 +25,7 @@
             src: url("{{ asset('fonts/SolaimanLipi.ttf') }}") format('truetype');
             font-weight: normal;
             font-style: normal;
+            font-display: swap;
         }
     </style>
 
@@ -57,6 +56,8 @@
     @endif
 
     <!-- End Google Tag Manager -->
+    {{-- dataLayer events that must be queued before the rest of the page loads --}}
+    @stack('head-scripts')
     <meta name="facebook-domain-verification" content="q3e3x73iwktzrop9d227rx2rj9bm8v" />
 </head>
 
@@ -214,6 +215,8 @@
             </a>
         </div> --}}
     </div>
+    <!-- SweetAlert (loaded here instead of <head> so it doesn't block first paint) -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Jquery -->
     <script src="{{ asset('frontend/library/jquery/jquery-3.7.1.min.js') }}"></script>
     <!-- Bootstrap Js  -->

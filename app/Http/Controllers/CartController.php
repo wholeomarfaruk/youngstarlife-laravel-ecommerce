@@ -336,7 +336,8 @@ class CartController extends Controller
             $deliveryCharge = $deliveryArea->charge;
 
             // Convert price and delivery charge to float for calculation
-            $price = (float) ($product->discount_price ?? $product->price);
+            // same rule as the price shown on the product page (a 0 discount means no discount)
+            $price = (float) ((float) $product->discount_price > 0 ? $product->discount_price : $product->price);
             $quantity = (float) $request->quantity;
             $delivery = (float) $deliveryCharge;
 
@@ -392,19 +393,34 @@ class CartController extends Controller
                 ]);
 
             }
-            $order_check = Order::where('phone', $order->phone)->where('status', 'autosave')->get();
-            if ($order_check->count() > 0) {
-                $order_check->each->delete();
-            }
+            // Housekeeping + admin push run after the redirect is sent, so the customer
+            // reaches the order received page (and its purchase event) without waiting.
+            $orderId = $order->id;
+            $orderPhone = $order->phone;
+            $productId = $request->product_id;
+            dispatch(function () use ($orderId, $orderPhone, $productId) {
+                try {
+                    // this lead has now become a real order
+                    Order::where('phone', $orderPhone)->where('status', 'autosave')->delete();
+                    AutoSaveOrder::where('phone', $orderPhone)
+                        ->whereHas('items', fn($q) => $q->where('product_id', $productId))
+                        ->delete();
+                } catch (\Throwable $th) {
+                    Log::warning('Auto save cleanup failed: ' . $th->getMessage());
+                }
 
-            // Instant web push alert to admins for the new order. Never let a push
-            // failure (no subscription yet, invalid VAPID, etc.) affect the
-            // customer's successful checkout, so this is isolated in its own try/catch.
-            try {
-                Notification::send(User::all(), new NewOrderPushNotification($order));
-            } catch (\Throwable $th) {
-                Log::warning('New order push notification failed: ' . $th->getMessage());
-            }
+                // Never let a push failure (no subscription yet, invalid VAPID, etc.)
+                // affect anything else, so this is isolated in its own try/catch.
+                try {
+                    $order = Order::find($orderId);
+                    $admins = User::whereHas('pushSubscriptions')->get();
+                    if ($order && $admins->isNotEmpty()) {
+                        Notification::send($admins, new NewOrderPushNotification($order));
+                    }
+                } catch (\Throwable $th) {
+                    Log::warning('New order push notification failed: ' . $th->getMessage());
+                }
+            })->afterResponse();
 
             return redirect()->route('order.received', ['order' => $order->id]);
         } catch (\Throwable $th) {
@@ -414,38 +430,56 @@ class CartController extends Controller
     }
     public function orderAutosave(Request $request)
     {
-        // return $request->all();
-
-        $validated = $request->validate([
-            'phone' => 'required',
-        ]);
-        $phone = preg_replace('/\D/', '', $request->phone);
+        // Called by the product page in the background (fetch keepalive / sendBeacon),
+        // so always answer with JSON and never redirect.
+        $phone = preg_replace('/\D/', '', (string) $request->phone);
         if (str_starts_with($phone, '88') && strlen($phone) > 11) {
             $phone = substr($phone, 2);
         }
         if (str_starts_with($phone, '0') && strlen($phone) == 10) {
             $phone = '0' . $phone;
         }
+        if (strlen($phone) != 11 || !$request->product_id) {
+            return response()->json(['success' => false, 'message' => 'Valid phone and product required'], 422);
+        }
 
         $extra_data = [];
-        $extra_data['order_data'] = $request->all();
+        $extra_data['order_data'] = $request->except('_token');
 
 
         try {
-            //code...
-
             $product = products::find($request->product_id);
+            if (!$product) {
+                return response()->json(['success' => false, 'message' => 'Product not found'], 422);
+            }
+
+            // Customer already placed this order (e.g. autosave fired while submitting)
+            $alreadyOrdered = Order::where('phone', $phone)
+                ->where('created_at', '>=', now()->subMinutes(30))
+                ->whereHas('Order_Item', fn($q) => $q->where('product_id', $product->id))
+                ->exists();
+            if ($alreadyOrdered) {
+                return response()->json(['success' => true, 'message' => 'Already ordered']);
+            }
+
             $deliveryArea = delivery_areas::find($request->delivery_area);
             $deliveryCharge = $deliveryArea?->charge;
 
             // Convert price and delivery charge to float for calculation
-            $price = (float) ($product->discount_price ?? $product->price);
-            $quantity = (float) $request->quantity;
+            // same rule as the price shown on the product page (a 0 discount means no discount)
+            $price = (float) ((float) $product->discount_price > 0 ? $product->discount_price : $product->price);
+            $quantity = (float) ($request->quantity ?: 1);
             $delivery = (float) $deliveryCharge;
 
             // Calculate total
             $total = ($price * $quantity) + $delivery;
-            $order = new AutoSaveOrder();
+
+            // One lead per phone + product: update the existing autosave instead of piling up rows
+            $order = AutoSaveOrder::where('phone', $phone)
+                ->where('status', 'autosave')
+                ->whereHas('items', fn($q) => $q->where('product_id', $product->id))
+                ->latest()
+                ->first() ?? new AutoSaveOrder();
             $order->name = $request->name;
             $order->phone = $phone ?? $request->phone;
             $order->address = $request->address;
@@ -471,14 +505,14 @@ class CartController extends Controller
             }
             $order->save();
 
-            $orderItem = new AutoSaveOrderItem();
-            $orderItem->auto_save_order_id = $order->id;
-            $orderItem->product_id = $request->product_id;
+            $orderItem = AutoSaveOrderItem::firstOrNew([
+                'auto_save_order_id' => $order->id,
+                'product_id' => $product->id,
+            ]);
             $orderItem->price = $price;
-            $orderItem->quantity = $request->quantity;
-            if ($request->has('size')) {
-
-                $orderItem->options = ['size' => $request->size ?? ''];
+            $orderItem->quantity = $quantity;
+            if ($request->filled('size')) {
+                $orderItem->options = ['size' => $request->size];
             }
             $orderItem->save();
 
@@ -488,8 +522,8 @@ class CartController extends Controller
                 'order_id' => $order->id,
             ]);
         } catch (\Throwable $th) {
-            //throw $th;
-            return $th->getMessage();
+            Log::warning('Order autosave failed: ' . $th->getMessage());
+            return response()->json(['success' => false, 'message' => 'Autosave failed'], 500);
         }
     }
     public function order_received(Request $request)
@@ -499,7 +533,7 @@ class CartController extends Controller
         if (!$order) {
             return redirect()->route('home.index');
         }
-        $orderItems = Order_Item::where('order_id', $order->id)->get();
+        $orderItems = Order_Item::with('product')->where('order_id', $order->id)->get();
         $subtotal = 0;
         $orderItems->transform(function ($item) {
             $item->subtotal = (float) ($item->discount_price ?? $item->price) * $item->quantity;

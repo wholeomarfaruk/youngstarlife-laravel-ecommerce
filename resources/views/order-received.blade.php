@@ -35,13 +35,13 @@
                 <hr class="m-0">
                 @foreach ($orderItems as $item)
                     <div class="d-flex order-card p-2">
-                        <img src="{{asset('storage/images/products/thumbnails/'.$item->product->image)}}" alt="" class="me-2" />
+                        <img src="{{asset('storage/images/products/thumbnails/'.$item->product?->image)}}" alt="" class="me-2" decoding="async" />
                         <div class="">
-                            <h5 class="order-product-name">{{$item->product->name}}</h5>
+                            <h5 class="order-product-name">{{$item->product?->name}}</h5>
 
                             <p class="order-product-size">Size: {{$item?->size}}</p>
                         </div>
-                        <p class="order-product-price ms-auto">{{$item->product->discount_price && $item->product->discount_price > 0 ? $item->product->discount_price : $item->product->price}} x {{$item->quantity}} = {{$item->subtotal}}  টাকা</p>
+                        <p class="order-product-price ms-auto">{{ (float) $item->price }} x {{$item->quantity}} = {{$item->subtotal}}  টাকা</p>
                     </div>
                     <hr class="m-0">
                 @endforeach
@@ -98,46 +98,49 @@
 
         </div>
     </div>
+@endsection
 
-@push('scripts')
-
+{{-- Purchase is pushed from <head> (right after GTM) so it is queued before images/CSS/JS load.
+     All values go through @json so names/addresses with quotes or line breaks can't break the script. --}}
+@if (isset($order) && isset($orderItems) && $orderItems->count() > 0)
+@push('head-scripts')
+    @php
+        $purchaseItems = $orderItems->map(fn($item) => [
+            'item_name' => $item->product?->name, // String, required
+            'item_id' => (string) $item->product_id, // String, required
+            'price' => (float) $item->price, // Number, price actually charged for this item
+            'quantity' => (int) ($item->quantity ?: 1), // Integer, required
+            'item_category' => 'Pants', // String, optional but advised if available
+            'item_brand' => 'YoungStar Life', // String, optional
+            'item_variant' => $item->size, // String, optional
+        ])->values();
+    @endphp
     <script>
-       
-        dataLayer = window.dataLayer || [];
-        dataLayer.push({
-            event: 'purchase',
+        (function() {
+            var visitorId = null;
+            try {
+                visitorId = sessionStorage.getItem('visitorId');
+            } catch (e) {} // storage can be blocked in some in-app browsers
 
-            ecommerce: {
-                value: {{ $order->total }}, // Number, two decimals, required
-                currency: 'BDT', // String, required
-                transaction_id: '{{ $order->id }}', // String, required, unique identifier of order/transaction
-                items: [{
-                    item_name: "{{ $orderItems->first()->product->name }}", // String, required
-                    item_id: "{{ $orderItems->first()->product->id }}", // String, required
-                    price: {{ $orderItems->first()->product->discount_price ?? $orderItems->first()->product->price }}, // Number, two decimals, required
-                    quantity: '{{ $orderItems->first()->quantity }}' ?? 1, // Integer, required
-                    item_category: "Pants", // String, optional but advised if available
-                    item_brand: 'YoungStar Life', // String, optional, might be useful if you sell different brands
-                    item_variant: '{{ $orderItems->first()?->size }}' // String, optional
-                }]
-            },
-            // user_data অবজেক্টে শুধুমাত্র সেই ডেটা রাখুন যা আপনার কাছে উপলব্ধ
-            // অথবা, যদি কোনো ইউজার ডেটা না থাকে, তাহলে এই অংশটি বাদ দিন।
-            // উদাহরণস্বরূপ, যদি আপনি একটি সেশন আইডি ট্র্যাক করতে পারেন:
-            user_data: {
-                first_name: "{{ $order->name }}" ?? null, // বা এই লাইনগুলো বাদ দিন
-                // last_name: null,
-                // email_address: null,
-                phone_number: "{{ $order->phone }}" ?? null,
-                street: "{{ $order->address }}" ?? null,
-                // country: "BD", // IP Address থেকে পাওয়া গেলে
-                // city: null,
-                // region: null,
-                // postal_code: null,
-                user_id: sessionStorage.getItem('visitorId') ||
-                    null, // উদাহরণ: সেশন স্টোরেজ থেকে visitorId ব্যবহার করা
-                // new_customer: 'true' // এটি অনুমান করা কঠিন হবে
-            }
-        });
+            window.dataLayer = window.dataLayer || [];
+            dataLayer.push({
+                ecommerce: null
+            }); // clear previous ecommerce object
+            dataLayer.push({
+                event: 'purchase',
+                ecommerce: {
+                    value: @json((float) $order->total), // Number, required
+                    currency: 'BDT', // String, required
+                    transaction_id: @json((string) $order->id), // String, required, unique identifier of order/transaction
+                    items: @json($purchaseItems)
+                },
+                user_data: {
+                    first_name: @json($order->name),
+                    phone_number: @json($order->phone),
+                    user_id: visitorId
+                }
+            });
+        })();
     </script>
 @endpush
+@endif

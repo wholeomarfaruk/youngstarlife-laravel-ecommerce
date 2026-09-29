@@ -66,14 +66,15 @@
                                 <div class="swiper-slide">
                                     <a href="{{ asset('storage/images/products/' . $product?->image) }}"
                                         data-fancybox="gallery">
-                                        <img src="{{ asset('storage/images/products/' . $product?->image) }}" />
+                                        <img src="{{ asset('storage/images/products/' . $product?->image) }}"
+                                            fetchpriority="high" decoding="async" />
                                     </a>
                                 </div>
                                 @if ($product->media->where('category', 'product_images')->count() > 0)
                                     @foreach ($product->media->where('category', 'product_images') as $pimage)
                                         <div class="swiper-slide">
                                             <a href="{{ asset($pimage->path) }}" data-fancybox="gallery">
-                                                <img src="{{ asset($pimage->path) }}" />
+                                                <img src="{{ asset($pimage->path) }}" loading="lazy" decoding="async" />
                                             </a>
                                         </div>
                                     @endforeach
@@ -81,7 +82,7 @@
                                 @if ($product?->sizechart)
                                     <div class="swiper-slide">
                                         <a href="{{ asset($product?->sizechart) }}" data-fancybox="gallery">
-                                            <img src="{{ asset($product?->sizechart) }}" />
+                                            <img src="{{ asset($product?->sizechart) }}" loading="lazy" decoding="async" />
                                         </a>
                                     </div>
                                 @endif
@@ -97,7 +98,7 @@
                                 <div class="swiper-slide">
 
 
-                                    <img src="{{ asset('storage/images/products/' . $product?->image) }}" />
+                                    <img src="{{ asset('storage/images/products/' . $product?->image) }}" decoding="async" />
 
                                 </div>
 
@@ -105,7 +106,7 @@
                                     @foreach ($product->media->where('category', 'product_images') as $pimage)
                                         <div class="swiper-slide">
 
-                                            <img src="{{ asset($pimage->path) }}" />
+                                            <img src="{{ asset($pimage->path) }}" loading="lazy" decoding="async" />
 
                                         </div>
                                     @endforeach
@@ -113,7 +114,7 @@
                                 @if ($product?->sizechart)
                                     <div class="swiper-slide">
 
-                                        <img src="{{ asset($product?->sizechart) }}" />
+                                        <img src="{{ asset($product?->sizechart) }}" loading="lazy" decoding="async" />
 
                                     </div>
                                 @endif
@@ -302,10 +303,50 @@
 
                                 </div>
                                 <div class="col-12">
+                                    <style>
+                                        #order-button .placing-text {
+                                            display: none;
+                                        }
+                                        #order-button.is-placing .default-text {
+                                            display: none;
+                                        }
+                                        #order-button.is-placing .placing-text {
+                                            display: inline-flex;
+                                            align-items: center;
+                                            gap: 10px;
+                                        }
+                                        #order-button.is-placing {
+                                            opacity: 0.9;
+                                            cursor: wait;
+                                            animation: order-pulse 1.2s ease-in-out infinite;
+                                        }
+                                        #order-button .order-spinner {
+                                            width: 20px;
+                                            height: 20px;
+                                            border: 3px solid rgba(255, 255, 255, 0.4);
+                                            border-top-color: #fff;
+                                            border-radius: 50%;
+                                            animation: order-spin 0.7s linear infinite;
+                                        }
+                                        @keyframes order-spin {
+                                            to {
+                                                transform: rotate(360deg);
+                                            }
+                                        }
+                                        @keyframes order-pulse {
+                                            50% {
+                                                transform: scale(0.98);
+                                            }
+                                        }
+                                    </style>
                                     <button id="order-button" type="submit"
                                         {{ $product?->stock_status == 'out_of_stock' ? 'disabled' : '' }}
-                                        class="btn btn-primary bg-primary-color mb-3 w-100 fw-bold fs-5 py-2">অর্ডার
-                                        করুন {{ $product?->stock_status == 'out_of_stock' ? '(স্টক শেষ)' : '' }}</button>
+                                        class="btn btn-primary bg-primary-color mb-3 w-100 fw-bold fs-5 py-2">
+                                        <span class="default-text">অর্ডার
+                                            করুন {{ $product?->stock_status == 'out_of_stock' ? '(স্টক শেষ)' : '' }}</span>
+                                        <span class="placing-text"><span class="order-spinner"></span> অর্ডার প্লেস
+                                            হচ্ছে...</span>
+                                    </button>
                                 </div>
 
                             </div>
@@ -447,7 +488,7 @@
                                 <div class="p-img-box">
                                     <a href="{{ route('product.show', $pitem->slug) }}">
                                         <img src="{{ asset('storage/images/products/' . $pitem->image) }}"
-                                            alt="">
+                                            alt="{{ $pitem->name }}" loading="lazy" decoding="async">
                                     </a>
                                 </div>
                                 <div class="p-info">
@@ -610,7 +651,7 @@
     </script>
     <script>
         $(document).ready(function() {
-            let pamount = "{{ $product->discount_price ?? $product->price }}";
+            let pamount = "{{ (float) $product->discount_price > 0 ? $product->discount_price : $product->price }}";
             pamount = parseFloat(pamount);
             console.log('dom ready');
             dataLayer = window.dataLayer || [];
@@ -623,7 +664,7 @@
                     value: pamount, // Number, two decimals, required
                     currency: 'BDT', // String, required
                     items: [{
-                        item_name: "{{ $product->name }}", // String, required
+                        item_name: @json($product->name), // String, required
                         item_id: "{{ $product->id }}", // String, required
                         price: pamount, // Number, two decimals, required
                         quantity: 1, // Integer, required
@@ -654,10 +695,10 @@
             function sentInitialCheckout() {
                 let value = parseFloat($("#total").text());
                 let quantity = parseFloat($(".quantity-field").val());
-                let name = $("input[name='name").val();
-                let phone = $("input[name='phone").val();
-                let address = $("textarea[name='address").val();
-                let size = $("input[name='size").val();
+                let name = $("input[name='name']").val();
+                let phone = $("input[name='phone']").val();
+                let address = $("textarea[name='address']").val();
+                let size = $("input[name='size']:checked").val() || null;
 
                 // console.log(value);
 
@@ -667,7 +708,7 @@
                         value: value, // Number, two decimals, required
                         currency: 'BDT', // String, required
                         items: [{
-                            item_name: "{{ $product->name }}", // String, required
+                            item_name: @json($product->name), // String, required
                             item_id: "{{ $product->id }}", // String, required
                             price: pamount, // Number, two decimals, required
                             quantity: quantity, // Integer, required
@@ -712,6 +753,24 @@
                     });
                     return false;
                 }
+
+                // Valid submit: block double taps (a 2nd submit hits the 30 min duplicate check and
+                // bounces back, so the customer never sees the order received page / purchase event)
+                if (window.orderSubmitting) {
+                    e.preventDefault();
+                    return false;
+                }
+                window.orderSubmitting = true;
+                $('#order-button').addClass('is-placing').prop('disabled', true);
+            });
+
+            // Coming back with the browser back button restores the page from cache; reset the button
+            window.addEventListener('pageshow', function(e) {
+                if (e.persisted) {
+                    window.orderSubmitting = false;
+                    $('#order-button').removeClass('is-placing')
+                        .prop('disabled', @json($product?->stock_status == 'out_of_stock'));
+                }
             });
 
             $('#order-button').on('click', function(e) {
@@ -736,41 +795,85 @@
         })
     </script>
     <script>
-        $(window).on('beforeunload', function() {
+        // Smart autosave (abandoned order leads).
+        // Saves only once the phone has 11+ digits, 1.5s after the customer stops typing, and only
+        // when something changed. Also flushes when the tab goes to the background (mobile users
+        // switching apps / closing). Never runs while the real order is being submitted.
+        (function() {
+            var form = document.getElementById('order-form');
+            if (!form) return;
 
-            var name = $("input[name='name']").val();
-            var phone = $("input[name='phone']").val();
-            var address = $("textarea[name='address']").val();
-            var size = $("input[name='size").val();
-            var product_id = $("input[name='product_id").val();
-            var quantity = $("input[name='quantity").val();
-            var delivery_area = $("select[name='delivery_area").val();
-            var token = "{{ csrf_token() }}";
-            console.log("token: " + token);
-            var order_data = {
-                name: name,
-                phone: phone,
-                address: address,
-                size: size,
-                product_id: product_id,
-                quantity: quantity,
-                delivery_area: delivery_area,
-                XSRF_TOKEN: token,
+            var url = @json(route('cart.order.autosave', [], false)); // relative, independent of APP_URL
+            var token = @json(csrf_token());
+            var lastSent = '';
+            var timer = null;
+
+            function collect() {
+                var sizeInput = form.querySelector("input[name='size']:checked");
+                var qty = form.querySelector("input[name='quantity']");
+                var area = form.querySelector("select[name='delivery_area']");
+                return {
+                    name: (form.querySelector("input[name='name']") || {}).value || '',
+                    phone: ((form.querySelector("input[name='phone']") || {}).value || '').replace(/\D/g, ''),
+                    address: (form.querySelector("textarea[name='address']") || {}).value || '',
+                    size: sizeInput ? sizeInput.value : '',
+                    product_id: (form.querySelector("input[name='product_id']") || {}).value || '',
+                    quantity: qty ? qty.value : 1,
+                    delivery_area: area ? area.value : '',
+                };
             }
-            fetch('/cart/autosave', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': token
-                },
 
-                body: JSON.stringify(order_data)
-            })
+            function send(useBeacon) {
+                clearTimeout(timer);
+                if (window.orderSubmitting) return;
 
-            // event.preventDefault();
+                var data = collect();
+                if (data.phone.length < 11 || !data.product_id) return; // server normalizes 88 prefix
 
+                var snapshot = JSON.stringify(data);
+                if (snapshot === lastSent) return;
+                lastSent = snapshot;
 
-        })
+                var body = new FormData();
+                body.append('_token', token);
+                Object.keys(data).forEach(function(key) {
+                    body.append(key, data[key]);
+                });
+
+                try {
+                    if (useBeacon && navigator.sendBeacon && navigator.sendBeacon(url, body)) return;
+                    fetch(url, {
+                        method: 'POST',
+                        body: body,
+                        keepalive: true,
+                        credentials: 'same-origin',
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    }).catch(function() {
+                        lastSent = ''; // retry on the next change
+                    });
+                } catch (e) {}
+            }
+
+            function schedule() {
+                clearTimeout(timer);
+                timer = setTimeout(function() {
+                    send(false);
+                }, 1500);
+            }
+
+            form.addEventListener('input', schedule);
+            form.addEventListener('change', schedule);
+            $('.button-plus, .button-minus').on('click', schedule);
+
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'hidden') send(true);
+            });
+            window.addEventListener('pagehide', function() {
+                send(true);
+            });
+        })();
     </script>
 
     <script>
