@@ -31,8 +31,8 @@
                     <td class="text-center text-muted">{{ $loop->iteration }}</td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
-                            <img src="{{ $productImages[$row['product_id']] ?? asset('website/img/thumbnails/featured_img.jpg') }}"
-                                class="op-thumb" alt="">
+                            <img src="{{ asset('storage/images/products/thumbnails/' . $row['image']) }}"
+                                class="op-thumb" alt="{{ $row['name'] }}">
                             <div>
                                 <div class="fw-semibold">{{ $row['name'] }}</div>
                                 <div class="small text-muted">

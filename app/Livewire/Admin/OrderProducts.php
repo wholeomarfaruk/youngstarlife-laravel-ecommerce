@@ -4,7 +4,6 @@ namespace App\Livewire\Admin;
 
 use App\Models\Order;
 use App\Models\Order_Item;
-use App\Models\products;
 use Carbon\Carbon;
 use Livewire\Component;
 
@@ -99,6 +98,7 @@ class OrderProducts extends Component
                 'orders.status as order_status',
                 'products.name as product_name',
                 'products.sku',
+                'products.image as product_image',
             ]);
 
         $days = [];
@@ -123,11 +123,6 @@ class OrderProducts extends Component
         krsort($days);
         uasort($productTotals, $byQty);
 
-        $productImages = products::with('media')
-            ->whereIn('id', $items->pluck('product_id')->unique())
-            ->get()
-            ->mapWithKeys(fn($p) => [$p->id => $p->featured_image]);
-
         $summary = [
             'qty' => $items->sum('quantity'),
             'orders' => $items->pluck('order_id')->unique()->count(),
@@ -141,7 +136,7 @@ class OrderProducts extends Component
             ->pluck('status');
 
         return view('livewire.admin.order-products', compact(
-            'days', 'productTotals', 'productImages', 'summary', 'status_group'
+            'days', 'productTotals', 'summary', 'status_group'
         ));
     }
 
@@ -151,6 +146,7 @@ class OrderProducts extends Component
             'product_id' => $item->product_id,
             'name' => $item->product_name,
             'sku' => $item->sku,
+            'image' => $item->product_image,
             'size' => $size,
             'qty' => 0,
             'returned' => 0,
