@@ -227,16 +227,18 @@
                                     <div class="mb-3">
                                         <label class="form-label fw-bold fs-5">আপনার নাম লিখুন</label>
                                         <input type="text" name="name" autocomplete="name" class="form-control"
-                                            required id="exampleFormControlInput1" placeholder="Type Your Full Name">
+                                            required id="exampleFormControlInput1" placeholder="Type Your Full Name"
+                                            value="{{ old('name') }}">
                                     </div>
                                 </div>
                                 <div class="col-lg-6">
                                     <div class="mb-3">
                                         <label class="form-label fw-bold fs-5">আপনার মোবাইল লিখুন
                                         </label>
-                                        <input name="phone" id="phone" type="text" class="form-control"
-                                            required minlength="11" inputmode="numeric" autocomplete="tel"
-                                            placeholder="Type Your Phone Number">
+                                        <input name="phone" id="phone" type="text"
+                                            class="form-control @error('phone') is-invalid @enderror"
+                                            required inputmode="numeric" autocomplete="tel"
+                                            placeholder="Type Your Phone Number" value="{{ old('phone') }}">
                                         @error('phone')
                                             <span class="invalid-feedback" role="alert">
                                                 <strong>{{ $message }}</strong>
@@ -248,7 +250,7 @@
                                     <div class="mb-3">
                                         <label class="form-label fw-bold fs-5">আপনার ফুল ঠিকানা লিখুন</label>
                                         <textarea autocomplete="address" required name="address" class="form-control" id="exampleFormControlTextarea1"
-                                            placeholder="Type Your Full Delivery Address" rows="3"></textarea>
+                                            placeholder="Type Your Full Delivery Address" rows="3">{{ old('address') }}</textarea>
                                     </div>
                                 </div>
                                 <div class="col-12">
@@ -624,30 +626,44 @@
         });
     </script>
     <script>
-        // Only digits allowed; also enforces max length = 11
+        // Same rules as App\Support\Phone::normalize(): accept +880 / 880 / 80 / 0088 prefixes, missing
+        // leading 0, spaces, dashes and Bangla digits, and return 01XXXXXXXXX (or null if not a BD mobile).
+        window.toAsciiDigits = function(value) {
+            return String(value || '').replace(/[০-৯]/g, d => d.charCodeAt(0) - 0x09E6)
+                .replace(/[٠-٩]/g, d => d.charCodeAt(0) - 0x0660)
+                .replace(/[۰-۹]/g, d => d.charCodeAt(0) - 0x06F0);
+        };
+        window.normalizeBdPhone = function(value) {
+            const digits = toAsciiDigits(value).replace(/\D/g, '');
+            if (digits.length < 10) return null;
+            const number = digits.slice(-10);
+            const prefix = digits.slice(0, -10);
+            if (!/^1[3-9]\d{8}$/.test(number) || !/^(00)?8{0,2}0{0,2}$/.test(prefix)) return null;
+            return '0' + number;
+        };
+
         const phone = document.getElementById('phone');
+        const phoneMessage = 'সঠিক মোবাইল নম্বর দিন (যেমন 01XXXXXXXXX)';
 
-        // Strip non-digits on input & cap at 11
+        // Bangla digits -> English, drop everything else; browser blocks submit until the number is valid
         phone.addEventListener('input', () => {
-            phone.value = phone.value.replace(/\D/g, '');
+            const cleaned = toAsciiDigits(phone.value).replace(/\D/g, '');
+            if (cleaned !== phone.value) phone.value = cleaned;
+            phone.setCustomValidity(!cleaned || normalizeBdPhone(cleaned) ? '' : phoneMessage);
         });
 
-        // Block non-digit keypress (still keep Backspace, Delete, arrows, Tab)
+        // Show the number in standard form (01XXXXXXXXX) once the customer leaves the field
+        phone.addEventListener('blur', () => {
+            const normalized = normalizeBdPhone(phone.value);
+            if (normalized) phone.value = normalized;
+        });
+
+        // Block letters/symbols typed on a keyboard; paste (Ctrl/Cmd+V), Bangla digits and
+        // mobile keyboards (which report "Unidentified") still work — the input handler cleans up
         phone.addEventListener('keydown', (e) => {
-            const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', 'Home', 'End'];
-            if (allowedKeys.includes(e.key)) return;
-            if (!/^\d$/.test(e.key)) e.preventDefault();
+            if (e.ctrlKey || e.metaKey || e.altKey || e.key.length !== 1) return;
+            if (!/^[0-9০-৯]$/.test(e.key)) e.preventDefault();
         });
-
-        // Optional: validate exactly 11 digits on blur
-        // phone.addEventListener('blur', () => {
-        //     console.log(phone.value)
-        //     if (phone.value.length !== 11) {
-        //         phone.setCustomValidity('Please enter exactly 11 digits.');
-        //     } else {
-        //         phone.setCustomValidity('');
-        //     }
-        // });
     </script>
     <script>
         $(document).ready(function() {
@@ -724,7 +740,8 @@
                         first_name: name ?? null, // বা এই লাইনগুলো বাদ দিন
                         // last_name: null,
                         // email_address: null,
-                        phone_number: phone ?? null,
+                        // +8801XXXXXXXXX: Meta's pixel drops the leading 0 and needs "+" to trust the country code
+                        phone_number: normalizeBdPhone(phone) ? '+88' + normalizeBdPhone(phone) : (phone || null),
                         street: address ?? null,
                         // country: "BD", // IP Address থেকে পাওয়া গেলে
                         // city: null,
@@ -796,7 +813,7 @@
     </script>
     <script>
         // Smart autosave (abandoned order leads).
-        // Saves only once the phone has 11+ digits, 1.5s after the customer stops typing, and only
+        // Saves only once the phone is a valid BD mobile, 1.5s after the customer stops typing, and only
         // when something changed. Also flushes when the tab goes to the background (mobile users
         // switching apps / closing). Never runs while the real order is being submitted.
         (function() {
@@ -814,7 +831,7 @@
                 var area = form.querySelector("select[name='delivery_area']");
                 return {
                     name: (form.querySelector("input[name='name']") || {}).value || '',
-                    phone: ((form.querySelector("input[name='phone']") || {}).value || '').replace(/\D/g, ''),
+                    phone: normalizeBdPhone((form.querySelector("input[name='phone']") || {}).value) || '',
                     address: (form.querySelector("textarea[name='address']") || {}).value || '',
                     size: sizeInput ? sizeInput.value : '',
                     product_id: (form.querySelector("input[name='product_id']") || {}).value || '',
@@ -828,7 +845,7 @@
                 if (window.orderSubmitting) return;
 
                 var data = collect();
-                if (data.phone.length < 11 || !data.product_id) return; // server normalizes 88 prefix
+                if (!data.phone || !data.product_id) return; // not a valid BD mobile yet
 
                 var snapshot = JSON.stringify(data);
                 if (snapshot === lastSent) return;

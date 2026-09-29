@@ -136,7 +136,7 @@
                 },
                 user_data: {
                     first_name: @json($order->name),
-                    phone_number: @json($order->phone),
+                    phone_number: @json(\App\Support\Phone::toE164($order->phone) ?? $order->phone), // +8801XXXXXXXXX for Meta/Google matching
                     user_id: visitorId
                 }
             });

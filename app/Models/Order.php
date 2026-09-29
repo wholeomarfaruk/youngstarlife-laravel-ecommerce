@@ -36,9 +36,31 @@ class Order extends Model
         'tracking_url',
         'consignment_id',
         'courier_status',
+        // campaign attribution (App\Support\Attribution)
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'utm_content',
+        'utm_term',
+        'campaign_id',
+        'campaign_name',
+        'adset_id',
+        'adset_name',
+        'ad_id',
+        'ad_name',
+        'placement',
+        'site_source',
+        'fbclid',
+        'gclid',
+        'fbc',
+        'fbp',
+        'landing_page',
+        'referrer',
+        'attribution',
       ];
       protected $casts = [
         'json_data' => 'array', // automatically converts to/from JSON
+        'attribution' => 'array',
         'courier_status' => CourierStatus::class,
     ];
     public function Order_Item()

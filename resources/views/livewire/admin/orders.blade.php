@@ -220,7 +220,18 @@
                                         value="{{ $order->id }}" style="display: none">
                                     {{ $order->id }}
                                 </td>
-                                                                <td class="text-center text-capitalize">{{ $order->source ?? '-' }}</td>
+                                <td class="text-center">
+                                    <span class="text-capitalize">{{ $order->source ?? '-' }}</span>
+                                    @php $campaignLabel = $order->campaign_name ?: $order->utm_campaign; @endphp
+                                    @if ($campaignLabel)
+                                        <div class="small text-primary text-truncate mx-auto" style="max-width: 160px;"
+                                            title="{{ $campaignLabel }}{{ ($order->ad_name ?: $order->utm_content) ? ' › ' . ($order->ad_name ?: $order->utm_content) : '' }}">
+                                            {{ $campaignLabel }}
+                                        </div>
+                                    @elseif ($order->fbclid)
+                                        <div class="small text-primary">FB ad</div>
+                                    @endif
+                                </td>
 
                                 <td class="text-center">
                                     <span x-data="{ open: false }" class="position-relative d-inline-flex align-items-center gap-1">

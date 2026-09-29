@@ -419,6 +419,75 @@
                     </div>
 
 
+                    <!-- Campaign attribution -->
+                    @php
+                        $campaignRows = [
+                            'Source / Medium' => collect([$order->utm_source, $order->utm_medium])->filter()->implode(' / '),
+                            'Campaign' => $order->campaign_name ?: $order->utm_campaign,
+                            'Ad set' => $order->adset_name ?: $order->utm_term,
+                            'Ad' => $order->ad_name ?: $order->utm_content,
+                            'Campaign ID' => $order->campaign_id,
+                            'Ad set ID' => $order->adset_id,
+                            'Ad ID' => $order->ad_id,
+                            'Placement' => collect([$order->site_source, $order->placement])->filter()->implode(' · '),
+                            'Referrer' => $order->referrer,
+                        ];
+                        $hasCampaign = collect($campaignRows)->filter()->isNotEmpty() || $order->fbclid || $order->gclid;
+                        $firstTouch = $order->attribution['first_touch'] ?? null;
+                        $lastTouch = $order->attribution['last_touch'] ?? null;
+                    @endphp
+                    <div class="card shadow-sm mb-3">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h6 class="mb-0 fw-bold">Campaign</h6>
+                            @if ($order->fbclid)
+                                <span class="badge bg-primary">Facebook / Instagram ad click</span>
+                            @elseif ($order->gclid)
+                                <span class="badge bg-success">Google ad click</span>
+                            @elseif ($hasCampaign)
+                                <span class="badge bg-secondary">Tracked link</span>
+                            @endif
+                        </div>
+                        <div class="card-body">
+                            @if ($hasCampaign)
+                                <table class="table table-borderless table-sm mb-0">
+                                    <tbody>
+                                        @foreach ($campaignRows as $label => $value)
+                                            @if ($value)
+                                                <tr>
+                                                    <td class="text-muted" width="150">{{ $label }}</td>
+                                                    <td class="fw-semibold text-break">{{ $value }}</td>
+                                                </tr>
+                                            @endif
+                                        @endforeach
+                                        @if ($order->landing_page)
+                                            <tr>
+                                                <td class="text-muted">Landing page</td>
+                                                <td class="small text-break">{{ $order->landing_page }}</td>
+                                            </tr>
+                                        @endif
+                                    </tbody>
+                                </table>
+                                @if ($firstTouch && $lastTouch && $firstTouch != $lastTouch)
+                                    @php
+                                        $firstParams = $firstTouch['params'] ?? [];
+                                        $firstLabel = ($firstParams['campaign_name'] ?? null) ?: ($firstParams['utm_campaign'] ?? null) ?: ($firstTouch['referrer'] ?? null) ?: 'Unknown';
+                                    @endphp
+                                    <div class="small text-muted mt-2">
+                                        First visit: <strong>{{ $firstLabel }}</strong>
+                                        @if (!empty($firstTouch['at']))
+                                            ({{ \Carbon\Carbon::createFromTimestampMs($firstTouch['at'])->timezone(config('app.timezone'))->format('d M Y, h:i A') }})
+                                        @endif
+                                    </div>
+                                @endif
+                            @else
+                                <p class="text-muted mb-0 small">
+                                    No campaign data. The customer came without ad/UTM parameters (direct visit,
+                                    organic, or the order was created before tracking was added).
+                                </p>
+                            @endif
+                        </div>
+                    </div>
+
                     <!-- Extra data -->
                     <div class="card shadow-sm mb-3">
                         <div class="card-header bg-white">

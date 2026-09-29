@@ -13,6 +13,7 @@ use App\Models\Order_Item;
 use App\Models\products;
 use App\Notifications\NewOrderPushNotification;
 use App\Services\OrderExtractionServiceInterface;
+use App\Support\Phone;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
@@ -193,13 +194,8 @@ class OrderAiExtract extends Component
             return null;
         }
 
-        $digits = preg_replace('/\D/', '', $phone);
-
-        if (str_starts_with($digits, '88') && strlen($digits) > 11) {
-            $digits = substr($digits, 2);
-        }
-
-        return $digits ?: null;
+        // not a recognizable BD mobile: keep the digits so the admin can still see/fix them
+        return Phone::normalize($phone) ?? (preg_replace('/\D/', '', $phone) ?: null);
     }
 
     private function buildLinesFromExtraction(array $extractedProducts): void

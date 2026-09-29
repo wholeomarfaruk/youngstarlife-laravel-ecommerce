@@ -62,7 +62,7 @@
                     <td class="text-center">{{ collect($row['orders'])->pluck('id')->unique()->count() }}</td>
                     <td class="text-center">৳{{ number_format($row['amount']) }}</td>
                     <td class="text-center">
-                        <i class="icon-chevron-down" :class="open && 'icon-chevron-up'"></i>
+                        <i class="icon-chevron-down" :class="{ 'icon-chevron-up': open }"></i>
                     </td>
                 </tr>
                 <tr x-show="open" x-cloak>

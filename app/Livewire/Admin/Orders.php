@@ -72,7 +72,12 @@ class Orders extends Component
                     $q->where('name', 'like', '%' . $search . '%')
                         ->orWhere('id', 'like', '%' . $search . '%')
                         ->orWhere('phone', 'like', '%' . $search . '%')
-                        ->orWhere('consignment_id', 'like', '%' . $search . '%');
+                        ->orWhere('consignment_id', 'like', '%' . $search . '%')
+                        ->when(\App\Support\Attribution::columnsReady(), fn($q) => $q
+                            ->orWhere('utm_campaign', 'like', '%' . $search . '%')
+                            ->orWhere('campaign_name', 'like', '%' . $search . '%')
+                            ->orWhere('ad_name', 'like', '%' . $search . '%')
+                            ->orWhere('ad_id', $search));
                 });
             })
             ->when($this->daterange, function ($query) {

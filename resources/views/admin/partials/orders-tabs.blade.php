@@ -11,4 +11,10 @@
             <i class="icon-box me-1"></i> Product Summary
         </a>
     </li>
+    <li class="nav-item">
+        <a class="nav-link {{ ($active ?? '') === 'campaigns' ? 'active fw-semibold' : '' }}"
+            href="{{ route('admin.orders.campaigns') }}">
+            <i class="icon-target me-1"></i> Campaigns
+        </a>
+    </li>
 </ul>

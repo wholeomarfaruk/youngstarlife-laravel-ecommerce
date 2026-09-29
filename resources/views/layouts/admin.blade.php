@@ -154,6 +154,12 @@
                                             </a>
                                         </li>
                                         <li class="sub-menu-item">
+                                            <a href="{{ route('admin.orders.campaigns') }}"
+                                                class=" {{ Request::is('admin/orders/campaigns') ? 'active' : '' }}">
+                                                <div class="text">Campaigns</div>
+                                            </a>
+                                        </li>
+                                        <li class="sub-menu-item">
                                             <a href="{{ route('admin.auto.saved.orders') }}"
                                                 class=" {{ Request::is('admin/auto-saved-orders') ? 'active' : '' }}">
                                                 <div class="text">Auto Saved Orders </div>

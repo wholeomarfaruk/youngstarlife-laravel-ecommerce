@@ -512,6 +512,10 @@ class AdminController extends Controller
     {
         return view('admin.orders-products');
     }
+    public function ordersCampaigns()
+    {
+        return view('admin.orders-campaigns');
+    }
 public function ordersDataTable(Request $request)
 {
     $query = Order::query()
@@ -1100,7 +1104,7 @@ public function ordersDataTable(Request $request)
             return redirect()->back()->with('error', 'Order not found');
         }
         $order->name = $request->name;
-        $order->phone = $request->phone;
+        $order->phone = \App\Support\Phone::normalizeOrKeep($request->phone);
         $order->address = $request->address;
         $order->notes = $request->note;
         $order->save();
@@ -1370,7 +1374,7 @@ public function ordersDataTable(Request $request)
     {
         $order = new Order();
         $order->name = $request->name;
-        $order->phone = $request->phone;
+        $order->phone = \App\Support\Phone::normalizeOrKeep($request->phone);
         $order->address = $request->address;
         $order->note = $request->note;
         $order->save();
@@ -1614,7 +1618,11 @@ public function ordersDataTable(Request $request)
                 'ip_address' => $autoSaveOrder->ip_address,
                 'user_agent' => $autoSaveOrder->user_agent,
                 'json_data' => $autoSaveOrder->json_data,
-            ]);
+            ] + (\App\Support\Attribution::columnsReady() ? array_intersect_key(
+                // campaign attribution captured when the lead was autosaved
+                (array) ($autoSaveOrder->json_data['attribution'] ?? []),
+                array_flip((new Order)->getFillable())
+            ) : []));
 
             // Copy items
             foreach ($autoSaveOrder->items as $item) {

@@ -17,6 +17,8 @@ use App\Models\Coupon;
 use App\Models\Customer;
 use App\Models\User;
 use App\Notifications\NewOrderPushNotification;
+use App\Support\Attribution;
+use App\Support\Phone;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -271,22 +273,19 @@ class CartController extends Controller
     }
     public function place_order(Request $request)
     {
-        // return $request->all();
-
+        // Accept however the customer typed it (+880..., 880..., 1684..., spaces, dashes, Bangla digits)
+        $phone = Phone::normalize($request->phone);
 
         $validated = $request->validate([
             'name' => 'required',
-            'phone' => 'required|min:11',
+            'phone' => ['required', function ($attribute, $value, $fail) use ($phone) {
+                if (!$phone) {
+                    $fail('সঠিক মোবাইল নম্বর দিন (যেমন 01XXXXXXXXX)');
+                }
+            }],
             'address' => 'required',
             'delivery_area' => 'required',
         ]);
-        $phone = preg_replace('/\D/', '', $request->phone);
-        if (str_starts_with($phone, '88') && strlen($phone) > 11) {
-            $phone = substr($phone, 2);
-        }
-        if (str_starts_with($phone, '0') && strlen($phone) == 10) {
-            $phone = '0' . $phone;
-        }
         $customer_check = Customer::where('phone', $phone)->first();
         $device_check = Device::where('user_agent', $request->userAgent())->first();
         if($customer_check && $customer_check->is_blocked){
@@ -368,6 +367,14 @@ class CartController extends Controller
             if ($extra_data) {
                 $order->json_data = $extra_data;
             }
+            // which ad / UTM link brought this customer; never block the order over it
+            try {
+                if (Attribution::columnsReady()) {
+                    $order->fill(Attribution::forOrder($request));
+                }
+            } catch (\Throwable $th) {
+                Log::warning('Order attribution failed: ' . $th->getMessage());
+            }
             $order->save();
 
             $orderItem = new Order_Item();
@@ -432,19 +439,19 @@ class CartController extends Controller
     {
         // Called by the product page in the background (fetch keepalive / sendBeacon),
         // so always answer with JSON and never redirect.
-        $phone = preg_replace('/\D/', '', (string) $request->phone);
-        if (str_starts_with($phone, '88') && strlen($phone) > 11) {
-            $phone = substr($phone, 2);
-        }
-        if (str_starts_with($phone, '0') && strlen($phone) == 10) {
-            $phone = '0' . $phone;
-        }
-        if (strlen($phone) != 11 || !$request->product_id) {
+        $phone = Phone::normalize($request->phone);
+        if (!$phone || !$request->product_id) {
             return response()->json(['success' => false, 'message' => 'Valid phone and product required'], 422);
         }
 
         $extra_data = [];
         $extra_data['order_data'] = $request->except('_token');
+        try {
+            // copied onto the real order if this lead is restored from Auto Saved Orders
+            $extra_data['attribution'] = Attribution::forOrder($request);
+        } catch (\Throwable $th) {
+            Log::warning('Autosave attribution failed: ' . $th->getMessage());
+        }
 
 
         try {

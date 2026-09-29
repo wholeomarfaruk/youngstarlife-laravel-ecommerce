@@ -13,6 +13,11 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         //  $middleware->append(\App\Http\Middleware\TrackVisits::class);
+
+        // remember ad / UTM parameters for order attribution
+        $middleware->web(append: [\App\Http\Middleware\CaptureAttribution::class]);
+        // Meta pixel browser cookies are written by JS (not encrypted); let Laravel read them as-is
+        $middleware->encryptCookies(except: ['_fbp', '_fbc']);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
