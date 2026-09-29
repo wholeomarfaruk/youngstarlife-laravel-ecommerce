@@ -28,6 +28,12 @@
         crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" type="text/css" href="{{ asset('admin-resource/css/custom.css') }}?v=1.1">
       @livewireStyles
+    <style>
+        /* theme bootstrap.css defaults the breadcrumb divider to its own URL */
+        .breadcrumb {
+            --bs-breadcrumb-divider: '/';
+        }
+    </style>
     @stack('styles')
 </head>
 
