@@ -120,6 +120,7 @@ Route::prefix('admin')->group(function () {
 
         // Orders
         Route::get('/orders', [AdminController::class, 'orders'])->name('admin.orders');
+        Route::get('/orders/products', [AdminController::class, 'ordersProducts'])->name('admin.orders.products');
         Route::get('/orders/pending', [AdminController::class, 'ordersPending'])->name('admin.orders.pending');
         Route::get('/orders/confirmed', [AdminController::class, 'ordersConfirmed'])->name('admin.orders.confirmed');
         Route::get('/orders/processing', [AdminController::class, 'ordersProcessing'])->name('admin.orders.processing');

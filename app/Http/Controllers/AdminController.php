@@ -508,6 +508,10 @@ class AdminController extends Controller
     {
         return view('admin.orders');
     }
+    public function ordersProducts()
+    {
+        return view('admin.orders-products');
+    }
 public function ordersDataTable(Request $request)
 {
     $query = Order::query()
