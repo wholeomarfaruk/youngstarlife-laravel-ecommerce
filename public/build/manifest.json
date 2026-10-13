@@ -1,0 +1,27 @@
+{
+  "resources/css/ops.css": {
+    "file": "assets/ops-CNytphUc.css",
+    "src": "resources/css/ops.css",
+    "isEntry": true
+  },
+  "resources/js/app.js": {
+    "file": "assets/app-DTOTx7Ic.js",
+    "name": "app",
+    "src": "resources/js/app.js",
+    "isEntry": true
+  },
+  "resources/js/ops.js": {
+    "file": "assets/ops-CfGax_yI.js",
+    "name": "ops",
+    "src": "resources/js/ops.js",
+    "isEntry": true,
+    "css": [
+      "assets/ops-D4-jI-EM.css"
+    ]
+  },
+  "resources/sass/app.scss": {
+    "file": "assets/app-CgO1b2t6.css",
+    "src": "resources/sass/app.scss",
+    "isEntry": true
+  }
+}
