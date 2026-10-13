@@ -44,6 +44,15 @@ class products extends Model
 
         return null;
     }
+    /** price the customer pays: the discount price when one is set (a 0 discount means none) */
+    public function sellPrice(): float
+    {
+        return (float) ((float) $this->discount_price > 0 ? $this->discount_price : $this->price);
+    }
+    public function isOrderable(): bool
+    {
+        return (int) $this->status === 1 && $this->stock_status !== 'out_of_stock';
+    }
     public function sizes()
     {
         return $this->hasMany(Size::class);

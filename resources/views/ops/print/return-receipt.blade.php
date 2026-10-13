@@ -1,0 +1,10 @@
+<!DOCTYPE html><html><head><meta charset="utf-8"><title>Return receipt {{ $session }}</title>@vite('resources/css/ops.css')<style>@page{size:A4;margin:14mm}</style></head>
+<body class="bg-white" onload="window.print()">
+<div class="mx-auto max-w-[760px] p-4 text-base">
+    <div class="flex justify-between"><div><div class="text-xl font-bold">{{ ops_setting('company.name', 'YoungStar Life') }}</div><div class="text-sm text-ink-muted">Return receive session</div></div><div class="text-right"><div class="mono text-lg font-semibold">{{ $session }}</div><div class="text-sm">{{ $returns->first()->courier?->name }} · {{ $returns->first()->created_at->format('d M Y H:i') }}</div>@if ($returns->first()->rider)<div class="text-sm">Rider: {{ $returns->first()->rider }}</div>@endif</div></div>
+    <table class="mt-5 w-full text-sm"><tr><th class="th">Return</th><th class="th">Order</th><th class="th">Items · condition</th><th class="th text-right">Refund</th></tr>
+        @foreach ($returns as $r)<tr class="border-b border-line align-top"><td class="mono py-1.5 font-semibold">{{ $r->code }}</td><td class="py-1.5">{{ $r->order->number }} · {{ $r->order->customer->name }}</td><td class="py-1.5">@foreach ($r->items as $it){{ $it->orderItem->variant->label }} · {{ config('ops.return_conditions.'.$it->condition.'.0', 'Not inspected') }}@if ($it->batch) <span class="mono">({{ $it->batch->code }})</span>@endif<br>@endforeach</td><td class="py-1.5 text-right">{{ $r->refund_amount ? tk($r->refund_amount) : '—' }}</td></tr>@endforeach</table>
+    <div class="mt-4 text-sm">{{ $returns->count() }} parcels received · {{ $returns->sum(fn ($r) => $r->items->where('condition', 'missing')->count()) }} items missing (courier claim) · received by {{ $returns->first()->receiver?->name }}</div>
+    <div class="mt-16 grid grid-cols-2 gap-10 text-sm"><div class="border-t border-ink pt-1">Courier rider signature</div><div class="border-t border-ink pt-1">Warehouse signature</div></div>
+</div>
+</body></html>

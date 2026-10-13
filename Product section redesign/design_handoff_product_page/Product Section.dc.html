@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#f4f4f2;font-family:'Hind Siliguri',system-ui,sans-serif;color:#262826;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#3f423f;text-decoration:none}a:hover{color:#262826;text-decoration:underline}
+input,textarea,select,button{font-family:inherit}
+</style>
+</helmet>
+<div style="min-height:100vh;padding:0 0 80px">
+  <div style="background:#fff;border-bottom:1px solid #e4e4e0">
+    <div style="max-width:1200px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:13px;color:#6b6e6b">
+      <span>ডেমো প্রোডাক্ট টাইপ:</span>
+      <div style="display:flex;gap:4px;background:#f0f0ed;padding:3px;border-radius:8px">
+        <sc-for list="{{ typeTabs }}" as="t" hint-placeholder-count="3">
+          <button onClick="{{ t.onClick }}" style="border:0;padding:5px 12px;border-radius:6px;font-size:13px;cursor:pointer;background:{{ t.bg }};color:{{ t.color }};font-weight:600">{{ t.label }}</button>
+        </sc-for>
+      </div>
+
+    </div>
+  </div>
+
+
+  <div style="background:#fff;border-bottom:1px solid #e4e4e0">
+    <div style="max-width:1200px;margin:0 auto;padding:6px 20px;display:flex;justify-content:center;gap:18px;font-size:13px;color:#3f423f;flex-wrap:wrap">
+      <a href="#" style="display:flex;align-items:center;gap:5px"><svg width="14" height="14" viewBox="0 0 24 24" fill="#25D366"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"></path></svg>WhatsApp</a>
+      <a href="#" style="display:flex;align-items:center;gap:5px"><svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"></path></svg>Call Us +88 01613-046803</a>
+    </div>
+  </div>
+  <header style="background:#545754;position:sticky;top:0;z-index:30;box-shadow:0 2px 8px rgba(0,0,0,.12)">
+    <div style="max-width:1200px;margin:0 auto;padding:0 20px;height:60px;display:flex;align-items:center;gap:12px">
+      <a href="#" style="display:flex;align-items:center;gap:8px;color:#fff;text-decoration:none;flex:none">
+        <span style="width:34px;height:34px;border-radius:50%;background:#fff;color:#545754;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:15px">Y</span>
+        <span style="font-size:17px;font-weight:600;letter-spacing:.3px">YOUNGSTAR Life</span>
+      </a>
+      <nav style="flex:1;min-width:0;display:flex;justify-content:safe flex-end;gap:4px;overflow-x:auto;scrollbar-width:none">
+        <sc-for list="{{ navLinks }}" as="n" hint-placeholder-count="7">
+          <a href="#" style="color:#fff;font-size:15px;padding:8px 10px;border-radius:6px;white-space:nowrap;text-decoration:none" style-hover="background:rgba(255,255,255,.12);color:#fff">{{ n }}</a>
+        </sc-for>
+      </nav>
+      <button onClick="{{ openCart }}" style="position:relative;flex:none;width:42px;height:42px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M2 3h3l2.5 12h11.5l2-8H6"></path></svg>
+        <span style="position:absolute;top:-2px;right:-2px;background:#c92a2a;color:#fff;border-radius:10px;min-width:19px;height:19px;padding:0 5px;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;border:2px solid #545754">{{ cartCount }}</span>
+      </button>
+      <a href="#" title="লগইন / অ্যাকাউন্ট" style="flex:none;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;display:flex;align-items:center;justify-content:center;text-decoration:none" style-hover="background:rgba(255,255,255,.22);color:#fff">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"></path></svg>
+      </a>
+    </div>
+  </header>
+  <div style="max-width:1200px;margin:0 auto;padding:16px 20px 0">
+    <div style="font-size:13px;color:#7a7d7a;display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+      <a href="#">Home</a><span>/</span><a href="#">Product</a><span>/</span><span style="color:#3f423f">{{ p.title }}</span>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,440px),1fr));gap:32px;align-items:start">
+      <!-- Gallery -->
+      <div style="position:sticky;top:76px;display:flex;flex-direction:column;gap:12px">
+        <div style="position:relative;aspect-ratio:4/5;border-radius:14px;overflow:hidden;background:repeating-linear-gradient(135deg,#e7e3d6 0 14px,#ece8dc 14px 28px);display:flex;align-items:center;justify-content:center">
+          <span style="font-family:ui-monospace,monospace;font-size:13px;color:#8a8574;background:rgba(255,255,255,.7);padding:6px 10px;border-radius:6px">{{ imgLabel }}</span>
+          <sc-if value="{{ hasDiscount }}" hint-placeholder-val="{{ true }}">
+            <span style="position:absolute;top:14px;left:14px;background:#c92a2a;color:#fff;font-weight:700;font-size:14px;padding:4px 10px;border-radius:20px">{{ discountLabel }}</span>
+          </sc-if>
+          <sc-if value="{{ isCombo }}" hint-placeholder-val="{{ false }}">
+            <span style="position:absolute;top:14px;right:14px;background:#262826;color:#fff;font-weight:600;font-size:13px;padding:4px 10px;border-radius:20px">{{ comboBadge }}</span>
+          </sc-if>
+          <button onClick="{{ prevImg }}" style="position:absolute;left:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.9);cursor:pointer;font-size:18px;color:#262826">‹</button>
+          <button onClick="{{ nextImg }}" style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:40px;height:40px;border-radius:50%;border:0;background:rgba(255,255,255,.9);cursor:pointer;font-size:18px;color:#262826">›</button>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+          <sc-for list="{{ thumbs }}" as="th" hint-placeholder-count="4">
+            <button onClick="{{ th.onClick }}" style="aspect-ratio:1;border-radius:10px;cursor:pointer;background:repeating-linear-gradient(135deg,#e7e3d6 0 8px,#ece8dc 8px 16px);border:2px solid {{ th.border }};font-family:ui-monospace,monospace;font-size:11px;color:#8a8574">{{ th.n }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <!-- Info -->
+      <div style="display:flex;flex-direction:column;gap:20px;min-width:0">
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <h1 style="margin:0;font-size:30px;line-height:1.25;font-weight:700;text-wrap:pretty">{{ p.title }}</h1>
+          <div style="display:flex;align-items:baseline;gap:12px;flex-wrap:wrap">
+            <span style="font-size:32px;font-weight:700">৳ {{ unitPrice }}</span>
+            <sc-if value="{{ hasDiscount }}" hint-placeholder-val="{{ true }}">
+              <span style="font-size:18px;color:#8a8d8a;text-decoration:line-through">৳ {{ p.oldPrice }}</span>
+              <span style="font-size:14px;font-weight:600;color:#c92a2a;background:#fdecec;padding:2px 8px;border-radius:6px">৳ {{ saveAmount }} সাশ্রয়</span>
+            </sc-if>
+          </div>
+          <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:14px;color:#4a4d4a">
+            <span style="display:flex;align-items:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:#2f9e44"></span>স্টকে আছে</span>
+            <span>ক্যাশ অন ডেলিভারি</span>
+            <span>৩ দিনে এক্সচেঞ্জ</span>
+          </div>
+        </div>
+
+        <a href="#" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;background:#eaf7ef;color:#1d5e36;font-size:15px;text-decoration:none">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#25D366"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.5-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.4.4c-.1.1-.3.3-.1.6.2.3.8 1.3 1.7 2.1 1.1 1 2.1 1.3 2.4 1.5.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.4z"></path></svg>
+          <span><b style="color:#c92a2a">বিদ্রঃ</b> যে কোন কালার দিয়ে কম্বো করতে <b>WhatsApp</b> করুন</span>
+        </a>
+
+        <!-- Variation block -->
+        <div style="background:#fff;border:1px solid #e4e4e0;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:16px">
+          <sc-if value="{{ isVariable }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+                <span style="font-weight:600;font-size:16px">সাইজ <span style="font-weight:400;color:#7a7d7a">{{ sizeHint }}</span></span>
+                <button onClick="{{ toggleChart }}" style="border:0;background:none;color:#3f423f;text-decoration:underline;cursor:pointer;font-size:14px;padding:0">সাইজ চার্ট</button>
+              </div>
+              <div style="display:flex;gap:8px;flex-wrap:wrap">
+                <sc-for list="{{ sizesMain }}" as="s" hint-placeholder-count="6">
+                  <button onClick="{{ s.onClick }}" disabled="{{ s.disabled }}" style="min-width:56px;height:46px;border-radius:10px;font-size:16px;font-weight:600;cursor:pointer;background:{{ s.bg }};color:{{ s.color }};border:1.5px solid {{ s.border }};text-decoration:{{ s.deco }}">{{ s.v }}</button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isCombo }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap">
+                <span style="font-weight:600;font-size:16px">প্রতিটি আইটেমের সাইজ বাছাই করুন</span>
+                <button onClick="{{ toggleChart }}" style="border:0;background:none;color:#3f423f;text-decoration:underline;cursor:pointer;font-size:14px;padding:0">সাইজ চার্ট</button>
+              </div>
+              <label style="display:flex;align-items:center;gap:8px;font-size:14px;color:#4a4d4a;cursor:pointer">
+                <input type="checkbox" checked="{{ sameSize }}" onChange="{{ toggleSame }}" style="width:18px;height:18px;accent-color:#262826">
+                সবগুলো একই সাইজ
+              </label>
+              <sc-for list="{{ comboRows }}" as="r" hint-placeholder-count="2">
+                <div style="display:grid;grid-template-columns:96px minmax(0,1fr);gap:14px;padding:12px;border-radius:12px;background:#f7f7f5;align-items:start">
+                  <div style="position:relative;width:96px;aspect-ratio:3/4;border-radius:10px;overflow:hidden;background:repeating-linear-gradient(135deg,#e7e3d6 0 8px,#ece8dc 8px 16px);display:flex;align-items:center;justify-content:center;border:2px solid {{ r.swatch }}">
+                    <span style="font-family:ui-monospace,monospace;font-size:10px;color:#8a8574;text-align:center;padding:0 4px">{{ r.color }} ছবি</span>
+                    <span style="position:absolute;left:0;right:0;bottom:0;background:#262826;color:#fff;font-size:11px;text-align:center;padding:2px 0">{{ r.color }}</span>
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+                  <div style="display:flex;align-items:center;gap:8px;font-size:15px;flex-wrap:wrap">
+                    <span style="width:18px;height:18px;border-radius:50%;background:{{ r.swatch }};border:1px solid rgba(0,0,0,.15)"></span>
+                    <span style="font-size:12px;font-weight:600;color:#6b6e6b;background:#ecece8;padding:1px 8px;border-radius:10px">{{ r.label }}</span><span style="color:#7a7d7a">{{ r.color }}</span>
+                    <span style="margin-left:auto;color:#4a4d4a;font-size:14px">{{ r.picked }}</span>
+                  </div>
+                  <span style="font-size:16px;font-weight:600;line-height:1.3;text-wrap:pretty">{{ r.name }}</span>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap">
+                    <sc-for list="{{ r.sizes }}" as="s" hint-placeholder-count="6">
+                      <button onClick="{{ s.onClick }}" disabled="{{ s.disabled }}" style="min-width:50px;height:42px;border-radius:9px;font-size:15px;font-weight:600;cursor:pointer;background:{{ s.bg }};color:{{ s.color }};border:1.5px solid {{ s.border }};text-decoration:{{ s.deco }}">{{ s.v }}</button>
+                    </sc-for>
+                  </div>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ chartOpen }}" hint-placeholder-val="{{ false }}">
+            <div style="overflow-x:auto;border:1px solid #e4e4e0;border-radius:10px">
+              <table style="width:100%;border-collapse:collapse;font-size:14px;text-align:center;min-width:480px">
+                <thead><tr style="background:#f4f4f2">
+                  <sc-for list="{{ chartHead }}" as="h" hint-placeholder-count="7"><th style="padding:8px 6px;font-weight:600">{{ h }}</th></sc-for>
+                </tr></thead>
+                <tbody>
+                  <sc-for list="{{ chartRows }}" as="row" hint-placeholder-count="6">
+                    <tr style="border-top:1px solid #eee;background:{{ row.bg }}">
+                      <sc-for list="{{ row.cells }}" as="c" hint-placeholder-count="7"><td style="padding:8px 6px">{{ c }}</td></sc-for>
+                    </tr>
+                  </sc-for>
+                </tbody>
+              </table>
+              <div style="font-size:12px;color:#7a7d7a;padding:6px 10px">সব মাপ ইঞ্চিতে</div>
+            </div>
+          </sc-if>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+            <span style="font-weight:600;font-size:16px">{{ qtyLabel }}</span>
+            <div style="display:flex;align-items:center;border:1.5px solid #d6d6d1;border-radius:10px;overflow:hidden">
+              <button onClick="{{ dec }}" style="width:46px;height:44px;border:0;background:#fff;font-size:20px;cursor:pointer;color:#262826">−</button>
+              <span style="width:48px;text-align:center;font-size:17px;font-weight:600">{{ qty }}</span>
+              <button onClick="{{ inc }}" style="width:46px;height:44px;border:0;background:#fff;font-size:20px;cursor:pointer;color:#262826">+</button>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <button onClick="{{ addToCart }}" style="height:52px;border-radius:10px;border:1.5px solid #262826;background:#fff;color:#262826;font-size:17px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:#f4f4f2">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="20" r="1.5"></circle><circle cx="18" cy="20" r="1.5"></circle><path d="M2 3h3l2.5 12h11.5l2-8H6"></path></svg>
+              কার্টে যোগ করুন
+            </button>
+            <button onClick="{{ scrollToForm }}" style="height:52px;border-radius:10px;border:0;background:#262826;color:#fff;font-size:17px;font-weight:700;cursor:pointer" style-hover="background:#3f423f">এখনই অর্ডার করুন</button>
+          </div>
+          <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}">
+            <div style="color:#c92a2a;font-size:14px">{{ err }}</div>
+          </sc-if>
+        </div>
+
+        <!-- Order form -->
+        <div ref="{{ formRef }}" style="background:#fff;border:1px solid #e4e4e0;border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px">
+          <sc-if value="{{ notPlaced }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:14px">
+              <div style="display:flex;flex-direction:column;gap:2px">
+                <span style="font-size:20px;font-weight:700">অর্ডার ফর্ম</span>
+                <span style="font-size:14px;color:#6b6e6b">পণ্য হাতে পেয়ে টাকা পরিশোধ করুন</span>
+              </div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">আপনার নাম
+                  <input value="{{ name }}" onChange="{{ setName }}" placeholder="পুরো নাম লিখুন" style="height:46px;border:1.5px solid #d6d6d1;border-radius:10px;padding:0 12px;font-size:15px;font-weight:400;outline:none" style-focus="border-color:#262826">
+                </label>
+                <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">মোবাইল নাম্বার
+                  <input value="{{ phone }}" onChange="{{ setPhone }}" placeholder="01XXXXXXXXX" inputMode="numeric" style="height:46px;border:1.5px solid #d6d6d1;border-radius:10px;padding:0 12px;font-size:15px;font-weight:400;outline:none" style-focus="border-color:#262826">
+                </label>
+              </div>
+              <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">পূর্ণ ঠিকানা
+                <textarea value="{{ address }}" onChange="{{ setAddress }}" placeholder="বাসা/রোড, এলাকা, থানা, জেলা" rows="2" style="border:1.5px solid #d6d6d1;border-radius:10px;padding:10px 12px;font-size:15px;font-weight:400;resize:vertical;outline:none" style-focus="border-color:#262826"></textarea>
+              </label>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <span style="font-size:14px;font-weight:600">ডেলিভারি এরিয়া</span>
+                <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:8px">
+                  <sc-for list="{{ areaOpts }}" as="a" hint-placeholder-count="5">
+                    <button onClick="{{ a.onClick }}" style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;cursor:pointer;text-align:left;font-size:14px;background:{{ a.bg }};border:1.5px solid {{ a.border }};color:#262826">
+                      <span style="display:flex;align-items:center;gap:8px"><span style="width:14px;height:14px;border-radius:50%;border:4px solid {{ a.dot }};background:#fff;flex:none"></span>{{ a.label }}</span>
+                      <b>৳{{ a.fee }}</b>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+
+              <div style="background:#f7f7f5;border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:6px;font-size:15px">
+                <div style="display:flex;justify-content:space-between;gap:8px"><span style="color:#4a4d4a">{{ summaryLine }}</span><span>৳ {{ subtotal }}</span></div>
+                <div style="display:flex;justify-content:space-between;gap:8px"><span style="color:#4a4d4a">ডেলিভারি চার্জ</span><span>৳ {{ deliveryFee }}</span></div>
+                <div style="display:flex;justify-content:space-between;gap:8px;border-top:1px dashed #cfcfca;padding-top:8px;margin-top:2px;font-size:18px;font-weight:700"><span>মোট</span><span>৳ {{ total }}</span></div>
+              </div>
+              <button onClick="{{ placeOrder }}" style="height:54px;border-radius:10px;border:0;background:#262826;color:#fff;font-size:18px;font-weight:700;cursor:pointer" style-hover="background:#3f423f">অর্ডার কনফার্ম করুন · ৳ {{ total }}</button>
+              <sc-if value="{{ hasFormErr }}" hint-placeholder-val="{{ false }}">
+                <div style="color:#c92a2a;font-size:14px">{{ formErr }}</div>
+              </sc-if>
+            </div>
+          </sc-if>
+          <sc-if value="{{ placed }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:8px;text-align:center;padding:16px 0">
+              <span style="width:52px;height:52px;border-radius:50%;background:#eaf7ef;color:#2f9e44;display:flex;align-items:center;justify-content:center;font-size:26px">✓</span>
+              <span style="font-size:20px;font-weight:700">অর্ডার সম্পন্ন হয়েছে</span>
+              <span style="font-size:15px;color:#4a4d4a">আমাদের প্রতিনিধি শীঘ্রই {{ phone }} নাম্বারে কল করবেন।</span>
+              <button onClick="{{ resetOrder }}" style="margin-top:6px;border:1.5px solid #262826;background:#fff;border-radius:10px;height:42px;padding:0 16px;cursor:pointer;font-size:15px">আবার অর্ডার করুন</button>
+            </div>
+          </sc-if>
+        </div>
+
+        <div style="background:#fff;border:1px solid #e4e4e0;border-radius:14px;padding:14px 18px">
+          <div style="font-size:17px;font-weight:600">পণ্যের বিবরণ</div>
+              <div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
+                <sc-if value="{{ isCombo }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:6px">
+                    <span style="font-size:14px;font-weight:600;color:#6b6e6b">এই কম্বোতে যা থাকছে</span>
+                    <sc-for list="{{ comboRows }}" as="r" hint-placeholder-count="2">
+                      <div style="display:flex;align-items:center;gap:10px;font-size:15px"><span style="width:14px;height:14px;border-radius:50%;background:{{ r.swatch }};border:1px solid rgba(0,0,0,.15);flex:none"></span><span><b>{{ r.name }}</b> · {{ r.color }}</span></div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{ isSimple }}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size:15px;color:#3f423f">ফ্রি সাইজ / একটি ভেরিয়েশন — সাইজ বাছাই করার প্রয়োজন নেই।</span>
+                </sc-if>
+                <ul style="margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px;font-size:15px;color:#3f423f">
+                  <sc-for list="{{ p.features }}" as="f" hint-placeholder-count="6">
+                    <li style="display:flex;gap:10px"><span style="color:#2f9e44;flex:none">✓</span><span>{{ f }}</span></li>
+                  </sc-for>
+                </ul>
+              </div>
+        </div>
+        <details style="background:#fff;border:1px solid #e4e4e0;border-radius:14px;padding:14px 18px">
+          <summary style="cursor:pointer;font-size:17px;font-weight:600">রিটার্ন ও এক্সচেঞ্জ পলিসি</summary>
+              <ul style="margin:12px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:10px;font-size:15px;color:#3f423f">
+                <li style="display:flex;gap:10px"><span style="flex:none">»</span><span>সারা বাংলাদেশে ক্যাশ অন ডেলিভারি এভেইলেবল।</span></li>
+                <li style="display:flex;gap:10px"><span style="flex:none">»</span><span>আপনি যদি আপনার ক্রয়কৃত প্রোডাক্ট নিয়ে সন্তুষ্ট না হন, তবে শুধু ডেলিভারি চার্জ প্রদান করে ডেলিভারি ম্যানের কাছে সহজেই ফেরত দিতে পারবেন।</span></li>
+                <li style="display:flex;gap:10px"><span style="flex:none">»</span><span>আমাদের আছে ডেলিভারির পর ৩ দিন পর্যন্ত এক্সচেঞ্জ সুবিধা।</span></li>
+              </ul>
+        </details>
+      </div>
+    </div>
+  </div>
+
+  <!-- Cart drawer -->
+  <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeCart }}" style="position:fixed;inset:0;background:rgba(20,20,20,.4);z-index:40"></div>
+    <div style="position:fixed;top:0;right:0;bottom:0;width:min(400px,100%);background:#fff;z-index:41;display:flex;flex-direction:column;box-shadow:-8px 0 30px rgba(0,0,0,.12)">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 18px;border-bottom:1px solid #eee">
+        <span style="font-size:18px;font-weight:700">আপনার কার্ট ({{ cartCount }})</span>
+        <button onClick="{{ closeCart }}" style="border:0;background:none;font-size:22px;cursor:pointer;color:#262826">×</button>
+      </div>
+      <sc-if value="{{ justAdded }}" hint-placeholder-val="{{ false }}">
+        <div style="margin:12px 18px 0;padding:10px 12px;border-radius:10px;background:#eaf7ef;color:#1d5e36;font-size:14px">✓ কার্টে যোগ হয়েছে</div>
+      </sc-if>
+      <div style="flex:1;overflow:auto;padding:12px 18px;display:flex;flex-direction:column;gap:12px">
+        <sc-if value="{{ cartEmpty }}" hint-placeholder-val="{{ false }}">
+          <div style="color:#7a7d7a;text-align:center;padding:40px 0">কার্ট খালি</div>
+        </sc-if>
+        <sc-for list="{{ cartItems }}" as="c" hint-placeholder-count="1">
+          <div style="display:grid;grid-template-columns:64px 1fr auto;gap:12px;align-items:start;padding-bottom:12px;border-bottom:1px solid #f0f0ed">
+            <div style="width:64px;height:76px;border-radius:8px;background:repeating-linear-gradient(135deg,#e7e3d6 0 8px,#ece8dc 8px 16px)"></div>
+            <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+              <span style="font-size:14px;font-weight:600;line-height:1.35">{{ c.title }}</span>
+              <span style="font-size:13px;color:#6b6e6b">{{ c.variant }}</span>
+              <span style="font-size:13px;color:#6b6e6b">পরিমাণ: {{ c.qty }}</span>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+              <b style="font-size:15px">৳ {{ c.line }}</b>
+              <button onClick="{{ c.remove }}" style="border:0;background:none;color:#c92a2a;font-size:13px;cursor:pointer;padding:0">মুছুন</button>
+            </div>
+          </div>
+        </sc-for>
+      </div>
+      <div style="border-top:1px solid #eee;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;font-size:17px;font-weight:700"><span>সাবটোটাল</span><span>৳ {{ cartTotal }}</span></div>
+        <span style="font-size:13px;color:#6b6e6b">ডেলিভারি চার্জ চেকআউটে যোগ হবে</span>
+        <button style="height:50px;border-radius:10px;border:0;background:#262826;color:#fff;font-size:17px;font-weight:700;cursor:pointer">চেকআউট করুন</button>
+        <button onClick="{{ closeCart }}" style="height:44px;border-radius:10px;border:1.5px solid #d6d6d1;background:#fff;font-size:15px;cursor:pointer;color:#262826">কেনাকাটা চালিয়ে যান</button>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;productType&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;simple&quot;,&quot;variable&quot;,&quot;combo&quot;],&quot;default&quot;:&quot;combo&quot;,&quot;tsType&quot;:&quot;'simple'|'variable'|'combo'&quot;},&quot;comboCount&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:2,&quot;max&quot;:4,&quot;step&quot;:1,&quot;default&quot;:2,&quot;tsType&quot;:&quot;number&quot;}}">
+const FEAT = ['৯৮% কটন, ২% স্প্যানডেক্স ফেব্রিক – প্রিমিয়াম মানের কাপড় দিয়ে তৈরি','ওয়াশ এনজাইম সফটেনেস – ধোয়ার পরেও থাকে নরম ও আরামদায়ক','শ্রিঙ্ক-ফ্রি গ্যারান্টি – ধোয়ার পর সঙ্কুচিত হবে না','কমফোর্ট ফিট ও স্মার্ট লুক – আরামদায়ক ফিটিং এবং দীর্ঘস্থায়ী আকৃতি','YKK জিপার – বিশ্বমানের টেকসই জিপার','নন-মেটালিক বাটন – মরিচা ধরে না','100% কালার গ্যারান্টি – রঙ নষ্ট হবে না','GSM: 290-310 – টেকসই কাপড়'];
+const SIZES = ['30','32','34','36','38','40'];
+const OUT = { '40': true };
+const PRODUCTS = {
+  simple: { title: 'Six Pocket Denim Pant', price: 650, oldPrice: 799, features: FEAT.slice(0, 5) },
+  variable: { title: 'Navy Blue 6 Pocket Baggy Cargo Pant - 98% Cotton', price: 850, oldPrice: 0, features: FEAT },
+  combo: { title: 'Beige + Off-White 6 Pocket Semi Baggy Cargo Pant Combo - 98% Cotton', price: 1299, oldPrice: 1399, features: FEAT,
+    items: [{ label: 'আইটেম ১', name: '6 Pocket Semi Baggy Cargo Pant', color: 'Beige', swatch: '#c9b48f' }, { label: 'আইটেম ২', name: '6 Pocket Semi Baggy Cargo Pant', color: 'Off-White', swatch: '#ece6d6' }, { label: 'আইটেম ৩', name: 'Six Pocket Denim Pant', color: 'Ash Deep', swatch: '#5b5e60' }, { label: 'আইটেম ৪', name: 'Semi Baggy Denim Pant', color: 'Deep Blue', swatch: '#2c3e66' }] }
+};
+const AREAS = [
+  { label: 'ঢাকার ভিতরে', fee: 80 }, { label: 'ঢাকার বাইরে', fee: 140 }, { label: 'গাজীপুর', fee: 110 },
+  { label: 'নারায়ণগঞ্জ', fee: 110 }, { label: 'কেরানীগঞ্জ', fee: 110 }
+];
+const CHART = [['30','30-31','37','18.5','13','7+','11'],['32','32-33','38','19.5','14+','7.5+','11.5'],['34','34-35','39.5','21.5','14+','8+','12.5'],['36','36-37','40.5','22','14+','8.5','13'],['38','38-39','40.5+','23+','15+','8.5+','14'],['40','40-41','41+','23+','15+','8.5+','14+']];
+
+const comboItems = n => PRODUCTS.combo.items.slice(0, Math.min(4, Math.max(2, n || 2)));
+class Component extends DCLogic {
+  state = { type: this.props.productType ?? 'combo', img: 0, size: null, c: [], same: false, qty: 1, area: 1,
+    name: '', phone: '', address: '', cart: [], drawer: false, justAdded: false, chart: false, err: '', formErr: '', placed: false };
+  formRef = React.createRef();
+  componentDidUpdate(pp) { if (pp.comboCount !== this.props.comboCount) this.setState({ c: [] }); if (pp.productType !== this.props.productType && this.props.productType) this.setType(this.props.productType); }
+  setType(type) { this.setState({ type, size: null, c: [], qty: 1, err: '', formErr: '', placed: false, chart: false }); }
+  chip(v, sel, onClick) {
+    const out = OUT[v];
+    return { v, disabled: !!out, onClick, deco: out ? 'line-through' : 'none',
+      bg: sel ? '#262826' : out ? '#f4f4f2' : '#fff', color: sel ? '#fff' : out ? '#b0b2b0' : '#262826', border: sel ? '#262826' : '#d6d6d1' };
+  }
+  variantText() {
+    const { type, size, c } = this.state;
+    if (type === 'variable') return size ? 'সাইজ ' + size : null;
+    const items = comboItems(this.props.comboCount);
+    if (type === 'combo') return items.every((_, i) => c[i]) ? items.map((it, i) => it.name + ' (' + it.color + ', ' + c[i] + ')').join(' + ') : null;
+    return 'Default';
+  }
+  validate() {
+    const v = this.variantText();
+    if (!v) { this.setState({ err: this.state.type === 'combo' ? 'প্রতিটি আইটেমের সাইজ বাছাই করুন' : 'সাইজ বাছাই করুন' }); return null; }
+    this.setState({ err: '' }); return v;
+  }
+  renderVals() {
+    const s = this.state, base = PRODUCTS[s.type], ci = comboItems(this.props.comboCount);
+    const bn = ['০','১','২','৩','৪'];
+    const p = s.type === 'combo' ? { ...base, title: ci.map(i => i.color).join(' + ') + ' Combo Pack (' + ci.length + ' pcs)' } : base;
+    const fee = AREAS[s.area].fee, subtotal = p.price * s.qty;
+    const pickCombo = (i, v) => this.setState(st => { const n = comboItems(this.props.comboCount).length; const c = st.same ? Array(n).fill(v) : [...st.c]; if (!st.same) c[i] = v; return { c, err: '' }; });
+    const cartTotal = s.cart.reduce((a, c) => a + c.price * c.qty, 0);
+    return {
+      p, unitPrice: p.price, hasDiscount: p.oldPrice > 0, saveAmount: p.oldPrice - p.price,
+      discountLabel: p.oldPrice ? '-' + Math.round((1 - p.price / p.oldPrice) * 100) + '%' : '',
+      navLinks: ['Home','All Products','Combo Offer','Denim 6 Pocket','Denim 4 Pocket','Cargo','Kids'], isCombo: s.type === 'combo', comboBadge: bn[ci.length] + ' পিস কম্বো', isSimple: s.type === 'simple',
+      tabDesc: (s.tab ?? 0) === 0, tabPolicy: s.tab === 1,
+      infoTabs: ['পণ্যের বিবরণ','রিটার্ন ও এক্সচেঞ্জ পলিসি'].map((label, i) => ({ label, color: (s.tab ?? 0) === i ? '#262826' : '#8a8d8a', line: (s.tab ?? 0) === i ? '#262826' : 'transparent', onClick: () => this.setState({ tab: i }) })), isVariable: s.type === 'variable',
+      typeTabs: [['simple','সিম্পল'],['variable','ভেরিয়েবল'],['combo','কম্বো']].map(([k, label]) => ({ label,
+        bg: s.type === k ? '#262826' : 'transparent', color: s.type === k ? '#fff' : '#4a4d4a', onClick: () => this.setType(k) })),
+      imgLabel: 'পণ্যের ছবি ' + (s.img + 1) + '/4',
+      thumbs: [0,1,2,3].map(i => ({ n: i + 1, border: s.img === i ? '#262826' : 'transparent', onClick: () => this.setState({ img: i }) })),
+      prevImg: () => this.setState({ img: (s.img + 3) % 4 }), nextImg: () => this.setState({ img: (s.img + 1) % 4 }),
+      sizeHint: s.size ? '· ' + s.size : '',
+      sizesMain: SIZES.map(v => this.chip(v, s.size === v, () => this.setState({ size: v, err: '' }))),
+      sameSize: s.same, toggleSame: () => this.setState(st => ({ same: !st.same, c: !st.same && st.c[0] ? Array(comboItems(this.props.comboCount).length).fill(st.c[0]) : st.c })),
+      comboRows: comboItems(this.props.comboCount).map((it, i) => ({ ...it, picked: s.c[i] ? 'সাইজ ' + s.c[i] : 'সাইজ বাছাই করুন',
+        sizes: SIZES.map(v => this.chip(v, s.c[i] === v, () => pickCombo(i, v))) })),
+      chartOpen: s.chart, toggleChart: () => this.setState({ chart: !s.chart }),
+      chartHead: ['Size','Waist','Length','F-Hip','F-Rise','Leg Open','Thigh'],
+      chartRows: CHART.map(r => ({ cells: r, bg: (s.size === r[0] || s.c.includes(r[0])) ? '#f4f1e8' : '#fff' })),
+      qtyLabel: s.type === 'combo' ? 'কম্বো সেট' : 'পরিমাণ', qty: s.qty,
+      dec: () => this.setState({ qty: Math.max(1, s.qty - 1) }), inc: () => this.setState({ qty: s.qty + 1 }),
+      err: s.err, hasErr: !!s.err,
+      addToCart: () => { const v = this.validate(); if (!v) return;
+        this.setState(st => ({ cart: [...st.cart, { id: Date.now(), title: p.title, variant: v, qty: st.qty, price: p.price }], drawer: true, justAdded: true })); },
+      scrollToForm: () => { if (!this.validate()) return; const el = this.formRef.current; if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 16, behavior: 'smooth' }); },
+      formRef: this.formRef,
+      name: s.name, phone: s.phone, address: s.address,
+      setName: e => this.setState({ name: e.target.value }), setPhone: e => this.setState({ phone: e.target.value }), setAddress: e => this.setState({ address: e.target.value }),
+      areaOpts: AREAS.map((a, i) => ({ ...a, bg: s.area === i ? '#f7f7f5' : '#fff', border: s.area === i ? '#262826' : '#e4e4e0', dot: s.area === i ? '#262826' : '#d6d6d1', onClick: () => this.setState({ area: i }) })),
+      summaryLine: (s.type === 'combo' ? 'কম্বো' : 'পণ্য') + ' × ' + s.qty, subtotal, deliveryFee: fee, total: subtotal + fee,
+      placeOrder: () => { if (!this.validate()) return;
+        if (!s.name.trim() || !/^01\d{9}$/.test(s.phone.trim()) || !s.address.trim()) { this.setState({ formErr: 'নাম, সঠিক ১১ ডিজিটের মোবাইল নাম্বার ও ঠিকানা লিখুন' }); return; }
+        this.setState({ placed: true, formErr: '' }); },
+      formErr: s.formErr, hasFormErr: !!s.formErr, placed: s.placed, notPlaced: !s.placed,
+      resetOrder: () => this.setState({ placed: false }),
+      drawerOpen: s.drawer, justAdded: s.justAdded, openCart: () => this.setState({ drawer: true, justAdded: false }), closeCart: () => this.setState({ drawer: false, justAdded: false }),
+      cartCount: s.cart.reduce((a, c) => a + c.qty, 0), cartEmpty: s.cart.length === 0, cartTotal,
+      cartItems: s.cart.map(c => ({ ...c, line: c.price * c.qty, remove: () => this.setState(st => ({ cart: st.cart.filter(x => x.id !== c.id) })) }))
+    };
+  }
+}
+</script>
+</body>
+</html>

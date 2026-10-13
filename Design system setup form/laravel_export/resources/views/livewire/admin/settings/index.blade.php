@@ -1,0 +1,21 @@
+@php($tabs = ['store' => 'Store details', 'users' => 'Users & roles', 'delivery' => 'Delivery areas', 'couriers' => 'Courier API', 'notifications' => 'Notifications', 'seo' => 'SEO', 'pixels' => 'Pixels & tracking'])
+<div class="grid items-start gap-3 lg:grid-cols-[220px_minmax(0,1fr)]">
+    <nav class="card flex gap-0.5 overflow-x-auto p-1.5 lg:sticky lg:top-[72px] lg:flex-col">
+        @foreach ($tabs as $k => $l)<button wire:click="$set('tab','{{ $k }}')" @class(['flex-none whitespace-nowrap rounded px-2.5 py-2 text-left', 'bg-soft font-semibold' => $tab === $k, 'text-ink-muted' => $tab !== $k])>{{ $l }}</button>@endforeach
+    </nav>
+    <form wire:submit="save" class="card">
+        <div class="card-head"><span class="card-title">{{ $tabs[$tab] ?? 'Profile' }}</span></div>
+        <div class="flex flex-col gap-3 p-3.5">
+            @switch($tab)
+                @case('store')<div class="grid gap-3 sm:grid-cols-2"><x-admin.field label="Store name" required><input wire:model="store.name" class="input"></x-admin.field><x-admin.field label="Support email"><input wire:model="store.email" class="input"></x-admin.field><x-admin.field label="Phone"><input wire:model="store.phone" class="input"></x-admin.field><x-admin.field label="Order prefix"><input wire:model="store.order_prefix" class="input mono"></x-admin.field><x-admin.field label="Address" class="sm:col-span-2"><textarea wire:model="store.address" rows="2" class="input"></textarea></x-admin.field></div>@break
+                @case('users')@foreach ($users as $u)<div class="flex items-center justify-between border-b border-soft py-2 last:border-0"><span><span class="font-medium">{{ $u->name }}</span> <span class="text-sm text-ink-muted">{{ $u->email }}</span></span><x-admin.badge :tone="$u->role === 'owner' ? 'ok' : 'mute'">{{ ucfirst($u->role) }}</x-admin.badge></div>@endforeach @break
+                @case('delivery')@foreach ($zones as $i => $z)<div class="grid items-end gap-2 rounded-lg border border-line p-2.5 sm:grid-cols-[1fr_120px_140px_80px]"><x-admin.field label="Area"><input wire:model="zones.{{ $i }}.name" class="input"></x-admin.field><x-admin.field label="Charge (৳)"><input type="number" wire:model="zones.{{ $i }}.charge" class="input"></x-admin.field><x-admin.field label="Delivery time"><input wire:model="zones.{{ $i }}.eta" class="input"></x-admin.field><label class="flex items-center gap-2 pb-2"><input type="checkbox" wire:model="zones.{{ $i }}.is_active" class="accent-brand"> On</label></div>@endforeach<button type="button" wire:click="addZone" class="btn-secondary btn-sm self-start">+ Add area</button>@break
+                @case('couriers')@foreach ($couriers as $i => $c)<div class="flex items-center justify-between border-b border-soft py-2 last:border-0"><span><span class="font-medium">{{ $c['name'] }}</span> <span class="mono text-xs text-ink-muted">webhook: {{ url('/webhooks/courier/'.$c['code']) }}</span></span><label class="flex items-center gap-2"><input type="checkbox" wire:model="couriers.{{ $i }}.is_active" class="accent-brand"> Active</label></div>@endforeach @break
+                @case('notifications')@foreach (['new_order' => 'New order', 'low_stock' => 'Low stock', 'delayed' => 'Parcel delayed 3 days', 'daily_email' => 'Daily summary email'] as $k => $l)<label class="flex items-center gap-2.5"><input type="checkbox" wire:model="notify.{{ $k }}" class="h-4 w-4 accent-brand"> {{ $l }}</label>@endforeach @break
+                @case('seo')<x-admin.field label="Meta title"><input wire:model="seo.title" class="input"></x-admin.field><x-admin.field label="Meta description"><textarea wire:model="seo.description" rows="3" class="input"></textarea></x-admin.field>@break
+                @case('pixels')<x-admin.field label="Meta Pixel ID"><input wire:model="pixels.meta_pixel" class="input mono"></x-admin.field><x-admin.field label="GA4 Measurement ID"><input wire:model="pixels.ga4" class="input mono"></x-admin.field><x-admin.field label="GTM container"><input wire:model="pixels.gtm" class="input mono"></x-admin.field>@break
+            @endswitch
+        </div>
+        @if ($tab !== 'users')<div class="flex justify-end gap-2 border-t border-soft bg-zebra px-3.5 py-3"><button class="btn-primary">Save changes</button></div>@endif
+    </form>
+</div>

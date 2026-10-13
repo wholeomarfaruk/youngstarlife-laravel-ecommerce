@@ -624,6 +624,13 @@
                         </div>
                     </div>
                     <div class="main-content">
+                        @if (\App\Support\LegacyAdmin::readOnly())
+                            <div style="margin:12px 16px;padding:12px 16px;border-radius:8px;background:#FFF4E5;border:1px solid #F5C27A;color:#7A4B00;font-size:14px;">
+                                <strong>Archive · read-only.</strong> The website now runs on Ops — new orders, products, categories and customers are there.
+                                <a href="{{ url('/ops') }}" style="font-weight:600;margin-left:6px;">Open Ops →</a>
+                                @if (session('error'))<div style="margin-top:6px;">{{ session('error') }}</div>@endif
+                            </div>
+                        @endif
                         @yield('content')
                         <div class="bottom-page">
                             <div class="body-text">Copyright © 2025 YoungStar Life</div>

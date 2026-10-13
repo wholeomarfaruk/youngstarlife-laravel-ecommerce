@@ -11,15 +11,29 @@ class Device extends Model
     protected array $stringLimits = ['name' => 255, 'status' => 255];
 
     protected $fillable = [
-        'name', 'model', 'user_agent', 'ip_address',
-        'status', 'customer_id', 'last_seen'
+        'token', 'name', 'model', 'user_agent', 'ip_address',
+        'status', 'customer_id', 'user_id', 'last_seen'
     ];
+    protected $casts = ['last_seen' => 'datetime'];
     protected $appends = ['is_blocked']; // optional if you want it in JSON
 
 
     public function customer()
     {
         return $this->belongsTo(Customer::class);
+    }
+    /** linked once the visitor has an account (first order, login or register) */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+    public function cart()
+    {
+        return $this->hasOne(Cart::class);
+    }
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
     }
     public function blackLists()
     {

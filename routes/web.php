@@ -14,6 +14,8 @@ use App\Http\Controllers\AdminController;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\AuthAdmin;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\StorefrontCartController;
 use Spatie\LaravelPackageTools\Package;
 
      Route::get('/optimize', function () {
@@ -21,9 +23,13 @@ use Spatie\LaravelPackageTools\Package;
             Artisan::call('optimize');
             return '<h3>✅ Application optimized successfully!</h3>';
         });
-Route::post('/cart/add/json', [CartController::class, 'add_json_to_cart'])->name('cart.add.json')->withoutMiddleware('auth');
 
 Auth::routes();
+// second sign-in step for accounts with two-factor on (Ops → My profile → Security)
+Route::middleware('guest')->group(function () {
+    Route::get('/two-factor-challenge', [\App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'show'])->name('two-factor.challenge');
+    Route::post('/two-factor-challenge', [\App\Http\Controllers\Auth\TwoFactorChallengeController::class, 'store'])->middleware('throttle:6,1');
+});
 
 // Route::get('/', function () {
 //     // return redirect()->away('https://seldomfashion.com/');
@@ -44,37 +50,30 @@ Route::get('/reviews', [HomeController::class, 'reviews'])->name('reviews');
 Route::get('/category/{slug}', [HomeController::class, 'categoryShow'])->name('category.show');
 Route::get('/product/{slug}', [HomeController::class, 'productShow'])->name('product.show');
 Route::get('/facebook-product-feed.xml', [HomeController::class, 'facebookProductFeed'])->name('facebook.product.feed');
-
-Route::get('/product/flower-silk-3-piece-dress', [HomeController::class, 'ProductOne'])->name('product.one');
-Route::get('/product/safina-3-piece-dress', [HomeController::class, 'ProductTwo'])->name('product.two');
-Route::get('/product/aafreen-3-piece-dress', [HomeController::class, 'ProductThree'])->name('product.three');
-Route::get('/product/test', [HomeController::class, 'ProductTest'])->name('product.test');
+Route::get('/sitemap.xml', [HomeController::class, 'sitemap'])->name('sitemap');
 
 
-//cart
-Route::get('/cart/distroy', [CartController::class, 'cart_distroy'])->name('cart.distroy');
-Route::get('/cart/test', [CartController::class, 'test'])->name('cart.test');
-Route::get('/cart', [CartController::class, 'index'])->name('cart.index');
-Route::post('/cart/add/{id}', [CartController::class, 'add_to_cart'])->name('cart.add');
 
-Route::delete('/cart/remove/{id}', [CartController::class, 'remove_item'])->name('cart.remove');
-Route::put('/cart/increase/{rowId}', [CartController::class, 'increase_quantity'])->name('cart.increase');
-Route::put('/cart/decrease/{rowId}', [CartController::class, 'decrease_quantity'])->name('cart.decrease');
-Route::delete('/cart/clear', [CartController::class, 'clear_cart'])->name('cart.clear');
-Route::get('/cart/checkout', [CartController::class, 'checkout'])->name('cart.checkout');
-Route::post('/cart/checkout/apply-coupon', [CartController::class, 'apply_coupon'])->name('cart.checkout.apply.coupon');
-Route::get('/cart/checkout/remove-coupon', [CartController::class, 'remove_coupon'])->name('cart.checkout.remove.coupon');
-Route::post('/cart/checkout/place-order', [CartController::class, 'place_order'])->name('cart.order.place');
-Route::get('/order-received', [CartController::class, 'order_received'])->name('order.received')->withoutMiddleware('auth');
+// Storefront cart + checkout — everything keyed by the visitor's device (App\Http\Middleware\RegisterDevice); orders go to Ops (ops_orders)
+Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout');
+Route::post('/checkout', [CheckoutController::class, 'place'])->name('checkout.place')->middleware('throttle:20,1');
+Route::post('/checkout/autosave', [CheckoutController::class, 'autosave'])->name('checkout.autosave')->middleware('throttle:60,1');
+Route::get('/checkout/order/{order}', [CheckoutController::class, 'order'])->name('checkout.order')->whereNumber('order');
+Route::post('/cart/items', [StorefrontCartController::class, 'store'])->name('cart.items.store')->middleware('throttle:60,1');
+Route::patch('/cart/items/{item}', [StorefrontCartController::class, 'update'])->name('cart.items.update')->whereNumber('item');
+Route::delete('/cart/items/{item}', [StorefrontCartController::class, 'destroy'])->name('cart.items.destroy')->whereNumber('item');
+Route::get('/cart/summary', [StorefrontCartController::class, 'summary'])->name('cart.summary');
+// old URLs → the checkout page
+Route::redirect('/cart', '/checkout')->name('cart.index');
+Route::redirect('/cart/checkout', '/checkout')->name('cart.checkout');
+Route::get('/order-received', [CheckoutController::class, 'legacyReceived'])->name('order.received');
 
-Route::post('/cart/checkout/test-place-order', [CartControllerTest::class, 'place_order_test'])->name('cart.order.place.test');
 
-Route::get('/order-received-test', [CartControllerTest::class, 'order_received_test'])->name('order.received.test')->withoutMiddleware('auth');
-Route::post('/cart/autosave', [CartController::class, 'orderAutosave'])->name('cart.order.autosave');
 
 // Admin
 Route::prefix('admin')->group(function () {
-    Route::middleware(['auth', AuthAdmin::class])->group(function () {
+    // old admin = read-only archive (App\Support\LegacyAdmin); the website and its orders run on Ops (/ops)
+    Route::middleware(['auth', AuthAdmin::class, \App\Http\Middleware\LegacyAdminReadOnly::class])->group(function () {
           Route::get('/migrate', function () {
             Artisan::call('migrate');
             exec('php artisan migrate');

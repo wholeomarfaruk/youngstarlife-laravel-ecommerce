@@ -302,6 +302,10 @@ class CartController extends Controller
         $quantityOrdered = (int) ($request->quantity ?: 1);
         $customer_check = Customer::where('phone', $phone)->first();
         $device_check = Device::where('user_agent', $request->userAgent())->first();
+        $currentDevice = app(\App\Services\Storefront\DeviceManager::class)->current();
+        if ($currentDevice && $currentDevice->is_blocked) {
+            return redirect()->back()->with('error', 'You are blacklisted from ordering');
+        }
         if($customer_check && $customer_check->is_blocked){
             return redirect()->back()->with('error', 'You are blacklisted from ordering');
         }
@@ -370,6 +374,7 @@ class CartController extends Controller
 
             $order->is_paid = false;
             $order->status = 'pending';
+            $order->device_id = $currentDevice?->id;
             if ($request->server('REMOTE_ADDR')) {
                 $order->ip_address = $request->server('REMOTE_ADDR');
             }
@@ -408,7 +413,10 @@ class CartController extends Controller
             // The order is saved; customer/device bookkeeping must not turn it into an error page
             // (the customer would retry and hit the 30 minute duplicate check).
             try {
-                if (!$order->customer && strlen($phone) == 11) {
+                if ($currentDevice) {
+                    // first order → user account by phone; device, customer and order linked to it
+                    app(\App\Services\Storefront\CheckoutService::class)->linkAccount($order, $currentDevice);
+                } elseif (!$order->customer && strlen($phone) == 11) {
                     $customer = $order->customer()->create([
                         'name' => $request->name,
                         'phone' => $phone
@@ -443,7 +451,7 @@ class CartController extends Controller
                 // affect anything else, so this is isolated in its own try/catch.
                 try {
                     $order = Order::find($orderId);
-                    $admins = User::whereHas('pushSubscriptions')->get();
+                    $admins = User::whereHas('pushSubscriptions')->get()->filter->wantsOps('newOrder', 'push');
                     if ($order && $admins->isNotEmpty()) {
                         Notification::send($admins, new NewOrderPushNotification($order));
                     }

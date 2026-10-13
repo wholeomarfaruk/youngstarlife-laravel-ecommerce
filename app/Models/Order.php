@@ -88,6 +88,15 @@ class Order extends Model
         return $this->hasOne(Customer::class, 'phone', 'phone');
         // matches customer.phone = order.phone
     }
+    /** the registered device (cookie) that placed the order; device() below is the older user-agent match */
+    public function registeredDevice()
+    {
+        return $this->belongsTo(Device::class, 'device_id');
+    }
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
      public function device()
     {
         return $this->hasOne(Device::class, 'user_agent', 'user_agent');

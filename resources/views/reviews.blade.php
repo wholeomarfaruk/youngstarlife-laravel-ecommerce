@@ -1,4 +1,5 @@
 @extends('layouts.app')
+@section('title', 'কাস্টমার রিভিউ')
 
 @section('content')
     <style>

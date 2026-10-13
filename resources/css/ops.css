@@ -1,0 +1,74 @@
+@config "../../tailwind.ops.config.js";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { @apply bg-canvas text-ink font-sans text-base antialiased; }
+  a { @apply text-brand hover:text-brand-hover; }
+  [x-cloak] { display: none !important; }
+  input[type=number]::-webkit-inner-spin-button { opacity: .5 }
+}
+
+@layer components {
+  /* buttons */
+  .btn { @apply inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-md px-3 py-1.5 text-base font-medium cursor-pointer transition-colors disabled:opacity-50 disabled:pointer-events-none; }
+  .btn-primary { @apply btn bg-brand text-white hover:bg-brand-hover; }
+  .btn-dark { @apply btn bg-ink text-white hover:bg-ink-2; }
+  .btn-secondary { @apply btn bg-white border border-line-2 text-ink hover:bg-zebra; }
+  .btn-ghost { @apply btn text-ink-3 hover:bg-soft; }
+  .btn-danger { @apply btn bg-white border border-line-2 text-bad hover:bg-bad-bg; }
+  .btn-sm { @apply px-2.5 py-1 text-sm rounded; }
+  /* form */
+  .input { @apply w-full min-w-0 rounded border border-line-2 bg-white px-2 py-1.5 text-base text-ink outline-none placeholder:text-ink-muted focus:border-ink disabled:bg-zebra disabled:text-ink-muted; }
+  .input-error { @apply border-bad; }
+  .label { @apply flex flex-col gap-1 text-xs text-ink-muted min-w-0; }
+  /* surfaces */
+  .card { @apply bg-white border border-line rounded-lg min-w-0; }
+  .card-head { @apply flex flex-wrap items-center justify-between gap-2 px-3.5 py-3 border-b border-soft; }
+  .card-title { @apply font-semibold text-md; }
+  /* tables (div-grid or real table) */
+  .th { @apply px-3 py-1.5 text-left text-xs font-normal text-ink-muted bg-zebra border-b border-soft whitespace-nowrap; }
+  .td { @apply px-3 py-2.5 border-b border-soft align-middle; }
+  .tr-hover { @apply hover:bg-zebra; }
+  /* badges */
+  .badge { @apply inline-flex items-center whitespace-nowrap rounded px-1.5 py-0.5 text-xs font-medium; }
+  .badge-ok { @apply badge bg-ok-bg text-ok; } .badge-info { @apply badge bg-info-bg text-info; }
+  .badge-warn { @apply badge bg-warn-bg text-warn; } .badge-bad { @apply badge bg-bad-bg text-bad; }
+  .badge-mute { @apply badge bg-mute-bg text-mute; }
+  /* chips (status filters) */
+  .chip { @apply inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-line-2 bg-white px-2.5 py-1 text-sm text-ink cursor-pointer; }
+  .chip-on { @apply bg-ink text-white border-ink; }
+  /* module tabs */
+  .mtab { @apply flex-none whitespace-nowrap border-b-2 border-transparent -mb-px px-3 py-2 text-md font-medium text-ink-muted; }
+  .mtab-on { @apply border-brand text-ink font-semibold; }
+  .kpi { @apply card px-3 py-2.5 flex flex-col gap-0.5; }
+  .mono { @apply font-mono; }
+}
+
+/* flatpickr — brand colours (Ops design tokens) */
+.flatpickr-calendar { font-family: Geist, system-ui, sans-serif; box-shadow: 0 8px 24px rgba(26,26,23,.14); border: 1px solid #D6D3C9; border-radius: 8px; }
+.flatpickr-day.selected, .flatpickr-day.selected:hover, .flatpickr-day.startRange, .flatpickr-day.endRange { background: #1F5F4A; border-color: #1F5F4A; }
+.flatpickr-day.today { border-color: #6FA58C; }
+.flatpickr-day:hover { background: #E3EEE8; border-color: #E3EEE8; }
+.flatpickr-months .flatpickr-month, .flatpickr-current-month .flatpickr-monthDropdown-months { color: #1A1A17; }
+.flatpickr-input[readonly] { cursor: pointer; background: #fff; }
+.flatpickr-input[disabled] { background: #FAFAF7; color: #6B6A63; cursor: not-allowed; }
+
+/* Tom Select (searchable select, <x-ops.select>) — matches .input */
+.ts-wrapper { min-width: 0; }
+.ts-wrapper .ts-control { border: 1px solid #D6D3C9; border-radius: 4px; padding: 6px 8px; min-height: 34px; font-size: 14px; color: #1A1A17; box-shadow: none; background: #fff; }
+.ts-wrapper.focus .ts-control { border-color: #1A1A17; box-shadow: none; }
+.ts-wrapper.disabled .ts-control { background: #FAFAF7; opacity: 1; }
+.ts-dropdown { border: 1px solid #D6D3C9; border-radius: 6px; box-shadow: 0 8px 24px rgba(26,26,23,.14); margin-top: 4px; font-size: 14px; z-index: 100; }
+.ts-dropdown .active { background: #E3EEE8; color: #1A1A17; }
+.ts-dropdown .option, .ts-dropdown .no-results { padding: 7px 10px; }
+.ts-dropdown .no-results { color: #6B6A63; }
+.ts-wrapper .clear-button { right: 8px; opacity: .5; }
+
+/* SortableJS (drag & drop, sortableTree) */
+.sortable-ghost { opacity: .4; background: #E3EEE8 !important; }
+.sortable-chosen { box-shadow: 0 6px 18px rgba(26,26,23,.12); }
+[data-drag] { cursor: grab; touch-action: none; }
+[data-drag]:active { cursor: grabbing; }

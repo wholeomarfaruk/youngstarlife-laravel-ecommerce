@@ -80,6 +80,7 @@ class OrderAiExtract extends Component
 
     public function runExtraction(OrderExtractionServiceInterface $service)
     {
+        \App\Support\LegacyAdmin::guard();   // old admin = read-only archive
         $this->validate([
             'source' => 'required|string',
             'uploadedImages.*' => 'nullable|image|max:5120',
@@ -414,6 +415,7 @@ class OrderAiExtract extends Component
 
     public function confirm()
     {
+        \App\Support\LegacyAdmin::guard();   // old admin = read-only archive
         $this->validate([
             'customer.name' => 'required|string',
             'customer.phone' => 'required|string|min:11',

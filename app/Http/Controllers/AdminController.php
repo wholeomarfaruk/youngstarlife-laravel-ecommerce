@@ -1467,6 +1467,13 @@ public function ordersDataTable(Request $request)
                 'reason' => 'Blacklist from Order by ' . auth()->user()->name,
             ]);
         }
+        // the cookie device that placed the order (storefront device registration)
+        $registered = $order->device_id ? Device::find($order->device_id) : null;
+        if ($registered && $registered->id !== $device->id && !$registered->is_blocked) {
+            $registered->blackLists()->create([
+                'reason' => 'Blacklist from Order by ' . auth()->user()->name,
+            ]);
+        }
 
 
         return response()->json([
@@ -1487,6 +1494,9 @@ public function ordersDataTable(Request $request)
 
             $customer->blackLists()->delete();
             $device->blackLists()->delete();
+            if ($order->device_id) {
+                Device::find($order->device_id)?->blackLists()->delete();
+            }
         } else {
             return response()->json([
                 'success' => false,

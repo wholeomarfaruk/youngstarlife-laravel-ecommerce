@@ -12,9 +12,10 @@ class NewOrderPushNotification extends Notification
 {
     use Queueable;
 
-    protected Order $order;
+    /** website orders are Ops orders (the old Order is still accepted by older screens) */
+    protected Order|\App\Models\Ops\Order $order;
 
-    public function __construct(Order $order)
+    public function __construct(Order|\App\Models\Ops\Order $order)
     {
         $this->order = $order;
     }
@@ -35,9 +36,9 @@ class NewOrderPushNotification extends Notification
     {
         return (new WebPushMessage)
             ->title('New Order Received')
-            ->icon(asset('frontend/img/youngstar logo-circle.png'))
-            ->body($this->order->name . ' placed an order — ৳' . $this->order->total)
-            ->data(['url' => route('admin.orders.details', $this->order->id)])
+            ->icon(site()->faviconUrl())
+            ->body(($this->order instanceof \App\Models\Ops\Order ? $this->order->ship_name.' · '.$this->order->number : $this->order->name) . ' placed an order — ৳' . $this->order->total)
+            ->data(['url' => $this->order instanceof \App\Models\Ops\Order ? route('ops.orders.show', $this->order) : route('admin.orders.details', $this->order->id)])
             ->tag('order-' . $this->order->id)
             ->requireInteraction();
     }

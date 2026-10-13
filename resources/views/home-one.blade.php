@@ -161,14 +161,14 @@
 
                             <div class="p-img-box">
                                 <a href="{{ route('product.show', $product->slug) }}">
-                                    <img src="{{ asset('storage/images/products/' . $product->image) }}" alt="">
+                                    <img src="{{ $product->image_url }}" alt="">
                                 </a>
                             </div>
                             <div class="p-info">
                                 <div class="prices">
-                                    @if ($product->discount_price > 0)
+                                    @if ($product->hasDiscount())
                                         <del class="old-price">৳ {{ $product->price }}</del>
-                                        <span class="price">৳ {{ $product->discount_price }}</span>
+                                        <span class="price">৳ {{ $product->sale_price }}</span>
                                     @else
                                         <span class="old-price">Price : </span> <span class="price"> ৳
                                             {{ $product->price }}</span>
@@ -299,7 +299,7 @@
     @endif
 
     @foreach ($categories as $category)
-        @if ($category->products->where('status', 1)->count() > 0)
+        @if ($category->products->isNotEmpty())
             <section class="sec-style-1 my-3">
                 <div class="container">
                     <div class="sec-header">
@@ -317,20 +317,20 @@
                     </div>
                     <div class="sec-body">
                         <div class="sec-grid-box">
-                            @foreach ($category?->products->where('status', 1)->take(6) as $product)
+                            @foreach ($category->products->take(6) as $product)
                                 <div class="sec-grid-item p-card-1">
 
                                     <div class="p-img-box">
                                         <a href="{{ route('product.show', $product->slug) }}">
-                                            <img src="{{ asset('storage/images/products/' . $product->image) }}"
+                                            <img src="{{ $product->image_url }}"
                                                 alt="">
                                         </a>
                                     </div>
                                     <div class="p-info">
                                         <div class="prices">
-                                            @if ($product->discount_price > 0)
+                                            @if ($product->hasDiscount())
                                                 <del class="old-price">৳ {{ $product->price }}</del>
-                                                <span class="price">৳ {{ $product->discount_price }}</span>
+                                                <span class="price">৳ {{ $product->sale_price }}</span>
                                             @else
                                                 <span class="old-price">Price : </span> <span class="price"> ৳
                                                     {{ $product->price }}</span>
@@ -368,25 +368,7 @@
         @endif
     @endforeach
 
-    <section id="faq" class=" mb-3">
-        <div class="container">
-
-            <h1 class="fs-5 fw-bold bg-primary-color text-center py-3 px-3 text-white">সচরাচর জিজ্ঞাস্য প্রশ্নাবলি
-            </h1>
-            <ul class="list-inline fs-6 fw-medium">
-                <li><i class="fa-solid fa-angles-right text-primary-color"></i> সারা বাংলাদেশে ক্যাশ অন ডেলিভারি
-                    এভেইলেবল </li>
-
-                <li><i class="fa-solid fa-angles-right  text-primary-color"></i> আপনি যদি আপনার ক্রয়কৃত ড্রেসটি
-                    নিয়ে সন্তুষ্ট না হন, তবে শুধু ডেলিভারি চার্জ প্রদান করে ডেলিভারি ম্যানের কাছে সহজেই ফেরত দিতে
-                    পারবেন। </li>
-
-                <li><i class="fa-solid fa-angles-right text-primary-color"></i>আমাদের আছে ডেলিভারির পর ৩ দিন
-                    পর্যন্ত এক্সচেঞ্জ সুবিধা।
-                </li>
-            </ul>
-        </div>
-    </section>
+    @include('partials.storefront.faq', ['page' => 'home'])
 @endsection
 
 

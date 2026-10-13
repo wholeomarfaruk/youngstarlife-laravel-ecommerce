@@ -33,6 +33,7 @@ class Products extends Component
     }
     public function updateStatus($id)
     {
+        \App\Support\LegacyAdmin::guard();   // old admin = read-only archive
         $product = ModelsProducts::find($id);
         $product->status = !$product->status;
         $product->save();
@@ -46,6 +47,7 @@ class Products extends Component
      */
     public function updateOrder($orderedIds)
     {
+        \App\Support\LegacyAdmin::guard();   // old admin = read-only archive
         $orderedIds = collect($orderedIds)->map(fn ($id) => (int) $id)->filter()->values();
 
         // The sort_order values currently occupied by this page's rows.
@@ -68,6 +70,7 @@ class Products extends Component
      */
     public function setPosition($id, $position)
     {
+        \App\Support\LegacyAdmin::guard();   // old admin = read-only archive
         $position = max(1, (int) $position);
         $product = ModelsProducts::find($id);
         if (!$product) {

@@ -52,7 +52,9 @@ return [
 
     'openrouter' => [
         'key' => env('OPENROUTER_API_KEY'),
+        'api_key' => env('OPENROUTER_API_KEY'),   // Ops AI order entry (a key saved in Ops → Settings wins)
         'model' => env('OPENROUTER_MODEL', 'openai/gpt-4o'),
+        'base_url' => env('OPENROUTER_BASE_URL', 'https://openrouter.ai/api/v1'),
     ],
 
     'ai' => [

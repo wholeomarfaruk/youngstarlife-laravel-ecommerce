@@ -36,6 +36,7 @@ class UserController extends Controller
             }
         }
         $user->save();
+        if ($user->is(auth()->user())) auth()->setUser($user);   // keeps this session valid after a password change (authenticated sessions)
         return redirect()->back()->with('status', 'Admin Settings Updated Successfully');
     }
 }
