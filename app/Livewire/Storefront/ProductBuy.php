@@ -22,6 +22,14 @@ class ProductBuy extends Component
     public string $token = '';          // idempotency: a double tap places one order
     protected ?Product $product = null;
 
+    /** every request: RegisterDevice skips livewire/* — load the visitor's device (cookie) here so cart / order find it */
+    public function boot(\App\Services\Storefront\DeviceManager $devices): void
+    {
+        if (! $devices->current()) {
+            try { $devices->boot(request()); } catch (\Throwable $e) { report($e); }
+        }
+    }
+
     public function mount(Product $product): void
     {
         $this->productId = $product->id; $this->product = $product; $this->token = (string) Str::uuid();
