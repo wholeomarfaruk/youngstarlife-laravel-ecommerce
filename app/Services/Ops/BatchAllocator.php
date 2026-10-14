@@ -71,8 +71,7 @@ class BatchAllocator
             if (! $order->shipment()->exists()) {
                 $courier = app(OrderWorkflow::class)->courierFor($order);
                 if ($courier) {
-                    $last = (int) Shipment::where('code', 'like', 'P%')->selectRaw('MAX(CAST(SUBSTRING(code, 2) AS UNSIGNED)) n')->value('n');
-                    $s = $order->shipment()->create(['code' => 'P'.max(1001, $last + 1), 'courier_id' => $courier->id, 'cod_amount' => $order->cod,
+                    $s = $order->shipment()->create(['code' => Shipment::nextCode(), 'courier_id' => $courier->id, 'cod_amount' => $order->cod,
                         'packed_by' => auth()->id(), 'packed_at' => now(), 'courier_status' => 'pending', 'status_updated_at' => now()]);
                     $order->log('packed', 'Packed and verified by scan · parcel '.$s->code.' · '.$courier->name);
                     // Automations → "Parcel is packed → send it to the courier API": after the response, so the packing scan stays fast
@@ -85,6 +84,8 @@ class BatchAllocator
                     return;
                 }
             }
+            // parcel made earlier (Book courier → sent before packing): this scan packs it
+            if (($s = $order->shipment()->first()) && ! $s->packed_at) { $s->update(['packed_by' => auth()->id(), 'packed_at' => now()]); $order->log('packed', 'Packed and verified by scan · parcel '.$s->code); return; }
             $order->log('packed', 'Packed and verified by scan');
         });
     }

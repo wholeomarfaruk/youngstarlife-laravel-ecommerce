@@ -38,10 +38,13 @@
                     <x-ops.field label="Note for the rider" class="sm:col-span-2" :error="$errors->first('f.note')"><input wire:model="f.note" class="input" placeholder="e.g. Call before delivery"></x-ops.field>
                 </div>
 
-                {{-- parcel: only once packed --}}
+                {{-- parcel: the order's unsent one, or a new one made when it is sent --}}
                 @if ($s)
                     <div class="flex flex-col gap-2 rounded-md border border-line p-3">
-                        <div class="flex items-center justify-between gap-2 text-sm"><span class="font-semibold">Parcel <span class="mono">{{ $s->code }}</span></span><span class="text-ink-muted">packed {{ $s->packed_at?->format('d M · H:i') }}</span></div>
+                        <div class="flex items-center justify-between gap-2 text-sm">
+                            <span class="font-semibold">Parcel @if ($s->exists)<span class="mono">{{ $s->code }}</span>@endif</span>
+                            <span class="text-ink-muted">{{ $s->packed_at ? 'packed '.$s->packed_at->format('d M · H:i') : ($s->exists ? 'not packed yet' : 'created when sent · pack it later with Pack & scan') }}</span>
+                        </div>
                         <div class="grid gap-2 sm:grid-cols-3">
                             <x-ops.field label="Weight (kg)" :error="$errors->first('f.weight')"><input type="number" step="0.1" min="0.1" wire:model.live.debounce.500ms="f.weight" class="input"></x-ops.field>
                             <x-ops.field label="Second phone"><input wire:model="f.alt_phone" inputmode="tel" class="input" placeholder="Optional"></x-ops.field>
@@ -59,20 +62,18 @@
                             @if ($pl['quote'])<div class="text-sm">Pathao charge for this zone: <b>{{ tk((int) round($pl['quote']['price'])) }}</b></div>@endif
                         @endif
                         @if ($c?->can('book'))
-                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" wire:model.live="f.send" class="accent-brand"> Send the parcel to the {{ $c->name }} API now</label>
+                            <label class="flex items-center gap-2 text-sm"><input type="checkbox" wire:model.live="f.send" class="accent-brand"> Send the parcel to the {{ $c->name }} API now @if ($o->status === 'pending')<span class="text-ink-muted">(also confirms the order)</span>@endif</label>
                         @elseif ($c)
                             <p class="text-xs text-ink-muted">{{ $c->name }} has no API connection (Settings → Couriers) — book it in their panel and type the tracking on the order page.</p>
                         @endif
                     </div>
-                @else
-                    <p class="text-xs text-ink-muted">Not packed yet — the order keeps this courier and note, and the parcel goes to {{ $c?->name ?? 'the courier' }} when it is packed (Pack &amp; scan).</p>
                 @endif
             </div>
         @endif
         <x-slot:footer>
             <button x-on:click="$dispatch('close-modal', 'book-courier-one')" class="btn-secondary">Cancel</button>
             <button wire:click="save" wire:loading.attr="disabled" class="btn-primary" @disabled(! $o)>
-                <span wire:loading.remove wire:target="save">{{ $s && ($f['send'] ?? false) && $c?->can('book') ? 'Save & send' : 'Book courier' }}</span><span wire:loading wire:target="save">Saving…</span>
+                <span wire:loading.remove wire:target="save">{{ $s && ($f['send'] ?? false) && $c?->can('book') ? 'Send to '.$c->name : 'Save courier' }}</span><span wire:loading wire:target="save">Saving…</span>
             </button>
         </x-slot:footer>
     </x-ops.modal>

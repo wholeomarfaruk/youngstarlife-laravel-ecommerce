@@ -43,7 +43,7 @@ return [
         'out_for_delivery' => ['Out for delivery', 'warn'], 'delivered' => ['Delivered', 'ok'], 'partial_delivered' => ['Partial delivered', 'warn'],
         'hold' => ['Hold', 'warn'], 'returning' => ['Returning', 'bad'], 'returned' => ['Returned', 'bad'], 'cancelled' => ['Cancelled', 'mute'], 'lost' => ['Lost', 'bad'],
     ],
-    'payment_status' => ['pending' => ['Pending', 'mute'], 'partial' => ['Partial', 'warn'], 'paid' => ['Paid', 'ok'], 'failed' => ['Failed', 'bad'], 'refunded' => ['Refunded', 'info']],
+    'payment_status' => ['pending' => ['Unpaid', 'mute'], 'partial' => ['Partial', 'warn'], 'paid' => ['Paid', 'ok'], 'failed' => ['Failed', 'bad'], 'refunded' => ['Refunded', 'info']],
     'sources' => ['facebook' => 'Facebook', 'website' => 'Website', 'instagram' => 'Instagram', 'phone' => 'Phone'],
     'product_types' => ['simple' => 'Simple', 'variable' => 'Variable', 'combo' => 'Combo'],
     'product_status' => ['active' => ['Active', 'ok'], 'draft' => ['Draft', 'mute'], 'archived' => ['Archived', 'warn']],

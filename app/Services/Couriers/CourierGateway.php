@@ -171,7 +171,7 @@ class CourierGateway
     {
         $customer = $s->order->customer_id;
         if (! $customer) return null;
-        $prev = Shipment::where('id', '!=', $s->id)->whereNotNull('courier_meta->pathao->zone_id')->whereHas('order', fn ($q) => $q->where('customer_id', $customer))->latest('id')->first();
+        $prev = Shipment::when($s->id, fn ($q) => $q->where('id', '!=', $s->id))->whereNotNull('courier_meta->pathao->zone_id')->whereHas('order', fn ($q) => $q->where('customer_id', $customer))->latest('id')->first();
         return $prev?->courier_meta['pathao'] ?? null;
     }
 

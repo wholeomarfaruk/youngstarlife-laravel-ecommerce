@@ -2,15 +2,16 @@
 
 namespace App\Livewire\Ops\Orders;
 
-use App\Models\Ops\{Courier, Order};
+use App\Models\Ops\{Courier, Order, Shipment};
 use App\Services\Couriers\{CourierException, CourierGateway};
 use Livewire\Attributes\{Computed, On};
 use Livewire\Component;
 
 /**
  * "Book courier…" from an order's ⋯ menu: one modal per page, opened with $dispatch('book-courier', { id }).
- * Staff check / fix the delivery details, pick the courier, and — when the parcel is already packed — send it to the courier API.
- * Orders not packed yet keep the courier ("Courier: X" tag) and the rider note; the parcel goes to that courier at packing.
+ * Staff check / fix the delivery details, pick the courier and send the parcel to the courier API now — packed or not:
+ * an order without a parcel gets one here (P1234, not packed yet; Pack & scan later packs that same parcel).
+ * Unticking "send now" (or a courier without API) only keeps the courier ("Courier: X" tag) and the note for packing.
  */
 class BookCourier extends Component
 {
@@ -27,8 +28,15 @@ class BookCourier extends Component
     #[Computed] public function couriers() { return Courier::where('is_active', true)->orderBy('name')->get(); }
     #[Computed] public function courier(): ?Courier { return $this->couriers->firstWhere('id', (int) ($this->f['courier_id'] ?? 0)); }
 
-    /** a packed parcel not sent yet → it can go to the courier API now */
-    public function parcel() { $s = $this->order?->shipment; return $s && ! $s->booked_at ? $s : null; }
+    /** the parcel to send: the order's unsent parcel, or a new one (saved only when it is sent) */
+    public function parcel(): ?Shipment
+    {
+        $o = $this->order; if (! $o) return null;
+        $s = $o->shipment;
+        if ($s?->booked_at) return null;
+        $s ??= new Shipment(['order_id' => $o->id, 'cod_amount' => $o->cod, 'courier_status' => 'pending']);
+        return $s->setRelation('order', $o);
+    }
 
     #[On('book-courier')]
     public function open(int $id): void
@@ -44,7 +52,7 @@ class BookCourier extends Component
             'description' => $o->courier_description ?: app(CourierGateway::class)->itemDescription($o),
             'weight' => (float) ($s?->weight_kg ?: 0.5), 'delivery_type' => 0, 'alt_phone' => '', 'city_id' => null, 'zone_id' => null, 'area_id' => null];
         $this->locationHint = null;
-        if ($s) $this->pathaoLocation(app(CourierGateway::class));
+        $this->pathaoLocation(app(CourierGateway::class));
         $this->dispatch('open-modal', name: 'book-courier-one');
     }
 
@@ -61,7 +69,7 @@ class BookCourier extends Component
         $s = $this->parcel(); $c = $this->courier; $this->locationHint = null;
         if (! $s || $c?->code !== 'pathao' || ! $c->isConnected()) return;
         $s->setRelation('courier', $c);
-        $loc = $s->courier_id === $c->id ? ($s->courier_meta['pathao'] ?? null) : null;
+        $loc = $s->exists && $s->courier_id === $c->id ? ($s->courier_meta['pathao'] ?? null) : null;
         if ($loc) $this->locationHint = 'Saved on this parcel';
         elseif ($loc = $gw->rememberedLocation($s)) $this->locationHint = 'Same as this customer’s last Pathao parcel';
         else { try { $g = $gw->guessLocation($c, $s); if ($g['city_id']) { $loc = $g; $this->locationHint = $g['zone_id'] ? 'Guessed from the address — please check' : 'City guessed from the delivery area — pick the zone'; } } catch (CourierException $e) { $this->addError('book', $e->getMessage()); } }
@@ -99,6 +107,7 @@ class BookCourier extends Component
         if ($why = $this->blocked($o)) { $this->addError('book', $why); return; }
         $c = $this->courier; $s = $this->parcel();
         $send = $s && $this->f['send'] && $c?->can('book');
+        $new = $s && ! $s->exists;
         $pathao = $send && $c->code === 'pathao';
         $this->validate([
             'f.name' => 'required|max:120', 'f.phone' => ['required', 'regex:/^01\d{9}$/'], 'f.address' => 'required|max:255',
@@ -115,16 +124,24 @@ class BookCourier extends Component
         $desc = trim($this->f['description']);   // kept only when staff changed it, so later item edits still flow through
         $o->update($edits + ['courier_note' => trim((string) $this->f['note']) ?: null, 'courier_description' => $desc !== $gw->itemDescription($o) ? $desc : null, 'tags' => $tags]);
         if ($edits) $o->log('edit', 'Delivery details changed before booking: '.collect($edits)->map(fn ($v, $k) => ['ship_name' => 'name', 'ship_phone' => 'phone', 'ship_address' => 'address', 'cod' => 'COD'][$k].' → '.($k === 'cod' ? tk($v) : $v))->join(', '));
-        if ($s) $s->update(['courier_id' => $c->id, 'cod_amount' => (int) $this->f['cod'], 'weight_kg' => $this->f['weight']]);
+        $parcel = ['courier_id' => $c->id, 'cod_amount' => (int) $this->f['cod'], 'weight_kg' => $this->f['weight']];
+        if ($s?->exists) $s->update($parcel);
         $o->log('courier', 'Booked with '.$c->name); ops_log("Order {$o->number} booked with {$c->name}", $o);
 
-        $msg = "Order {$o->number} booked with {$c->name}".($s ? '' : ' · it goes to them when packed');
+        $msg = "Order {$o->number} booked with {$c->name}".($s?->exists ? '' : ' · it goes to them when packed');
         if ($send) {
+            if ($new) {   // not packed yet → the parcel is made now; Pack & scan packs this same parcel later
+                $s = $o->shipments()->create($parcel + ['code' => Shipment::nextCode(), 'courier_status' => 'pending', 'status_updated_at' => now()]);
+                $o->log('courier', 'Parcel '.$s->code.' created for '.$c->name.' (not packed yet)');
+            }
             try {
                 $gw->book($s->fresh(['courier', 'order']), ['note' => $o->courier_note, 'weight' => $this->f['weight'], 'delivery_type' => (int) $this->f['delivery_type'], 'alt_phone' => $this->f['alt_phone'] ?: null,
                     'pathao' => $pathao ? ['city_id' => (int) $this->f['city_id'], 'zone_id' => (int) $this->f['zone_id'], 'area_id' => $this->f['area_id'] ? (int) $this->f['area_id'] : null] : null]);
                 $msg = "Parcel {$s->code} sent to {$c->name}";
+                // booked with the courier = the order is confirmed (stock gets reserved)
+                if (($fresh = $o->fresh())->status === 'pending') { app(\App\Services\Ops\OrderWorkflow::class)->setStatus($fresh, 'confirmed'); $msg .= ' · order confirmed'; }
             } catch (CourierException $e) {
+                if ($new) $s->delete();   // nothing was sent → no half-made parcel on an unpacked order (the API log keeps the request)
                 $this->addError('book', 'Details saved, but '.$c->name.' did not accept the parcel: '.$e->getMessage());
                 $this->dispatch('ops-order-updated'); return;
             }

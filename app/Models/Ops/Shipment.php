@@ -27,6 +27,13 @@ class Shipment extends OpsModel
     public function events(): HasMany { return $this->hasMany(ShipmentEvent::class)->latest('created_at')->latest('id'); }
     public function apiLogs(): HasMany { return $this->hasMany(CourierApiLog::class)->latest('created_at')->latest('id'); }
 
+    /** next parcel code: P1001, P1002… */
+    public static function nextCode(): string
+    {
+        $last = (int) static::where('code', 'like', 'P%')->selectRaw('MAX(CAST(SUBSTRING(code, 2) AS UNSIGNED)) n')->value('n');
+        return 'P'.max(1001, $last + 1);
+    }
+
     public function isFinal(): bool { return in_array($this->courier_status, self::FINAL, true); }
 
     /** the courier's public tracking page for the customer */
