@@ -16,7 +16,7 @@
     <a href="{{ route('ops.orders.print', ['ids' => $o->id]) }}" target="_blank" class="rounded px-2 py-1.5 text-ink hover:bg-soft">Print invoice</a>
     <a href="{{ route('ops.orders.parcel-labels', ['ids' => $o->id]) }}" target="_blank" class="rounded px-2 py-1.5 text-ink hover:bg-soft">Print parcel label</a>
     @if ($tracking)<button type="button" onclick="opsCopy('{{ $tracking }}')" class="flex w-full justify-between rounded px-2 py-1.5 text-left text-ink hover:bg-soft">Copy tracking <span class="mono text-xs text-ink-muted">{{ $tracking }}</span></button>@endif
-    @if (in_array($s, \App\Livewire\Ops\Orders\BookCourier::OPEN))<x-ops.menu-item x-on:click="$dispatch('book-courier', { id: {{ $o->id }} })">Book courier…</x-ops.menu-item>@endif
+    @if (in_array($s, \App\Livewire\Ops\Orders\BookCourier::OPEN))<x-ops.menu-item x-on:click="$dispatch('open-modal', 'book-courier-one'); $dispatch('book-courier', { id: {{ $o->id }} })">Book courier…</x-ops.menu-item>@endif
     <a href="tel:{{ $o->customer?->phone ?? $o->ship_phone }}" class="rounded px-2 py-1.5 text-ink hover:bg-soft">Call customer</a>
     @if (in_array($s, ['delivered', 'partially_delivered']))
         <div class="my-1 border-t border-soft"></div>

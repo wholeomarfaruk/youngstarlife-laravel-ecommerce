@@ -20,6 +20,7 @@ class BookCourier extends Component
     public ?int $orderId = null;
     public array $f = [];   // form
     public ?string $locationHint = null;
+    public bool $pathaoReady = false;   // Pathao lists load after the modal is open (loadPathao) — they are slow API calls
 
     #[Computed] public function order(): ?Order
     {
@@ -43,8 +44,9 @@ class BookCourier extends Component
     {
         $this->orderId = $id; unset($this->order); $this->resetErrorBag();
         $o = $this->order;
-        if (! $o) { $this->dispatch('toast', message: 'Order not found', type: 'bad'); return; }
-        if ($why = $this->blocked($o)) { $this->dispatch('toast', message: $why, type: 'bad'); return; }
+        // the ⋯ menu already opened the modal (loading state) → close it again when this order can't be booked
+        if (! $o) { $this->dispatch('close-modal', 'book-courier-one'); $this->dispatch('toast', message: 'Order not found', type: 'bad'); return; }
+        if ($why = $this->blocked($o)) { $this->orderId = null; unset($this->order); $this->dispatch('close-modal', 'book-courier-one'); $this->dispatch('toast', message: $why, type: 'bad'); return; }
         $s = $o->shipment;
         $courier = $s?->courier ?? app(\App\Services\Ops\OrderWorkflow::class)->courierFor($o);
         $this->f = ['name' => $o->ship_name, 'phone' => $o->ship_phone, 'address' => $o->ship_address, 'cod' => (int) ($s?->cod_amount ?? $o->cod),
@@ -52,7 +54,7 @@ class BookCourier extends Component
             'description' => $o->courier_description ?: app(CourierGateway::class)->itemDescription($o),
             'weight' => (float) ($s?->weight_kg ?: 0.5), 'delivery_type' => 0, 'alt_phone' => '', 'city_id' => null, 'zone_id' => null, 'area_id' => null];
         $this->locationHint = null;
-        $this->pathaoLocation(app(CourierGateway::class));
+        $this->pathaoReady = false;
         $this->dispatch('open-modal', name: 'book-courier-one');
     }
 
@@ -64,6 +66,14 @@ class BookCourier extends Component
     }
 
     /** Pathao needs city / zone: saved on the parcel → this customer's last Pathao parcel → guessed from the address */
+    /** called by the modal once it is visible (x-init) — city / zone lists + the saved / guessed location */
+    public function loadPathao(): void
+    {
+        if ($this->pathaoReady || ! $this->order) return;
+        $this->pathaoLocation(app(CourierGateway::class));
+        $this->pathaoReady = true;
+    }
+
     protected function pathaoLocation(CourierGateway $gw): void
     {
         $s = $this->parcel(); $c = $this->courier; $this->locationHint = null;
@@ -78,7 +88,7 @@ class BookCourier extends Component
 
     public function updatedF($value, ?string $key = null): void
     {
-        if ($key === 'courier_id') { unset($this->courier); $this->f['city_id'] = $this->f['zone_id'] = $this->f['area_id'] = null; $this->pathaoLocation(app(CourierGateway::class)); }
+        if ($key === 'courier_id') { unset($this->courier); $this->f['city_id'] = $this->f['zone_id'] = $this->f['area_id'] = null; $this->pathaoReady = false; }   // the modal calls loadPathao() again
         if ($key === 'city_id') $this->f['zone_id'] = $this->f['area_id'] = null;
         if ($key === 'zone_id') $this->f['area_id'] = null;
     }
@@ -89,7 +99,7 @@ class BookCourier extends Component
     {
         $none = ['cities' => [], 'zones' => [], 'areas' => [], 'quote' => null];
         $c = $this->courier;
-        if (! $this->parcel() || $c?->code !== 'pathao' || ! $c->isConnected()) return $none;
+        if (! $this->pathaoReady || ! $this->parcel() || $c?->code !== 'pathao' || ! $c->isConnected()) return $none;
         try {
             /** @var \App\Services\Couriers\Drivers\PathaoDriver $d */
             $d = app(CourierGateway::class)->driver($c, $this->parcel());

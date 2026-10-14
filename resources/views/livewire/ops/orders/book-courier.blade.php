@@ -1,8 +1,10 @@
 <div>
     @php($o = $this->order) @php($s = $this->parcel()) @php($c = $this->courier)
     <x-ops.modal name="book-courier-one" :title="$o ? 'Book courier · '.$o->number : 'Book courier'" width="max-w-2xl">
+        {{-- opens at once from the ⋯ menu; the order loads in the background --}}
+        <div wire:loading.flex wire:target="open" class="items-center justify-center gap-2 py-16 text-sm text-ink-muted"><span class="h-4 w-4 animate-spin rounded-full border-2 border-line border-t-brand"></span> Loading order…</div>
         @if ($o)
-            <div class="flex flex-col gap-3" wire:key="bc{{ $o->id }}">
+            <div class="flex flex-col gap-3" wire:key="bc{{ $o->id }}" wire:loading.remove wire:target="open">
                 @error('book')<div class="rounded bg-bad-bg px-3 py-2 text-sm text-bad">{{ $message }}</div>@enderror
 
                 {{-- order summary --}}
@@ -51,6 +53,9 @@
                             @if ($c?->code !== 'pathao')<x-ops.field label="Delivery"><select wire:model="f.delivery_type" class="input"><option value="0">Home delivery</option><option value="1">Point delivery</option></select></x-ops.field>@endif
                         </div>
                         @if ($c?->code === 'pathao' && $c->isConnected())
+                            @if (! $pathaoReady)
+                                <div x-init="$wire.loadPathao()" class="flex items-center gap-2 text-sm text-ink-muted"><span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-line border-t-brand"></span> Loading Pathao cities &amp; zones…</div>
+                            @endif
                             @php($pl = $this->pathaoLists)
                             @if (! empty($pl['error']))<div class="rounded bg-bad-bg px-3 py-2 text-sm text-bad">{{ $pl['error'] }}</div>@endif
                             @if ($locationHint)<div class="text-xs text-ink-muted">{{ $locationHint }}</div>@endif
@@ -72,7 +77,7 @@
         @endif
         <x-slot:footer>
             <button x-on:click="$dispatch('close-modal', 'book-courier-one')" class="btn-secondary">Cancel</button>
-            <button wire:click="save" wire:loading.attr="disabled" class="btn-primary" @disabled(! $o)>
+            <button wire:click="save" wire:loading.attr="disabled" wire:target="open,save,loadPathao" class="btn-primary" @disabled(! $o)>
                 <span wire:loading.remove wire:target="save">{{ $s && ($f['send'] ?? false) && $c?->can('book') ? 'Send to '.$c->name : 'Save courier' }}</span><span wire:loading wire:target="save">Saving…</span>
             </button>
         </x-slot:footer>
