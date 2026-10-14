@@ -32,7 +32,7 @@ class Edit extends Component
         $this->labelSize = ops_setting('barcode.size', '50x30'); $this->labelPrice = (bool) ops_setting('barcode.price_on_label', true);
     }
 
-    #[Computed] public function variants() { return ProductVariant::with('product:id,name')->where('is_active', true)->get(['id', 'product_id', 'sku', 'color', 'size', 'stock']); }
+    #[Computed] public function variants() { return ProductVariant::with('product:id,name,featured_image')->where('is_active', true)->get(['id', 'product_id', 'sku', 'barcode', 'color', 'size', 'stock']); }
     #[Computed] public function editable(): bool { return in_array($this->po->status, ['draft', 'sent']); }
 
     public function addItem(): void

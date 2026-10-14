@@ -44,7 +44,9 @@
                         @empty <x-ops.empty colspan="7" title="No items yet" hint="Choose a variant below or add low-stock items." /> @endforelse
                     </x-ops.table>
                     @if ($this->editable)
-                        <div class="flex flex-wrap gap-2 bg-zebra p-3"><select wire:model="pick" class="input flex-[1_1_260px]"><option value="">Choose a product variant…</option>@foreach ($this->variants as $v)<option value="{{ $v->id }}">{{ $v->label }} · {{ $v->sku }} · stock {{ $v->stock }}</option>@endforeach</select><input type="number" min="1" wire:model="pickQty" class="input w-24"><button wire:click="addItem" class="btn-dark">+ Add item</button></div>
+                        <div class="flex flex-wrap gap-2 bg-zebra p-3"><x-ops.searchable-select field="pick" class="flex-[1_1_260px]" placeholder="Choose a product variant…" searchPlaceholder="Name, size, SKU or barcode…"
+                            :options="$this->variants->mapWithKeys(fn ($v) => [$v->id => $v->label.' · '.$v->sku.($v->barcode ? ' · '.$v->barcode : '').' · stock '.$v->stock])->all()"
+                            :images="$this->variants->mapWithKeys(fn ($v) => [$v->id => $v->product->thumb_url])->all()" /><input type="number" min="1" wire:model="pickQty" class="input w-24"><button wire:click="addItem" class="btn-dark">+ Add item</button></div>
                     @endif
                 </x-ops.card>
                 @if ($po->receipts->isNotEmpty())

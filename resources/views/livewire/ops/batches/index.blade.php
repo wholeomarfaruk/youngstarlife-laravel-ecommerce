@@ -12,7 +12,7 @@
         <x-ops.toolbar>
             <x-ops.search placeholder="Search batch, product, SKU, PO…" />
             <x-ops.searchable-select field="filters.supplier" :options="$suppliers" placeholder="All suppliers" searchPlaceholder="Search suppliers…" class="w-52" />
-            <x-ops.searchable-select field="filters.product" :options="$products" placeholder="All products" searchPlaceholder="Search products…" class="w-60" />
+            <x-ops.searchable-select field="filters.product" :options="$products->pluck('name', 'id')->all()" :images="$products->mapWithKeys(fn ($p) => [$p->id => $p->thumb_url])->all()" placeholder="All products" searchPlaceholder="Search products…" class="w-60" />
             <select class="input w-auto" wire:model.live="filters.warehouse"><option value="">All warehouses</option>@foreach ($warehouses as $id => $n)<option value="{{ $id }}">{{ $n }}</option>@endforeach</select>
             <x-ops.date-range />
             <select class="input w-auto" wire:model.live="sort"><option value="newest">Newest first</option><option value="fifo">Oldest first (FIFO)</option><option value="remaining">Most remaining</option><option value="value">Highest value</option><option value="sellthrough">Best sell-through</option><option value="returns">Most returns</option></select>

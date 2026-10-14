@@ -161,7 +161,7 @@ class Index extends Component
     {
         return view('livewire.ops.batches.index', [
             'suppliers' => Supplier::orderBy('name')->pluck('name', 'id'), 'warehouses' => Warehouse::orderBy('name')->pluck('name', 'id'),
-            'products' => cache()->remember('products.pick', 300, fn () => Product::orderBy('name')->pluck('name', 'id')),
+            'products' => cache()->remember('products.pick.img', 300, fn () => Product::orderBy('name')->get(['id', 'name', 'featured_image'])),
         ]);
     }
 }

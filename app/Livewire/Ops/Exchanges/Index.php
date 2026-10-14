@@ -27,7 +27,7 @@ class Index extends Component
     public function updatedState(): void { $this->resetPage(); }
 
     #[Computed] public function original(): ?Order { return $this->order ? Order::live()->numbered($this->order)->with('items.variant.product:id,name,price,sale_price', 'customer:id,name,phone', 'zone', 'exchanges:id,number,exchange_of_id,exchange_state,status')->first() : null; }
-    #[Computed] public function variants() { return ProductVariant::with('product:id,name,price,sale_price')->where('is_active', true)->get(); }
+    #[Computed] public function variants() { return ProductVariant::with('product:id,name,price,sale_price,featured_image')->where('is_active', true)->get(); }
     #[Computed] public function remaining(): array { return $this->original ? app(ExchangeService::class)->remaining($this->original) : []; }
 
     protected function load(): void
