@@ -25,7 +25,7 @@ class Show extends Component
 
     public function mount(Order $order): void
     {
-        $this->order = $order->load(['customer', 'zone', 'campaign', 'creator:id,name', 'items.variant.product:id,name', 'items.allocations.batch:id,code,supplier_id,purchase_order_id', 'items.allocations.batch.supplier:id,name', 'items.allocations.batch.purchaseOrder:id,number', 'shipment.courier', 'events.user:id,name', 'returns:id,order_id,code,type']);
+        $this->order = $order->load(['customer', 'zone', 'campaign', 'creator:id,name', 'items.variant.product:id,name,featured_image', 'items.allocations.batch:id,code,supplier_id,purchase_order_id', 'items.allocations.batch.supplier:id,name', 'items.allocations.batch.purchaseOrder:id,number', 'shipment.courier', 'events.user:id,name', 'returns:id,order_id,code,type']);
         $this->tracking = (string) $this->order->shipment?->tracking; $this->parcelStatus = (string) $this->order->shipment?->courier_status;
         if ($this->edit && ! $this->editable()) $this->edit = false;
         $o = $this->order;

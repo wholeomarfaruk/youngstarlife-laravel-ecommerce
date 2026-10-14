@@ -16,7 +16,7 @@
                     </div>
                     <div class="divide-y divide-soft">
                         @foreach ($o->items as $i)
-                            <div class="flex justify-between gap-3 px-3 py-1.5"><span class="min-w-0 truncate">{{ $i->variant?->label ?? 'Item' }} <span class="text-ink-muted">×{{ $i->qty }}</span></span><span class="tabular-nums">{{ tk($i->qty * $i->unit_price) }}</span></div>
+                            <div class="flex items-center justify-between gap-3 px-3 py-1.5"><span class="flex min-w-0 items-center gap-2">@if ($p = $i->variant?->product)<img src="{{ $p->thumb_url }}" alt="" loading="lazy" class="h-9 w-9 shrink-0 rounded bg-soft object-cover">@endif<span class="truncate">{{ $i->variant?->label ?? 'Item' }} <span class="text-ink-muted">×{{ $i->qty }}</span></span></span><span class="tabular-nums">{{ tk($i->qty * $i->unit_price) }}</span></div>
                         @endforeach
                     </div>
                     <div class="flex flex-wrap justify-end gap-x-4 gap-y-1 border-t border-soft bg-zebra px-3 py-2 tabular-nums">

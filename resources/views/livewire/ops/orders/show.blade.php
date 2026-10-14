@@ -103,7 +103,10 @@
                 <x-ops.table min-width="680px">
                     <x-slot:head><th class="th">Product</th><th class="th">Batch → supplier</th><th class="th text-right">Qty</th><th class="th text-right">Price</th><th class="th text-right">Cost (at pack)</th></x-slot:head>
                     @foreach ($o->items as $i)
-                        <tr><td class="td"><div class="font-medium">{{ $i->variant->label }}</div>@if ($i->combo_text)<div class="text-xs font-semibold text-info">Combo: {{ $i->combo_text }}</div>@endif<div class="mono text-xs text-ink-muted">{{ $i->variant->sku }}@if ($i->returned_qty) · <span class="text-bad">{{ $i->returned_qty }} returned</span>@endif</div></td>
+                        <tr><td class="td"><div class="flex items-start gap-2.5">
+                            @if ($p = $i->variant->product)<a href="{{ $p->image_url }}" target="_blank" class="shrink-0"><img src="{{ $p->thumb_url }}" alt="" loading="lazy" class="h-12 w-12 rounded-md bg-soft object-cover"></a>@endif
+                            <div class="min-w-0"><div class="font-medium">{{ $i->variant->label }}</div>@if ($i->combo_text)<div class="text-xs font-semibold text-info">Combo: {{ $i->combo_text }}</div>@endif<div class="mono text-xs text-ink-muted">{{ $i->variant->sku }}@if ($i->returned_qty) · <span class="text-bad">{{ $i->returned_qty }} returned</span>@endif</div></div>
+                        </div></td>
                             <td class="td">@forelse ($i->allocations as $a)<div><a href="{{ route('ops.trace', ['q' => $a->batch->code]) }}" wire:navigate class="mono font-semibold">{{ $a->batch->code }}</a> <span class="text-xs text-ink-muted">→ {{ $a->batch->supplier->name }}{{ $a->batch->purchaseOrder ? ' · '.$a->batch->purchaseOrder->number : '' }} × {{ $a->qty }}</span></div>@empty<span class="text-ink-muted">Not allocated</span>@endforelse</td>
                             <td class="td text-right">{{ $i->qty }}</td><td class="td text-right tabular-nums">{{ tk($i->unit_price) }}</td>
                             <td class="td text-right tabular-nums text-ink-muted">{{ $i->allocations->whereNotNull('unit_cost')->isNotEmpty() ? tk($i->allocations->sum(fn ($a) => $a->qty * $a->unit_cost)) : '—' }}</td></tr>

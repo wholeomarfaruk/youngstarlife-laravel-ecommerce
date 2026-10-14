@@ -24,7 +24,7 @@ class BookCourier extends Component
 
     #[Computed] public function order(): ?Order
     {
-        return $this->orderId ? Order::with('customer:id,name,phone,delivered_count,returned_count', 'items.variant.product:id,name', 'shipment.courier', 'zone:id,name')->find($this->orderId) : null;
+        return $this->orderId ? Order::with('customer:id,name,phone,delivered_count,returned_count', 'items.variant.product:id,name,featured_image', 'shipment.courier', 'zone:id,name')->find($this->orderId) : null;
     }
     #[Computed] public function couriers() { return Courier::where('is_active', true)->orderBy('name')->get(); }
     #[Computed] public function courier(): ?Courier { return $this->couriers->firstWhere('id', (int) ($this->f['courier_id'] ?? 0)); }
