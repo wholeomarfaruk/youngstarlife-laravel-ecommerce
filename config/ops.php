@@ -22,7 +22,7 @@ return [
         ],
         'orders' => [
             ['Orders', 'ops.orders.index'], ['By date', 'ops.orders.by-date'], ['Campaign summary', 'ops.orders.campaigns'],
-            ['Drafts', 'ops.orders.drafts'], ['Bulk / AI order', 'ops.orders.bulk'], ['Ordered products', 'ops.orders.products'], ['In courier', 'ops.orders.in-courier'],
+            ['Drafts', 'ops.orders.drafts'], ['Bulk / AI order', 'ops.orders.bulk'], ['Ordered products', 'ops.orders.products'], ['Bulk courier', 'ops.orders.bulk-courier'], ['In courier', 'ops.orders.in-courier'],
             ['Packing scan', 'ops.packing.scan'], ['Return receive', 'ops.returns.receive'], ['Exchanges', 'ops.exchanges.index'],
         ],
         'parties' => [['Users', 'ops.users.index'], ['Customers', 'ops.customers.index'], ['Suppliers', 'ops.suppliers.index'], ['Blacklist', 'ops.blacklist.index']],

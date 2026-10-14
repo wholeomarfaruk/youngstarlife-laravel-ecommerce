@@ -15,7 +15,7 @@ use Livewire\Component;
  */
 class BookCourier extends Component
 {
-    public const OPEN = ['pending', 'confirmed', 'processing', 'packed', 'on_hold'];
+    public const OPEN = \App\Services\Ops\CourierBooking::OPEN;
 
     public ?int $orderId = null;
     public array $f = [];   // form
@@ -111,13 +111,12 @@ class BookCourier extends Component
         }
     }
 
-    public function save(CourierGateway $gw): void
+    public function save(\App\Services\Ops\CourierBooking $booking): void
     {
         $o = $this->order; abort_unless($o, 404);
         if ($why = $this->blocked($o)) { $this->addError('book', $why); return; }
         $c = $this->courier; $s = $this->parcel();
         $send = $s && $this->f['send'] && $c?->can('book');
-        $new = $s && ! $s->exists;
         $pathao = $send && $c->code === 'pathao';   // city / zone optional — Pathao reads the address
         $this->validate([
             'f.name' => 'required|max:120', 'f.phone' => ['required', 'regex:/^01\d{9}$/'], 'f.address' => 'required|max:255',
@@ -126,31 +125,16 @@ class BookCourier extends Component
             'f.city_id' => 'nullable|integer', 'f.zone_id' => 'nullable|integer', 'f.area_id' => 'nullable|integer',
         ], ['f.phone.regex' => 'Enter an 11-digit mobile number (01XXXXXXXXX).', 'f.courier_id.required' => 'Choose a courier.']);
 
-        // delivery details edited here → order (and the parcel's COD)
-        $edits = array_filter(['ship_name' => trim($this->f['name']), 'ship_phone' => trim($this->f['phone']), 'ship_address' => trim($this->f['address']), 'cod' => (int) $this->f['cod']],
-            fn ($v, $k) => $v != $o->$k, ARRAY_FILTER_USE_BOTH);
-        $tags = array_values(array_merge(array_filter($o->tags ?? [], fn ($t) => ! preg_match('/^(Auto )?[Cc]ourier: /', $t)), ['Courier: '.$c->name]));
-        $desc = trim($this->f['description']);   // kept only when staff changed it, so later item edits still flow through
-        $o->update($edits + ['courier_note' => trim((string) $this->f['note']) ?: null, 'courier_description' => $desc !== $gw->itemDescription($o) ? $desc : null, 'tags' => $tags]);
-        if ($edits) $o->log('edit', 'Delivery details changed before booking: '.collect($edits)->map(fn ($v, $k) => ['ship_name' => 'name', 'ship_phone' => 'phone', 'ship_address' => 'address', 'cod' => 'COD'][$k].' → '.($k === 'cod' ? tk($v) : $v))->join(', '));
-        $parcel = ['courier_id' => $c->id, 'cod_amount' => (int) $this->f['cod'], 'weight_kg' => $this->f['weight']];
-        if ($s?->exists) $s->update($parcel);
-        $o->log('courier', 'Booked with '.$c->name); ops_log("Order {$o->number} booked with {$c->name}", $o);
-
+        $booking->saveDetails($o, $c, $this->f);
         $msg = "Order {$o->number} booked with {$c->name}".($s?->exists ? '' : ' · it goes to them when packed');
-        if ($send) {
-            if ($new) {   // not packed yet → the parcel is made now; Pack & scan packs this same parcel later
-                $s = $o->shipments()->create($parcel + ['code' => Shipment::nextCode(), 'courier_status' => 'pending', 'status_updated_at' => now()]);
-                $o->log('courier', 'Parcel '.$s->code.' created for '.$c->name.' (not packed yet)');
-            }
+        if (! $send) { $o->log('courier', 'Booked with '.$c->name); ops_log("Order {$o->number} booked with {$c->name}", $o); }
+        else {
+            $wasPending = $o->status === 'pending';
             try {
-                $gw->book($s->fresh(['courier', 'order']), ['note' => $o->courier_note, 'weight' => $this->f['weight'], 'delivery_type' => (int) $this->f['delivery_type'], 'alt_phone' => $this->f['alt_phone'] ?: null,
+                $s = $booking->send($o->fresh(), $c, ['weight' => $this->f['weight'], 'delivery_type' => (int) $this->f['delivery_type'], 'alt_phone' => $this->f['alt_phone'] ?: null,
                     'pathao' => $pathao && $this->f['city_id'] && $this->f['zone_id'] ? ['city_id' => (int) $this->f['city_id'], 'zone_id' => (int) $this->f['zone_id'], 'area_id' => $this->f['area_id'] ? (int) $this->f['area_id'] : null] : null]);
-                $msg = "Parcel {$s->code} sent to {$c->name}";
-                // booked with the courier = the order is confirmed (stock gets reserved)
-                if (($fresh = $o->fresh())->status === 'pending') { app(\App\Services\Ops\OrderWorkflow::class)->setStatus($fresh, 'confirmed'); $msg .= ' · order confirmed'; }
+                $msg = "Parcel {$s->code} sent to {$c->name}".($wasPending ? ' · order confirmed' : '');
             } catch (CourierException $e) {
-                if ($new) $s->delete();   // nothing was sent → no half-made parcel on an unpacked order (the API log keeps the request)
                 $hint = $pathao && ! $this->f['zone_id'] && preg_match('/city|zone|area/i', $e->getMessage()) ? ' — pick the city / zone with "Choose city / zone" and send again.' : '';
                 $this->addError('book', 'Details saved, but '.$c->name.' did not accept the parcel: '.$e->getMessage().$hint);
                 $this->dispatch('ops-order-updated'); return;

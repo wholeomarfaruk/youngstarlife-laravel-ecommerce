@@ -52,7 +52,7 @@ class CourierGateway
         return [
             'invoice' => $s->code, 'name' => $o->ship_name ?: $o->customer?->name, 'phone' => $o->ship_phone ?: $o->customer?->phone,
             'alt_phone' => $opts['alt_phone'] ?? null, 'address' => $o->ship_address ?: $o->customer?->address,
-            'cod' => $s->cod_amount ?? $o->cod, 'weight' => (float) ($opts['weight'] ?? $s->weight_kg ?: 0.5), 'qty' => max(1, (int) $o->items->sum('qty')),
+            'cod' => $s->cod_amount ?? $o->cod, 'weight' => (float) ($opts['weight'] ?? $s->weight_kg ?: 0.5), 'qty' => max(1, (int) ($opts['qty'] ?? $o->items->sum('qty'))),
             'description' => mb_substr(($exchange ? 'EXCHANGE · ' : '').($o->courier_description ?: $this->itemDescription($o)), 0, 250), 'note' => trim(collect([$exchange, $userNote])->filter()->join(' · ')) ?: null,
             'delivery_type' => (int) ($opts['delivery_type'] ?? 0),
             'meta' => ['pathao' => $opts['pathao'] ?? ($s->courier_meta['pathao'] ?? null)],

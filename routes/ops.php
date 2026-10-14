@@ -27,6 +27,7 @@ Route::get('orders/bulk', P\Orders\Bulk::class)->name('orders.bulk');   // bulk 
 Route::redirect('orders/ai-entry', 'bulk?intake=1')->name('orders.ai-entry');
 Route::get('orders/products', P\Orders\OrderedProducts::class)->name('orders.products');
 Route::get('orders/in-courier', P\Orders\InCourier::class)->name('orders.in-courier');
+Route::get('orders/bulk-courier', P\Orders\BulkCourier::class)->name('orders.bulk-courier');   // courier sheet: book many orders at once (from ecomx-automation)
 Route::get('orders/print', [PrintController::class, 'invoices'])->name('orders.print');
 Route::get('orders/parcel-labels', [PrintController::class, 'parcelLabels'])->name('orders.parcel-labels');
 Route::get('orders/{order}', P\Orders\Show::class)->name('orders.show');
