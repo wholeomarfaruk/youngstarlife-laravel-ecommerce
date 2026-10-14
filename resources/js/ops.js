@@ -5,6 +5,7 @@ import TomSelect from 'tom-select/base';                            // select2-s
 import TomSelectClearButton from 'tom-select/dist/esm/plugins/clear_button/plugin.js';
 import 'tom-select/dist/css/tom-select.css';
 import Sortable from 'sortablejs';                                  // drag & drop (lists + nested trees, touch)
+import swal from 'sweetalert';                                      // confirm dialogs: window.opsConfirm below
 
 TomSelect.define('clear_button', TomSelectClearButton);
 window.Sortable = Sortable;
@@ -13,6 +14,12 @@ const toast = (message, type = 'ok') => window.dispatchEvent(new CustomEvent('to
 
 // Copy tracking / IDs: onclick="opsCopy('SF553357')"
 window.opsCopy = (text) => navigator.clipboard?.writeText(text).then(() => toast('Copied ' + text), () => toast('Could not copy', 'bad'));
+
+// SweetAlert confirm → Promise<boolean>. x-on:click="opsConfirm({ title, text, confirm: 'Delete', danger: true }).then(ok => ok && $wire.deleteOrder(5))"
+window.opsConfirm = ({ title = 'Are you sure?', text = '', confirm = 'Yes', cancel = 'Cancel', danger = false } = {}) => swal({
+  title, text, icon: danger ? 'warning' : 'info', dangerMode: danger,
+  buttons: { cancel: { text: cancel, visible: true, value: false }, confirm: { text: confirm, value: true, closeModal: true } },
+}).then(Boolean);
 
 // Unsaved-changes guard: a form sets window.opsDirty = true while edited (Product edit, PO, Settings)
 window.opsDirty = false;

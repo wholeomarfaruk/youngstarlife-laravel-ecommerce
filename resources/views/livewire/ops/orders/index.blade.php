@@ -72,6 +72,7 @@
         <x-ops.pagination :paginator="$this->orders" />
     </section>
 
+    <livewire:ops.orders.book-courier />
     <x-ops.modal name="book-courier" title="Book courier">
         <p class="mb-3 text-sm text-ink-muted">{{ count($selected) }} orders. Packed parcels move to this courier; other orders are booked with it when packed.</p>
         <x-ops.field label="Courier" required :error="$errors->first('bookCourierId')"><select wire:model="bookCourierId" class="input"><option value="">Choose…</option>@foreach ($couriers as $id => $n)<option value="{{ $id }}">{{ $n }}</option>@endforeach</select></x-ops.field>

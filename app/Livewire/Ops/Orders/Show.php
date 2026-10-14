@@ -7,7 +7,7 @@ use App\Services\Couriers\{CourierException, CourierGateway};
 use App\Services\Ops\{BatchAllocator, OrderWorkflow};
 use App\Livewire\Ops\Concerns\OrderActions;
 use Illuminate\Support\Facades\DB;
-use Livewire\Attributes\{Computed, Layout, Url};
+use Livewire\Attributes\{Computed, Layout, On, Url};
 use Livewire\Component;
 
 #[Layout('layouts.ops', ['module' => 'Orders & Packing', 'title' => 'Order details', 'tabs' => 'orders'])]
@@ -35,6 +35,10 @@ class Show extends Component
 
     /** live blacklist entries matching this order's phone / device / IP (warning banner) */
     #[Computed] public function blacklisted() { $o = $this->order; return app(\App\Services\Ops\Blacklist::class)->matches(['phone' => $o->ship_phone, 'device_id' => $o->device_id, 'ip' => $o->ip_address, 'email' => $o->customer?->email]); }
+
+    /** Book courier modal saved this order → reload it (not while editing, so the form isn't lost) */
+    #[On('ops-order-updated')]
+    public function reloadOrder(): void { if (! $this->edit && ($o = $this->order->fresh())) $this->mount($o); }
 
     public function editable(): bool { return in_array($this->order->status, ['pending', 'confirmed', 'processing', 'on_hold']); }
     #[Computed] public function zones() { return DeliveryZone::where('is_active', true)->get(['id', 'name', 'charge']); }

@@ -222,4 +222,5 @@
         </div>
         <x-slot:footer><button x-on:click="$dispatch('close-modal')" class="btn-secondary">Cancel</button><button wire:click="recordPayment" class="btn-primary">Save payment</button></x-slot:footer>
     </x-ops.modal>
+    <livewire:ops.orders.book-courier />
 </div>

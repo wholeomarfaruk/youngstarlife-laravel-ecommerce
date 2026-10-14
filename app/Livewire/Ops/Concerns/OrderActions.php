@@ -41,6 +41,33 @@ trait OrderActions
         return $this->redirectRoute('ops.orders.drafts', ['edit' => $copy->id], navigate: true);
     }
 
+    /** statuses an order can still be deleted in (nothing handed to a courier, nothing delivered) — the ⋯ menu shows "Delete order" for these */
+    public const DELETABLE = ['pending', 'confirmed', 'processing', 'packed', 'on_hold', 'cancelled'];
+
+    /** Delete for good (confirmed with SweetAlert): reserved / packed stock goes back to its batches, the customer's counters drop. */
+    public function deleteOrder(int $id)
+    {
+        $o = Order::with('shipments', 'customer')->findOrFail($id);
+        $why = match (true) {
+            ! in_array($o->status, self::DELETABLE) => 'it is '.mb_strtolower(config("ops.order_status.{$o->status}.0", $o->status)),
+            $o->shipments->contains(fn ($s) => $s->booked_at || $s->handed_over_at) => 'its parcel is already with the courier',
+            $o->returns()->exists() || $o->exchanges()->exists() || $o->exchange_of_id => 'it has a return / exchange',
+            \App\Models\Ops\Transaction::where('ref_type', $o->getMorphClass())->where('ref_id', $o->id)->exists() => 'a payment is recorded on it',
+            default => null,
+        };
+        if ($why) { $this->dispatch('toast', message: "Can’t delete {$o->number}: $why — cancel it instead.", type: 'bad'); return; }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($o) {
+            app(\App\Services\Ops\BatchAllocator::class)->release($o);
+            if (! $o->is_draft && ($c = $o->customer)) $c->update(['orders_count' => max(0, $c->orders_count - 1), 'total_spent' => max(0, $c->total_spent - $o->total)]);
+            $o->delete();   // items, allocations, events and parcels cascade
+            ops_log("Deleted order {$o->number} · {$o->ship_name} · ".tk($o->total));
+        });
+        $this->dispatch('toast', message: "Order {$o->number} deleted");
+        $this->dispatch('ops-order-updated');
+        if ($this instanceof \App\Livewire\Ops\Orders\Show) return $this->redirectRoute('ops.orders.index', navigate: true);
+    }
+
     /** Bulk "Book courier": parcels already packed move to the courier; others remember it for packing. */
     public function bookCourier(): void
     {

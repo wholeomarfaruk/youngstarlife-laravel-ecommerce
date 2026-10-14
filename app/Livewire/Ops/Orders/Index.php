@@ -4,7 +4,7 @@ namespace App\Livewire\Ops\Orders;
 
 use App\Models\Ops\{Courier, Order};
 use App\Livewire\Ops\Concerns\{OrderActions, WithTable};
-use Livewire\Attributes\{Computed, Layout, Title, Url};
+use Livewire\Attributes\{Computed, Layout, On, Title, Url};
 use Livewire\Component;
 
 #[Layout('layouts.ops', ['module' => 'Orders & Packing', 'title' => 'All orders', 'tabs' => 'orders'])]
@@ -24,6 +24,10 @@ class Index extends Component
         };
         $this->resetPage();
     }
+    /** Book courier modal (its own component) changed an order → fresh rows */
+    #[On('ops-order-updated')]
+    public function refreshList(): void { unset($this->orders, $this->counts, $this->kpis); }
+
     public function updatedFrom(): void { $this->preset = 'custom'; }
     public function updatedTo(): void { $this->preset = 'custom'; }
 
