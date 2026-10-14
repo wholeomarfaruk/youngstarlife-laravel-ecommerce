@@ -73,7 +73,7 @@ class Index extends Component
     #[Computed]
     public function orders()
     {
-        return $this->baseQuery()->with(['customer:id,name,phone,area,delivered_count,returned_count', 'shipment:id,order_id,courier_id,tracking,courier_status,code', 'shipment.courier:id,name',
+        return $this->baseQuery()->with(['customer:id,name,phone,area,delivered_count,returned_count', 'shipment:id,order_id,courier_id,tracking,courier_status,code,handed_over_at', 'shipment.courier:id,name',
                 'exchanges' => fn ($x) => $x->live()->select('id', 'number', 'exchange_of_id', 'exchange_state', 'status'), 'returns:id,order_id,shipment_id'])
             ->orderBy($this->sortField === 'id' ? 'placed_at' : $this->sortField, $this->sortDir)->paginate($this->perPage);
     }

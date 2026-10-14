@@ -125,7 +125,7 @@ class Show extends Component
     public string $resendReason = 'Customer found a fault and sent it back';
     public $resendCod = null;
 
-    public function canResend(): bool { return ! $this->order->exchange_of_id && in_array($this->order->status, OrderWorkflow::RESENDABLE); }
+    public function canResend(): bool { return OrderWorkflow::canResend($this->order); }
 
     public function sendAgain(OrderWorkflow $wf): void
     {

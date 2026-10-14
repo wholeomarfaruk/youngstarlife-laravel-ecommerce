@@ -59,6 +59,20 @@ class OrderWorkflow
 
     /** statuses from which the order can go out again in a new parcel */
     public const RESENDABLE = ['returning', 'returned', 'on_hold', 'shipped'];
+    /** courier statuses of a parcel that is out of our hands (slow, wrong address, held, coming back, lost) */
+    public const PARCEL_OUT = ['picked_up', 'in_transit', 'out_for_delivery', 'hold', 'returning', 'returned', 'cancelled', 'lost'];
+
+    /**
+     * Can it go out again now? Returning / returned / on hold / shipped — or its parcel is already with the courier
+     * (an order booked before packing stays Confirmed after pickup) and nothing was delivered.
+     */
+    public static function canResend(Order $o): bool
+    {
+        if ($o->is_draft || $o->exchange_of_id || in_array($o->status, ['delivered', 'partially_delivered', 'cancelled', 'pending'])) return false;
+        if (in_array($o->status, self::RESENDABLE)) return true;
+        $s = $o->shipment;
+        return $s && ($s->handed_over_at || in_array($s->courier_status, self::PARCEL_OUT));
+    }
 
     /**
      * Send the order again in a NEW parcel (customer sent it back / refused, then asked for it again).
@@ -68,7 +82,7 @@ class OrderWorkflow
     public function resend(Order $order, string $reason, ?int $cod = null): void
     {
         $order->refresh();
-        abort_unless(in_array($order->status, self::RESENDABLE) && ! $order->is_draft, 422, 'This order can’t be sent again now.');
+        abort_unless(self::canResend($order), 422, 'This order can’t be sent again now.');
         $old = $order->shipment;
         \Illuminate\Support\Facades\DB::transaction(function () use ($order, $old, $reason, $cod) {
             if ($old) {
@@ -94,6 +108,7 @@ class OrderWorkflow
         $s->update(['courier_status' => $status, 'status_updated_at' => now(), 'delivered_at' => $status === 'delivered' ? now() : $s->delivered_at]);
         if ($s->isSuperseded()) {   // a parcel replaced by a re-send: track it, but the order follows its new parcel
             $o->log('courier', 'Old parcel '.$s->code.': '.$by.' → '.config("ops.courier_status.$status.0"));
+            if (in_array($status, ['delivered', 'partial_delivered'])) ops_notify('risky', 'Order '.$o->number.': the REPLACED parcel '.$s->code.' was delivered too — stop / call back the new parcel', route('ops.orders.show', $o));
             ops_log("Parcel {$s->code} (replaced): ".config("ops.courier_status.$status.0")." ($by)", $s);
             return true;
         }

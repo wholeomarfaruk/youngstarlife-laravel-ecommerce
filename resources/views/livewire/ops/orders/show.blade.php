@@ -271,6 +271,9 @@
             <div x-data x-init="@if ($resend) $nextTick(() => $dispatch('open-modal', 'resend')) @endif" class="flex flex-col gap-3 text-sm">
                 <p class="text-ink-muted">Parcel <b class="mono">{{ $o->shipment?->code ?? '—' }}</b> is marked <b>replaced</b> — it stays tracked, and when it comes back Return receive restocks it without touching this order.
                     The order goes back to <b>Confirmed</b> (stock reserved again) → Pack &amp; scan → courier, in a new parcel.</p>
+                @if ($o->shipment && ! in_array($o->shipment->courier_status, ['returning', 'returned']))
+                    <p class="rounded-md bg-warn-bg px-3 py-2 text-warn">The old parcel is still with {{ $o->shipment->courier?->name ?? 'the courier' }} ({{ config('ops.courier_status.'.$o->shipment->courier_status.'.0') }}). Ask them to <b>return it</b> in their merchant panel — if it gets delivered anyway you'll get an alert to stop the new one.</p>
+                @endif
                 <x-ops.field label="Why" required :error="$errors->first('resendReason')">
                     <select wire:model="resendReason" class="input">@foreach (['Customer found a fault and sent it back', 'Customer refused, then asked for it again', 'Wrong item sent', 'Parcel lost / damaged by the courier', 'Other'] as $r)<option>{{ $r }}</option>@endforeach</select>
                 </x-ops.field>
