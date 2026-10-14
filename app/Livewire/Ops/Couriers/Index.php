@@ -128,7 +128,7 @@ class Index extends Component
             $st = CourierSettlement::create(['courier_id' => $courier->id, 'reference' => $this->reference ?: null, 'cod_total' => (int) $parcels->sum('cod_amount'), 'charges' => (int) $this->charges,
                 'delivery_charges' => (int) $this->deliveryCharges, 'cod_fee' => (int) $this->codFee, 'received' => (int) $this->received, 'received_on' => $this->receivedOn, 'account' => $this->settleAccount, 'note' => $this->settleNote ?: null]);
             Shipment::whereIn('id', $parcels->pluck('id'))->update(['settlement_id' => $st->id]);
-            if ($st->received > 0) Transaction::create(['account_id' => Account::where('name', $this->settleAccount)->value('id'), 'direction' => 'in', 'category' => 'Courier payment', 'amount' => $st->received, 'description' => $courier->name.($parcels->count() ? ' settlement · '.$parcels->count().' parcels' : ' payment on account').($st->reference ? ' · '.$st->reference : ''), 'date' => $this->receivedOn, 'ref_type' => $st->getMorphClass(), 'ref_id' => $st->id, 'user_id' => auth()->id()]);
+            if ($st->received > 0) Transaction::create(['account_id' => Account::idFor($this->settleAccount), 'direction' => 'in', 'category' => 'Courier payment', 'amount' => $st->received, 'description' => $courier->name.($parcels->count() ? ' settlement · '.$parcels->count().' parcels' : ' payment on account').($st->reference ? ' · '.$st->reference : ''), 'date' => $this->receivedOn, 'ref_type' => $st->getMorphClass(), 'ref_id' => $st->id, 'user_id' => auth()->id()]);
             return $st;
         });
         $courier->update(['last_synced_at' => now()]);

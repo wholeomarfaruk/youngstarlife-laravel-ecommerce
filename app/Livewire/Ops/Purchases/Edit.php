@@ -67,7 +67,7 @@ class Edit extends Component
         abort_if($this->po->status === 'cancelled', 403);
         $editable = $this->editable;   // items/supplier lock once stock arrives; payment can still be recorded
         $this->validate(['supplier_id' => 'required|exists:ops_suppliers,id', 'warehouse_id' => 'required|exists:ops_warehouses,id', 'ordered_at' => 'required|date', 'expected_at' => 'nullable|date',
-            'paid' => 'required|integer|min:0', 'paid_from' => 'required|exists:ops_accounts,name']
+            'paid' => 'required|integer|min:0', 'paid_from' => 'required|in:'.implode(',', config('ops.accounts'))]
             + ($editable ? ['items' => 'required|array|min:1', 'items.*.qty' => 'required|integer|min:1', 'items.*.unit_cost' => 'required|integer|min:1'] : []),
             ['items.required' => 'Add at least one item.', 'items.*.unit_cost.min' => 'Enter a unit cost for every item.']);
         DB::transaction(function () use ($editable, $send) {
@@ -78,7 +78,7 @@ class Edit extends Component
             }
             // "Paid now" change → money out of the chosen account and off the supplier's due
             if ($delta = (int) $this->paid - $this->po->paid) {
-                Transaction::create(['account_id' => Account::where('name', $this->paid_from)->value('id'), 'direction' => $delta > 0 ? 'out' : 'in', 'category' => 'Supplier',
+                Transaction::create(['account_id' => Account::idFor($this->paid_from), 'direction' => $delta > 0 ? 'out' : 'in', 'category' => 'Supplier',
                     'amount' => abs($delta), 'description' => 'Supplier payment · '.$this->po->number.' · '.Supplier::whereKey($this->supplier_id)->value('name'),
                     'date' => today(), 'ref_type' => $this->po->getMorphClass(), 'ref_id' => $this->po->id, 'user_id' => auth()->id()]);
                 Supplier::whereKey($this->supplier_id)->decrement('due', $delta);

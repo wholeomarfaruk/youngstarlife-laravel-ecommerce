@@ -96,7 +96,7 @@ class Index extends Component
                 $qty = $sr->approved_qty ?? $sr->items->sum('qty');
                 $value = (int) round($sr->value * ($qty / max(1, $sr->items->sum('qty'))));
                 match ($sr->resolution) {
-                    'refund' => Transaction::create(['account_id' => Account::where('name', $sr->refund_account ?? 'Bank')->value('id'), 'direction' => 'in', 'category' => 'Supplier refund', 'amount' => $value, 'description' => 'Supplier refund · '.$sr->code, 'date' => today(), 'ref_type' => $sr->getMorphClass(), 'ref_id' => $sr->id, 'user_id' => auth()->id()]),
+                    'refund' => Transaction::create(['account_id' => Account::idFor($sr->refund_account ?? 'Bank'), 'direction' => 'in', 'category' => 'Supplier refund', 'amount' => $value, 'description' => 'Supplier refund · '.$sr->code, 'date' => today(), 'ref_type' => $sr->getMorphClass(), 'ref_id' => $sr->id, 'user_id' => auth()->id()]),
                     'credit' => $sr->supplier->decrement('due', $value),
                     'replacement' => $sr->items->each(function ($i) use ($sr, $qty) {   // new stock into the original batch
                         $units = (int) min($i->qty, $qty); if ($units > 0) app(StockService::class)->move($i->batch, 'replacement', $units, $sr, 'Replacement from supplier');

@@ -94,7 +94,7 @@ class Show extends Component
         $this->validate(['payAmount' => 'required|integer|min:1|max:'.max(1, $this->order->cod), 'payAccount' => 'required|in:'.implode(',', config('ops.accounts'))], ['payAmount.max' => 'More than the COD left to collect.']);
         $o = $this->order;
         DB::transaction(function () use ($o) {
-            Transaction::create(['account_id' => Account::where('name', $this->payAccount)->value('id'), 'direction' => 'in', 'category' => 'Sales', 'amount' => (int) $this->payAmount, 'description' => 'Advance · '.$o->number.' · '.$o->ship_name, 'date' => today(), 'ref_type' => $o->getMorphClass(), 'ref_id' => $o->id, 'user_id' => auth()->id()]);
+            Transaction::create(['account_id' => Account::idFor($this->payAccount), 'direction' => 'in', 'category' => 'Sales', 'amount' => (int) $this->payAmount, 'description' => 'Advance · '.$o->number.' · '.$o->ship_name, 'date' => today(), 'ref_type' => $o->getMorphClass(), 'ref_id' => $o->id, 'user_id' => auth()->id()]);
             $advance = $o->advance + (int) $this->payAmount; $cod = max(0, $o->total - $advance);
             $o->update(['advance' => $advance, 'cod' => $cod, 'payment_status' => $cod === 0 ? 'paid' : 'partial']);
             $o->shipment?->update(['cod_amount' => $cod]);

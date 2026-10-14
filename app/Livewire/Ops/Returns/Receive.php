@@ -295,7 +295,7 @@ class Receive extends Component
         $r = CustomerReturn::with('order')->findOrFail($id);
         if ($r->refunded_at) { $this->dispatch('toast', message: 'Already refunded', type: 'bad'); return; }   // a refund can post only once
         DB::transaction(function () use ($r, $via) {
-            Transaction::create(['account_id' => Account::where('name', $via)->value('id'), 'direction' => 'out', 'category' => 'Refund', 'amount' => $r->refund_amount, 'description' => 'Refund · '.$r->code.' · '.$r->order->number, 'date' => today(), 'ref_type' => $r->getMorphClass(), 'ref_id' => $r->id, 'user_id' => auth()->id()]);
+            Transaction::create(['account_id' => Account::idFor($via), 'direction' => 'out', 'category' => 'Refund', 'amount' => $r->refund_amount, 'description' => 'Refund · '.$r->code.' · '.$r->order->number, 'date' => today(), 'ref_type' => $r->getMorphClass(), 'ref_id' => $r->id, 'user_id' => auth()->id()]);
             $r->update(['refunded_at' => now(), 'refund_via' => $via, 'status' => 'closed']);
             $r->order->update(['payment_status' => 'refunded']); $r->order->log('refund', 'Refunded '.tk($r->refund_amount).' via '.$via);
         });

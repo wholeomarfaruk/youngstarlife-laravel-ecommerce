@@ -106,7 +106,7 @@ class Index extends Component
         $this->validate(['payAmount' => 'required|integer|min:1', 'payAccount' => 'required|in:'.implode(',', config('ops.accounts'))]);
         $sup = Supplier::findOrFail($this->payFor);
         DB::transaction(function () use ($sup) {
-            Transaction::create(['account_id' => Account::where('name', $this->payAccount)->value('id'), 'direction' => 'out', 'category' => 'Supplier', 'amount' => (int) $this->payAmount, 'description' => 'Supplier payment · '.$sup->name.($this->payNote ? ' · '.$this->payNote : ''), 'date' => today(), 'ref_type' => $sup->getMorphClass(), 'ref_id' => $sup->id, 'user_id' => auth()->id()]);
+            Transaction::create(['account_id' => Account::idFor($this->payAccount), 'direction' => 'out', 'category' => 'Supplier', 'amount' => (int) $this->payAmount, 'description' => 'Supplier payment · '.$sup->name.($this->payNote ? ' · '.$this->payNote : ''), 'date' => today(), 'ref_type' => $sup->getMorphClass(), 'ref_id' => $sup->id, 'user_id' => auth()->id()]);
             $sup->decrement('due', (int) $this->payAmount);
         });
         ops_log('Paid '.$sup->name.' '.tk($this->payAmount).' from '.$this->payAccount, $sup);
