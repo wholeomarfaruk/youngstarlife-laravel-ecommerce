@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Cache;
 class CourierBooking
 {
     /** order statuses a courier can still be booked for */
-    public const OPEN = ['pending', 'confirmed', 'processing', 'packed', 'on_hold'];
+    public const OPEN = ['pending', 'confirmed', 'packed', 'on_hold'];
 
     public function __construct(private CourierGateway $gw, private OrderWorkflow $workflow) {}
 

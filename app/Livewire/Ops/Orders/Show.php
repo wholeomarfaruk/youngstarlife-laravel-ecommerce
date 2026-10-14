@@ -25,7 +25,7 @@ class Show extends Component
 
     public function mount(Order $order): void
     {
-        $this->order = $order->load(['customer', 'zone', 'campaign', 'creator:id,name', 'items.variant.product:id,name,featured_image', 'items.allocations.batch:id,code,supplier_id,purchase_order_id', 'items.allocations.batch.supplier:id,name', 'items.allocations.batch.purchaseOrder:id,number', 'shipment.courier', 'events.user:id,name', 'returns:id,order_id,code,type']);
+        $this->order = $order->load(['customer', 'zone', 'campaign', 'creator:id,name', 'items.variant.product:id,name,featured_image', 'items.allocations.batch:id,code,supplier_id,purchase_order_id', 'items.allocations.batch.supplier:id,name', 'items.allocations.batch.purchaseOrder:id,number', 'shipment.courier', 'events.user:id,name', 'returns:id,order_id,shipment_id,code,type']);
         $this->tracking = (string) $this->order->shipment?->tracking; $this->parcelStatus = (string) $this->order->shipment?->courier_status;
         if ($this->edit && ! $this->editable()) $this->edit = false;
         $o = $this->order;
@@ -40,13 +40,13 @@ class Show extends Component
     #[On('ops-order-updated')]
     public function reloadOrder(): void { if (! $this->edit && ($o = $this->order->fresh())) $this->mount($o); }
 
-    public function editable(): bool { return in_array($this->order->status, ['pending', 'confirmed', 'processing', 'on_hold']); }
+    public function editable(): bool { return in_array($this->order->status, ['pending', 'confirmed', 'on_hold']); }
     #[Computed] public function zones() { return DeliveryZone::where('is_active', true)->get(['id', 'name', 'charge']); }
     #[Computed] public function variants() { return ProductVariant::with('product:id,name,price,sale_price,featured_image')->where('is_active', true)->get(); }
 
     public function advance(): void
     {
-        $next = ['pending' => 'confirmed', 'confirmed' => 'processing', 'packed' => 'shipped'][$this->order->status] ?? null;
+        $next = ['pending' => 'confirmed', 'packed' => 'shipped'][$this->order->status] ?? null;
         if (! $next) return;
         app(OrderWorkflow::class)->setStatus($this->order, $next);
         $this->mount($this->order->fresh());

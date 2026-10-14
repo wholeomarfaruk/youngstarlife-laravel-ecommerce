@@ -29,7 +29,7 @@ class LegacyImporter
     ];
 
     protected const STATUS = [
-        'pending' => 'pending', 'confirmed' => 'confirmed', 'processing' => 'processing', 'in_review' => 'processing', 'ready' => 'processing',
+        'pending' => 'pending', 'confirmed' => 'confirmed', 'processing' => 'confirmed', 'in_review' => 'confirmed', 'ready' => 'confirmed',   // no "processing" step in Ops: confirmed → pack
         'in_transit' => 'shipped', 'delivery_in_review' => 'shipped', 'delivered' => 'delivered', 'on_hold' => 'on_hold', 'cancelled' => 'cancelled', 'returned' => 'returned',
     ];
     protected const COURIER_STATUS = ['pending' => 'pending', 'rider_assigned' => 'picked_up', 'in_transit' => 'in_transit', 'returning' => 'returning', 'delivered' => 'delivered', 'returned' => 'returned'];

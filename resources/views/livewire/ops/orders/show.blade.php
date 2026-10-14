@@ -2,13 +2,13 @@
 <div class="flex flex-col gap-3">
     <a href="{{ route('ops.orders.index') }}" wire:navigate class="self-start text-sm">← Back to orders</a>
     <x-ops.page-header :title="'Order '.$o->number" :subtitle="$o->placed_at->format('d M Y, H:i').' · '.config('ops.sources.'.$o->source, ucfirst($o->source)).($o->campaign ? ' · '.$o->campaign->name : '').($o->creator ? ' · by '.$o->creator->name : '')">
-        <x-ops.badge map="order_status" :status="$o->status" /><x-ops.badge map="payment_status" :status="$o->payment_status" />
+        <x-ops.badge map="order_status" :status="$o->status" />@if ($pr = $o->partialReturnStage())<x-ops.badge :tone="$pr[1]">{{ $pr[0] }}</x-ops.badge>@endif<x-ops.badge map="payment_status" :status="$o->payment_status" />
         <a href="{{ route('ops.orders.print', ['ids' => $o->id]) }}" target="_blank" class="btn-secondary">Print invoice</a>
         @if ($this->editable() && ! $edit)<button wire:click="$set('edit', true)" class="btn-secondary">Edit order</button>@endif
-        @if (in_array($o->status, ['processing']))
+        @if ($o->status === 'confirmed')
             <a href="{{ route('ops.packing.scan', ['order' => $o->number]) }}" wire:navigate class="btn-primary">Pack & scan</a>
-        @elseif (in_array($o->status, ['pending', 'confirmed', 'packed']))
-            <button wire:click="advance" wire:loading.attr="disabled" class="btn-primary">{{ ['pending' => 'Confirm order', 'confirmed' => 'Start processing', 'packed' => 'Mark shipped'][$o->status] }}</button>
+        @elseif (in_array($o->status, ['pending', 'packed']))
+            <button wire:click="advance" wire:loading.attr="disabled" class="btn-primary">{{ ['pending' => 'Confirm order', 'packed' => 'Mark shipped'][$o->status] }}</button>
         @elseif ($o->status === 'on_hold')
             <button wire:click="resume({{ $o->id }})" class="btn-primary">Resume order</button>
         @elseif ($o->status === 'cancelled')
@@ -88,7 +88,7 @@
                         @if ($xs)<span class="text-ink-muted">Parcel <span class="mono text-ink">{{ $xs->code }}</span> · {{ $xs->courier?->name }}@if ($xs->tracking) · <span class="mono">{{ $xs->tracking }}</span>@endif</span><x-ops.badge map="courier_status" :status="$xs->courier_status" />@endif
                         <span class="ml-auto flex flex-wrap gap-1.5">
                             @if ($ex->status === 'pending')<button wire:click="setStatus({{ $ex->id }}, 'confirmed')" class="btn-secondary btn-sm">Confirm</button>@endif
-                            @if (in_array($ex->status, ['pending', 'confirmed', 'processing']))<a href="{{ route('ops.packing.scan', ['order' => $ex->number]) }}" wire:navigate class="btn-secondary btn-sm">Pack & scan</a>@endif
+                            @if (in_array($ex->status, ['pending', 'confirmed']))<a href="{{ route('ops.packing.scan', ['order' => $ex->number]) }}" wire:navigate class="btn-secondary btn-sm">Pack & scan</a>@endif
                             @if (in_array($ex->status, \App\Services\Ops\CourierBooking::OPEN) && ! $xs?->booked_at)<button x-data @click="$dispatch('open-modal', 'book-courier-one'); $dispatch('book-courier', { id: {{ $ex->id }} })" class="btn-secondary btn-sm">Book courier…</button>@endif
                             @if (in_array($ex->exchange_state, \App\Services\Ops\ExchangeService::RECEIVABLE) && $ex->exchangeLine?->status === 'expected')<a href="{{ route('ops.returns.receive', ['exchange' => $ex->number]) }}" wire:navigate class="btn-secondary btn-sm">Receive old item</a>@endif
                             <a href="{{ route('ops.orders.show', $ex) }}" wire:navigate class="btn-ghost btn-sm">Details →</a>

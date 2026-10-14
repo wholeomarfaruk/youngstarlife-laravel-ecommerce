@@ -27,7 +27,6 @@
         </div>
         <x-ops.bulk-bar :count="count($selected)">
             <button wire:click="bulkStatus('confirmed')" class="btn-sm rounded bg-white text-ink">Confirm</button>
-            <button wire:click="bulkStatus('processing')" class="btn-sm rounded bg-side-hover">Processing</button>
             <a href="{{ route('ops.orders.print', ['ids' => implode(',', $selected)]) }}" target="_blank" class="btn-sm rounded bg-side-hover text-white hover:text-white">Print invoices</a>
             <button x-data @click="$dispatch('open-modal','book-courier')" class="btn-sm rounded bg-side-hover">Book courier</button>
             <a href="{{ route('ops.orders.bulk-courier', ['add' => implode(',', $selected)]) }}" wire:navigate class="btn-sm rounded bg-side-hover text-white hover:text-white">Courier sheet</a>

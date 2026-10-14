@@ -61,7 +61,7 @@ trait OrderActions
     }
 
     /** statuses an order can still be deleted in (nothing handed to a courier, nothing delivered) — the ⋯ menu shows "Delete order" for these */
-    public const DELETABLE = ['pending', 'confirmed', 'processing', 'packed', 'on_hold', 'cancelled'];
+    public const DELETABLE = ['pending', 'confirmed', 'packed', 'on_hold', 'cancelled'];
 
     /** Delete for good (confirmed with SweetAlert): reserved / packed stock goes back to its batches, the customer's counters drop. */
     public function deleteOrder(int $id)

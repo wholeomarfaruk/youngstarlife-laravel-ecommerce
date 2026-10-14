@@ -87,7 +87,7 @@ class Dashboard extends Component
 
     /** order groups for the stats strip: [label, statuses, tone] */
     public const GROUPS = [
-        'pending' => ['Pending orders', ['pending', 'confirmed', 'on_hold', 'processing', 'packed'], 'mute'],   // still in the warehouse, not shipped
+        'pending' => ['Pending orders', ['pending', 'confirmed', 'on_hold', 'packed'], 'mute'],   // still in the warehouse, not shipped
         'courier' => ['In courier', ['shipped', 'returning'], 'info'],                                          // with the courier (incl. exchange orders), not back yet
         'delivered' => ['Delivered', ['delivered', 'partially_delivered'], 'ok'],
         'cancelled' => ['Cancelled', ['cancelled'], 'mute'],
@@ -210,13 +210,13 @@ class Dashboard extends Component
             $out = DB::table('ops_products as p')->where('p.status', 'active')
                 ->whereRaw('COALESCE((select SUM(stock) from ops_product_variants v where v.product_id = p.id), 0) <= 0')->count();
             $late = Order::live()->where('status', 'pending')->where('placed_at', '<', now()->subDay())->count();
-            [$pn, $pv] = $o(['pending']); [$cn, $cv] = $o(['confirmed', 'processing']); [$kn, $kv] = $o(['packed']); [$hn, $hv] = $o(['on_hold']);
+            [$pn, $pv] = $o(['pending']); [$cn, $cv] = $o(['confirmed']); [$kn, $kv] = $o(['packed']); [$hn, $hv] = $o(['on_hold']);
             $rows = [
                 ['bad', 'Pending orders to confirm', $late ? "$late waiting more than 24 h" : 'Call / confirm new orders', $pn, $pv, route('ops.orders.index', ['status' => 'pending']), 'Confirm'],
                 ['warn', 'Refund requests', 'Customers waiting for their money', (int) $refund->n, (int) $refund->v, route('ops.returns.receive', ['view' => 'refund']), 'Refund'],
                 ['bad', 'Out of stock', 'Active products with no stock', $out, null, route('ops.products.index', ['status' => 'out']), 'Restock'],
                 ['warn', 'Orders on hold', 'Resolve and release', $hn, $hv, route('ops.orders.index', ['status' => 'on_hold']), 'Review'],
-                ['info', 'Ready to pack', 'Confirmed / processing orders', $cn, $cv, route('ops.packing.scan'), 'Pack'],
+                ['info', 'Ready to pack', 'Confirmed orders', $cn, $cv, route('ops.packing.scan'), 'Pack'],
                 ['info', 'Packed — hand to courier', 'Waiting for pickup', $kn, $kv, route('ops.orders.index', ['status' => 'packed']), 'Ship'],
                 ['warn', 'Return parcels to receive', 'Back from courier, not scanned in', (int) $this->kpis['pending_returns'], null, route('ops.returns.receive'), 'Receive'],
                 ['warn', 'Returns to inspect', 'Condition not set yet', CustomerReturn::whereHas('items', fn ($i) => $i->whereNull('condition'))->count(), null, route('ops.returns.receive', ['view' => 'inspect']), 'Inspect'],

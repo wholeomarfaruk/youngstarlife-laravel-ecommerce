@@ -30,14 +30,14 @@ return [
 
     // ── Enums: key => [label, tone]   (tone: ok | info | warn | bad | mute)
     'order_status' => [
-        'pending' => ['Pending', 'mute'], 'confirmed' => ['Confirmed', 'info'], 'processing' => ['Processing', 'info'],
+        'pending' => ['Pending', 'mute'], 'confirmed' => ['Confirmed', 'info'],
         'packed' => ['Packed', 'info'], 'shipped' => ['Shipped', 'warn'], 'delivered' => ['Delivered', 'ok'],
         'partially_delivered' => ['Partially delivered', 'warn'], 'returning' => ['Returning', 'bad'],
         'returned' => ['Return received', 'bad'], 'on_hold' => ['On hold', 'warn'], 'cancelled' => ['Cancelled', 'mute'],
     ],
     // order list tab labels (Returning and Returned are separate tabs)
-    'order_tabs' => ['all' => 'All', 'pending' => 'Pending', 'confirmed' => 'Confirmed', 'processing' => 'Processing', 'packed' => 'Packed', 'shipped' => 'Shipped',
-        'delivered' => 'Delivered', 'partially_delivered' => 'Partial', 'returning' => 'Returning', 'returned' => 'Return received', 'on_hold' => 'On hold', 'cancelled' => 'Cancelled'],
+    'order_tabs' => ['all' => 'All', 'pending' => 'Pending', 'confirmed' => 'Confirmed', 'packed' => 'Packed', 'shipped' => 'Shipped',
+        'delivered' => 'Delivered', 'partially_delivered' => 'Partial delivered', 'returning' => 'Returning', 'returned' => 'Return received', 'on_hold' => 'On hold', 'cancelled' => 'Cancelled'],
     'courier_status' => [
         'pending' => ['Pending', 'mute'], 'picked_up' => ['Picked up', 'info'], 'in_transit' => ['In transit', 'info'],
         'out_for_delivery' => ['Out for delivery', 'warn'], 'delivered' => ['Delivered', 'ok'], 'partial_delivered' => ['Partial delivered', 'warn'],

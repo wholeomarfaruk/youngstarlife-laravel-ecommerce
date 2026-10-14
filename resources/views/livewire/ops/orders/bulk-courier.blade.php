@@ -30,7 +30,7 @@
         <div class="flex flex-wrap items-center gap-2 border-b border-soft px-3 py-2">
             <span class="mr-auto font-semibold">Ready to ship <span class="text-sm font-normal text-ink-muted">{{ ops_num($orders->total()) }} not with a courier</span></span>
             <input wire:model.live.debounce.400ms="search" class="input w-56" placeholder="Order no., name, phone…">
-            <select wire:model.live="filterStatus" class="input w-auto"><option value="">All statuses</option>@foreach (['pending', 'confirmed', 'processing', 'packed'] as $st)<option value="{{ $st }}">{{ config("ops.order_status.$st.0") }}</option>@endforeach</select>
+            <select wire:model.live="filterStatus" class="input w-auto"><option value="">All statuses</option>@foreach (['pending', 'confirmed', 'packed'] as $st)<option value="{{ $st }}">{{ config("ops.order_status.$st.0") }}</option>@endforeach</select>
             <select wire:model.live="filterSource" class="input w-auto"><option value="">All channels</option>@foreach (config('ops.sources') as $k => $l)<option value="{{ $k }}">{{ $l }}</option>@endforeach</select>
             @if ($search !== '' || $filterStatus !== '' || $filterSource !== '')<button wire:click="clearFilters" class="text-sm text-brand">Clear</button>@endif
             <button wire:click="addPage('{{ $addable->implode(',') }}')" @disabled($addable->isEmpty()) class="btn-secondary btn-sm">+ Add all on this page ({{ $addable->count() }})</button>

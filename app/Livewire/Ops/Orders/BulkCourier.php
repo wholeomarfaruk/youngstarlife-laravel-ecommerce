@@ -25,7 +25,7 @@ class BulkCourier extends Component
     use WithPagination;
 
     private const EDITABLE = ['courier_id', 'name', 'phone', 'address', 'cod', 'weight', 'qty', 'description', 'note'];
-    private const READY = ['pending', 'confirmed', 'processing', 'packed'];
+    private const READY = ['pending', 'confirmed', 'packed'];
 
     #[Url(except: '')] public string $search = '';
     #[Url(except: '')] public string $filterStatus = '';

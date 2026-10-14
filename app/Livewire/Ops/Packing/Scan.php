@@ -22,7 +22,7 @@ class Scan extends Component
         return $this->order ? Order::live()->numbered($this->order)->with('items.variant.product:id,name', 'items.allocations.batch:id,code')->first() : null;
     }
 
-    public const PACKABLE = ['pending', 'confirmed', 'processing'];   // "Pack & scan" is offered from pending too (stock is reserved at pack)
+    public const PACKABLE = ['pending', 'confirmed'];   // "Pack & scan" is offered from pending too (stock is reserved at pack)
 
     /** Opened from "Pack & scan" (?order=#1042): only orders waiting to be packed may be packed. */
     public function mount(): void { if ($this->order) $this->openOrder($this->order); }
@@ -32,7 +32,7 @@ class Scan extends Component
         $this->order = $code; $this->scanned = []; unset($this->current);
         if (! $o = $this->current) { $this->flash = ['tone' => 'bad', 'title' => 'Order not found', 'sub' => $code]; $this->order = null; unset($this->current); return; }
         if (! in_array($o->status, self::PACKABLE)) {
-            $this->flash = ['tone' => 'warn', 'title' => 'Order '.$o->number.' is '.strtolower(config("ops.order_status.{$o->status}.0", $o->status)), 'sub' => 'Only confirmed or processing orders can be packed'];
+            $this->flash = ['tone' => 'warn', 'title' => 'Order '.$o->number.' is '.strtolower(config("ops.order_status.{$o->status}.0", $o->status)), 'sub' => 'Only pending or confirmed orders can be packed'];
             $this->order = null; unset($this->current); return;
         }
         $this->flash = ['tone' => 'info', 'title' => 'Order '.$o->number.' opened', 'sub' => 'Scan each product'];

@@ -53,7 +53,7 @@ class Order extends OpsModel
     public function exchangeStage(): array
     {
         return match ($this->exchange_state) {
-            'cancelled' => ['Exchange cancelled', 'mute'], 'failed' => ['Exchange failed', 'bad'], 'completed' => ['Exchange done', 'ok'],
+            'cancelled' => ['Exchange cancelled', 'mute'], 'failed' => ['Exchange return received', 'bad'], 'completed' => ['Exchange done', 'ok'],
             'old_missing' => ['Exchange · old item missing', 'bad'], 'refused' => ['Exchange returning', 'bad'],
             'collecting' => ['Exchange delivered', 'info'], 'out' => ['Exchange shipped', 'info'],
             default => match ($this->status) {
@@ -62,6 +62,17 @@ class Order extends OpsModel
             },
         };
     }
+    /**
+     * Partial delivery = two tracks at once: the kept part is delivered (order status), the rest comes back:
+     * Partial returning → Partial return received (Return receive). [label, tone] or null.
+     */
+    public function partialReturnStage(): ?array
+    {
+        if ($this->status !== 'partially_delivered') return null;
+        $s = $this->shipment;
+        return $this->returns->contains(fn ($r) => ! $s || $r->shipment_id === $s->id) ? ['Partial return received', 'bad'] : ['Partial returning', 'warn'];
+    }
+
     public function isOpenExchange(): bool { return in_array($this->exchange_state, ['awaiting', 'out', 'collecting', 'refused']) && $this->status !== 'cancelled'; }
 
     public function log(string $type, string $message): void { $this->events()->create(['type' => $type, 'message' => $message, 'user_id' => auth()->id()]); }
