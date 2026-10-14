@@ -21,6 +21,21 @@ window.opsConfirm = ({ title = 'Are you sure?', text = '', confirm = 'Yes', canc
   buttons: { cancel: { text: cancel, visible: true, value: false }, confirm: { text: confirm, value: true, closeModal: true } },
 }).then(Boolean);
 
+// Scan feedback sound: Livewire $this->dispatch('ops-beep', tone: 'ok' | 'warn' | 'bad' | 'done') — no audio files, WebAudio tones
+let beepCtx;
+window.addEventListener('ops-beep', e => {
+  try {
+    beepCtx ??= new (window.AudioContext || window.webkitAudioContext)();
+    const notes = { ok: [[880, .08]], done: [[660, .1], [990, .14]], warn: [[440, .12], [440, .12]], bad: [[200, .28]] }[e.detail?.tone] || [];
+    let t = beepCtx.currentTime;
+    for (const [f, d] of notes) {
+      const o = beepCtx.createOscillator(), g = beepCtx.createGain();
+      o.type = e.detail?.tone === 'bad' ? 'square' : 'sine'; o.frequency.value = f; g.gain.value = .08;
+      o.connect(g).connect(beepCtx.destination); o.start(t); o.stop(t + d); t += d + .05;
+    }
+  } catch (_) {}
+});
+
 // Unsaved-changes guard: a form sets window.opsDirty = true while edited (Product edit, PO, Settings)
 window.opsDirty = false;
 document.addEventListener('livewire:navigate', e => {
