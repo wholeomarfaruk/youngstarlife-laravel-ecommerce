@@ -49,7 +49,7 @@
                         <td class="td text-right tabular-nums"><div class="font-semibold">{{ tk($o->total) }}</div><div class="text-xs text-ink-muted">COD {{ tk($o->cod) }}</div></td>
                         <td class="td"><x-ops.badge map="payment_status" :status="$o->payment_status" /></td>
                         <td class="td"><x-ops.badge map="order_status" :status="$o->status" />@include('livewire.ops.orders.partials.exchange-stages', ['o' => $o])</td>
-                        <td class="td"><div class="font-medium">{{ $o->shipment?->courier->name ?? '—' }}</div><div class="mono text-xs text-ink-muted">{{ $o->shipment?->tracking }}</div></td>
+                        <td class="td"><div class="font-medium">{{ $o->shipment?->courier->name ?? '—' }}</div><div class="mono text-xs text-ink-muted">{{ $o->shipment?->consignment_id }}</div></td>
                         <td class="td"><div class="flex max-w-[200px] flex-wrap gap-1">@foreach ($o->tags ?? [] as $t)<x-ops.badge :tone="$t === 'Advance required' ? 'bad' : ($t === 'Auto-confirmed' ? 'ok' : 'info')">{{ $t }}</x-ops.badge>@endforeach</div></td>
                         <td class="td">@include('livewire.ops.orders.partials.row-menu', ['o' => $o])</td>
                     </tr>

@@ -40,7 +40,7 @@ class Index extends Component
             $n = ltrim($s, '#');
             $q->where(fn ($q) => $q->where('number', 'like', "%$n%")->orWhere('ship_address', 'like', "%$s%")->orWhereHas('exchanges', fn ($x) => $x->where('number', 'like', "%$n%"))
                 ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%$s%")->orWhere('phone', 'like', "%$s%")->orWhere('area', 'like', "%$s%"))
-                ->orWhereHas('shipment', fn ($c) => $c->where('tracking', $s)->orWhere('code', strtoupper($s))));
+                ->orWhereHas('shipment', fn ($c) => $c->where('tracking', $s)->orWhere('consignment_id', $s)->orWhere('code', strtoupper($s))));
         }
         foreach (['source', 'payment_status'] as $f) if ($v = $this->filters[$f] ?? null) $q->where($f, $v);
         if ($c = $this->filters['courier'] ?? null) $c === 'none' ? $q->whereDoesntHave('shipment') : $q->whereHas('shipment', fn ($s) => $s->where('courier_id', $c));
@@ -73,7 +73,7 @@ class Index extends Component
     #[Computed]
     public function orders()
     {
-        return $this->baseQuery()->with(['customer:id,name,phone,area,delivered_count,returned_count', 'shipment:id,order_id,courier_id,tracking,courier_status,code,handed_over_at', 'shipment.courier:id,name',
+        return $this->baseQuery()->with(['customer:id,name,phone,area,delivered_count,returned_count', 'shipment:id,order_id,courier_id,tracking,consignment_id,courier_status,code,handed_over_at', 'shipment.courier:id,name',
                 'exchanges' => fn ($x) => $x->live()->select('id', 'number', 'exchange_of_id', 'exchange_state', 'status'), 'returns:id,order_id,shipment_id'])
             ->orderBy($this->sortField === 'id' ? 'placed_at' : $this->sortField, $this->sortDir)->paginate($this->perPage);
     }
