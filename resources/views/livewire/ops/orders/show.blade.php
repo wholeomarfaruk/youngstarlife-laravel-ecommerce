@@ -14,6 +14,7 @@
         @elseif ($o->status === 'cancelled')
             <button x-on:click="opsConfirm({ title: @js('Restore '.$o->number.'?'), text: 'It goes back to Pending — confirm and pack it again as usual.', confirm: 'Restore' }).then(ok => ok && $wire.restore({{ $o->id }}))" class="btn-primary">Restore order</button>
         @endif
+        @if ($this->canResend())<button type="button" x-data @click="$dispatch('open-modal','resend')" class="btn-secondary">Send again…</button>@endif
         @include('livewire.ops.orders.partials.row-menu', ['o' => $o])
     </x-ops.page-header>
     @if ($o->tags)<div class="flex flex-wrap gap-1.5">@foreach ($o->tags as $t)<x-ops.badge :tone="in_array($t, ['Advance required', 'Blacklist review']) ? 'bad' : ($t === 'Auto-confirmed' ? 'ok' : 'info')">{{ $t }}</x-ops.badge>@endforeach</div>@endif
@@ -65,11 +66,35 @@
         </x-ops.modal>
     @endif
     @if ($this->exchangesOf->isNotEmpty())
-        <section class="card"><div class="card-head"><span class="card-title">Exchanges of this order</span></div>
-            @foreach ($this->exchangesOf as $ex)
-                <a href="{{ route('ops.orders.show', $ex) }}" wire:navigate class="flex flex-wrap items-center gap-2 border-t border-soft px-3.5 py-2 text-sm text-ink first:border-0 hover:bg-zebra"><span class="mono font-semibold">{{ $ex->number }}</span>
-                    <span class="flex-1 text-ink-muted">old: {{ $ex->exchangeLine?->items->map(fn ($i) => $i->orderItem->variant->label.' ×'.$i->qty)->join(', ') }}</span>
-                    <x-ops.badge :tone="config('ops.exchange_state.'.$ex->exchange_state.'.1', 'mute')">{{ config('ops.exchange_state.'.$ex->exchange_state.'.0', $ex->exchange_state) }}</x-ops.badge></a>
+        {{-- exchanges are part of this order: each one = new items out in its own parcel, old items back --}}
+        <section class="card">
+            <div class="card-head"><span class="card-title">Exchanges <span class="text-sm font-normal text-ink-muted">{{ $this->exchangesOf->count() }}</span></span>
+                @if (in_array($o->status, ['delivered', 'partially_delivered']))<a href="{{ route('ops.exchanges.index', ['order' => $o->number]) }}" wire:navigate class="btn-secondary btn-sm">+ New exchange</a>@endif</div>
+            @foreach ($this->exchangesOf->sortBy('id') as $ex)
+                @php([$label, $tone] = $ex->exchangeStage()) @php($xs = $ex->shipment)
+                <div wire:key="ex{{ $ex->id }}" class="flex flex-col gap-2 border-t border-soft px-3.5 py-3 first:border-0">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <span class="font-semibold">Exchange {{ \Illuminate\Support\Str::afterLast($ex->number, '-EX') }}</span><span class="mono text-xs text-ink-muted">{{ $ex->number }}</span>
+                        <x-ops.badge :tone="$tone">{{ $label }}</x-ops.badge>
+                        <span class="ml-auto text-sm">COD <b>{{ tk($ex->cod) }}</b></span>
+                    </div>
+                    <div class="grid gap-2 text-sm sm:grid-cols-2">
+                        <div><div class="text-xs text-ink-muted">Old item (comes back) @if ($ex->exchangeLine)<x-ops.badge :tone="config('ops.return_status.'.$ex->exchangeLine->status.'.1', 'mute')">{{ config('ops.return_status.'.$ex->exchangeLine->status.'.0', $ex->exchangeLine->status) }}</x-ops.badge>@endif</div>
+                            @foreach ($ex->exchangeLine?->items ?? [] as $it)<div class="mt-1 flex items-center gap-2">@if ($p = $it->orderItem->variant->product)<img src="{{ $p->thumb_url }}" alt="" loading="lazy" class="h-8 w-8 rounded bg-soft object-cover">@endif<span>{{ $it->orderItem->variant->label }} ×{{ $it->qty }} <span class="text-xs text-ink-muted">· {{ $it->reason }}</span></span></div>@endforeach</div>
+                        <div><div class="text-xs text-ink-muted">New item (goes out)</div>
+                            @foreach ($ex->items as $it)<div class="mt-1 flex items-center gap-2">@if ($p = $it->variant->product)<img src="{{ $p->thumb_url }}" alt="" loading="lazy" class="h-8 w-8 rounded bg-soft object-cover">@endif<span>{{ $it->variant->label }} ×{{ $it->qty }}</span></div>@endforeach</div>
+                    </div>
+                    <div class="flex flex-wrap items-center gap-1.5 text-sm">
+                        @if ($xs)<span class="text-ink-muted">Parcel <span class="mono text-ink">{{ $xs->code }}</span> · {{ $xs->courier?->name }}@if ($xs->tracking) · <span class="mono">{{ $xs->tracking }}</span>@endif</span><x-ops.badge map="courier_status" :status="$xs->courier_status" />@endif
+                        <span class="ml-auto flex flex-wrap gap-1.5">
+                            @if ($ex->status === 'pending')<button wire:click="setStatus({{ $ex->id }}, 'confirmed')" class="btn-secondary btn-sm">Confirm</button>@endif
+                            @if (in_array($ex->status, ['pending', 'confirmed', 'processing']))<a href="{{ route('ops.packing.scan', ['order' => $ex->number]) }}" wire:navigate class="btn-secondary btn-sm">Pack & scan</a>@endif
+                            @if (in_array($ex->status, \App\Services\Ops\CourierBooking::OPEN) && ! $xs?->booked_at)<button x-data @click="$dispatch('open-modal', 'book-courier-one'); $dispatch('book-courier', { id: {{ $ex->id }} })" class="btn-secondary btn-sm">Book courier…</button>@endif
+                            @if (in_array($ex->exchange_state, \App\Services\Ops\ExchangeService::RECEIVABLE) && $ex->exchangeLine?->status === 'expected')<a href="{{ route('ops.returns.receive', ['exchange' => $ex->number]) }}" wire:navigate class="btn-secondary btn-sm">Receive old item</a>@endif
+                            <a href="{{ route('ops.orders.show', $ex) }}" wire:navigate class="btn-ghost btn-sm">Details →</a>
+                        </span>
+                    </div>
+                </div>
             @endforeach
         </section>
     @endif
@@ -214,6 +239,19 @@
                     @endif
                 @else <span class="text-ink-muted">Not booked yet — the parcel is created at packing.</span> @endif
             </x-ops.card>
+            @if ($this->parcels->count() > 1 || $this->parcels->contains(fn ($p) => $p->isSuperseded()))
+                {{-- one order, many parcels: first delivery, re-sends, exchanges --}}
+                <x-ops.card title="Parcels" flush>
+                    @foreach ($this->parcels as $p)
+                        <a href="{{ route('ops.trace', ['q' => $p->code]) }}" wire:navigate class="flex flex-col gap-0.5 border-t border-soft px-3.5 py-2 text-sm text-ink first:border-0 hover:bg-zebra">
+                            <span class="flex items-center gap-2"><span class="mono font-semibold">{{ $p->code }}</span>
+                                <span class="text-xs text-ink-muted">{{ $p->order->exchange_of_id ? 'Exchange '.\Illuminate\Support\Str::afterLast($p->order->number, '-EX') : ($p->kind === 'resend' ? 'Re-send' : 'Delivery') }}</span>
+                                <span class="ml-auto"><x-ops.badge map="courier_status" :status="$p->courier_status" /></span></span>
+                            <span class="text-xs text-ink-muted">{{ $p->courier?->name }}@if ($p->tracking) · {{ $p->tracking }}@endif · {{ $p->created_at->format('d M') }}@if ($p->isSuperseded()) · <span class="font-semibold text-warn">replaced {{ $p->superseded_at->format('d M') }}</span>@endif</span>
+                        </a>
+                    @endforeach
+                </x-ops.card>
+            @endif
             @if ($o->returns->isNotEmpty())
                 <x-ops.card title="Returns" flush>@foreach ($o->returns as $r)<a href="{{ route('ops.trace', ['q' => $r->code]) }}" wire:navigate class="flex justify-between border-t border-soft px-3.5 py-2 text-ink first:border-0 hover:bg-zebra"><span class="mono font-semibold">{{ $r->code }}</span><span class="text-sm capitalize">{{ $r->type }}</span></a>@endforeach</x-ops.card>
             @endif
@@ -228,4 +266,17 @@
         <x-slot:footer><button x-on:click="$dispatch('close-modal')" class="btn-secondary">Cancel</button><button wire:click="recordPayment" class="btn-primary">Save payment</button></x-slot:footer>
     </x-ops.modal>
     <livewire:ops.orders.book-courier />
+    @if ($this->canResend())
+        <x-ops.modal name="resend" title="Send again in a new parcel">
+            <div x-data x-init="@if ($resend) $nextTick(() => $dispatch('open-modal', 'resend')) @endif" class="flex flex-col gap-3 text-sm">
+                <p class="text-ink-muted">Parcel <b class="mono">{{ $o->shipment?->code ?? '—' }}</b> is marked <b>replaced</b> — it stays tracked, and when it comes back Return receive restocks it without touching this order.
+                    The order goes back to <b>Confirmed</b> (stock reserved again) → Pack &amp; scan → courier, in a new parcel.</p>
+                <x-ops.field label="Why" required :error="$errors->first('resendReason')">
+                    <select wire:model="resendReason" class="input">@foreach (['Customer found a fault and sent it back', 'Customer refused, then asked for it again', 'Wrong item sent', 'Parcel lost / damaged by the courier', 'Other'] as $r)<option>{{ $r }}</option>@endforeach</select>
+                </x-ops.field>
+                <x-ops.field label="COD for the new parcel (৳)" :error="$errors->first('resendCod')" :hint="'Empty = same as now ('.tk($o->cod).'). Put 0 when the customer already paid / you cover it.'"><input type="number" min="0" wire:model="resendCod" class="input" placeholder="{{ $o->cod }}"></x-ops.field>
+            </div>
+            <x-slot:footer><button x-on:click="$dispatch('close-modal')" class="btn-secondary">Cancel</button><button wire:click="sendAgain" wire:loading.attr="disabled" class="btn-primary">Send again</button></x-slot:footer>
+        </x-ops.modal>
+    @endif
 </div>

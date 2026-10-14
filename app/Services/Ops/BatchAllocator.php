@@ -22,13 +22,20 @@ class BatchAllocator
 
     protected function lines(Order $order) { return $order->items()->with('allocations.batch:id,variant_id', 'variant.product.comboItems')->get(); }
 
+    /** parcels replaced by a re-send — their units left with that parcel (and come back through Return receive) */
+    protected function superseded(Order $order): array { return $order->shipments()->whereNotNull('superseded_at')->pluck('id')->all(); }
+
+    /** allocations that still serve the order now (not the units of a replaced parcel) */
+    protected function current($allocations, array $superseded) { return $superseded ? $allocations->reject(fn ($a) => $a->shipment_id && in_array($a->shipment_id, $superseded)) : $allocations; }
+
     /** Idempotent: only allocates what is still unallocated (FIFO by received date), and reserves exactly what it allocated. */
     public function allocate(Order $order): void
     {
         DB::transaction(function () use ($order) {
+            $old = $this->superseded($order);
             foreach ($this->lines($order) as $item) {
                 foreach ($this->parts($item) as $vid => $want) {
-                    $need = $want - $item->allocations->filter(fn ($a) => $a->batch?->variant_id == $vid)->sum('qty');
+                    $need = $want - $this->current($item->allocations, $old)->filter(fn ($a) => $a->batch?->variant_id == $vid)->sum('qty');
                     if ($need <= 0) continue;
                     $reserved = 0;
                     foreach (Batch::where('variant_id', $vid)->available()->lockForUpdate()->get() as $batch) {
@@ -48,7 +55,8 @@ class BatchAllocator
     /** Units of the order that could not be allocated from batches (0 = fully covered). */
     public function shortfall(Order $order): int
     {
-        return $this->lines($order)->sum(fn ($i) => collect($this->parts($i))->map(fn ($want, $vid) => max(0, $want - $i->allocations->filter(fn ($a) => $a->batch?->variant_id == $vid)->sum('qty')))->sum());
+        $old = $this->superseded($order);
+        return $this->lines($order)->sum(fn ($i) => collect($this->parts($i))->map(fn ($want, $vid) => max(0, $want - $this->current($i->allocations, $old)->filter(fn ($a) => $a->batch?->variant_id == $vid)->sum('qty')))->sum());
     }
 
     /** Called by Packing scan when the parcel is verified. Deducts batches, stores purchase price, books the parcel. */
@@ -56,9 +64,9 @@ class BatchAllocator
     {
         DB::transaction(function () use ($order) {
             $this->allocate($order);   // pick up stock received since the order was confirmed
-            $cost = 0; $touched = [];
+            $cost = 0; $touched = []; $packed = [];
             foreach (OrderItemAllocation::whereIn('order_item_id', $order->items()->pluck('id'))->whereNull('packed_at')->with('batch', 'item')->get() as $a) {
-                $a->update(['unit_cost' => $a->batch->unit_cost, 'packed_at' => now()]);
+                $a->update(['unit_cost' => $a->batch->unit_cost, 'packed_at' => now()]); $packed[] = $a->id;
                 $this->stock->move($a->batch, 'sale', -$a->qty, $order);
                 ProductVariant::whereKey($a->batch->variant_id)->decrement('reserved', $a->qty);   // batch's variant (= component for combos)
                 $cost += $a->qty * $a->batch->unit_cost; $touched[] = $a->batch->variant_id;
@@ -68,11 +76,13 @@ class BatchAllocator
             foreach (ProductVariant::whereIn('id', array_unique($touched))->with('product:id,name,low_stock_threshold')->get() as $v)
                 if ($v->stock < $v->product->low_stock_threshold) ops_notify('lowStock', $v->label.' is low · '.$v->stock.' left', route('ops.products.edit', ['product' => $v->product_id, 'tab' => 'stock']));
             ops_log("Packed {$order->number} · cost ".tk($cost), $order);
+            $stamp = fn (Shipment $s) => OrderItemAllocation::whereIn('id', $packed)->update(['shipment_id' => $s->id]);   // these units travel in this parcel
             if (! $order->shipment()->exists()) {
                 $courier = app(OrderWorkflow::class)->courierFor($order);
                 if ($courier) {
-                    $s = $order->shipment()->create(['code' => Shipment::nextCode(), 'courier_id' => $courier->id, 'cod_amount' => $order->cod,
+                    $s = $order->shipments()->create(['kind' => $order->shipments()->exists() ? 'resend' : 'delivery', 'code' => Shipment::nextCode(), 'courier_id' => $courier->id, 'cod_amount' => $order->cod,
                         'packed_by' => auth()->id(), 'packed_at' => now(), 'courier_status' => 'pending', 'status_updated_at' => now()]);
+                    $stamp($s);
                     $order->log('packed', 'Packed and verified by scan · parcel '.$s->code.' · '.$courier->name);
                     // Automations → "Parcel is packed → send it to the courier API": after the response, so the packing scan stays fast
                     if ((ops_setting('automations.auto_book.on') ?? false) && $courier->can('book')) {
@@ -85,7 +95,10 @@ class BatchAllocator
                 }
             }
             // parcel made earlier (Book courier → sent before packing): this scan packs it
-            if (($s = $order->shipment()->first()) && ! $s->packed_at) { $s->update(['packed_by' => auth()->id(), 'packed_at' => now()]); $order->log('packed', 'Packed and verified by scan · parcel '.$s->code); return; }
+            if ($s = $order->shipment()->first()) {
+                $stamp($s);
+                if (! $s->packed_at) { $s->update(['packed_by' => auth()->id(), 'packed_at' => now()]); $order->log('packed', 'Packed and verified by scan · parcel '.$s->code); return; }
+            }
             $order->log('packed', 'Packed and verified by scan');
         });
     }
@@ -94,7 +107,8 @@ class BatchAllocator
     public function release(Order $order): void
     {
         DB::transaction(function () use ($order) {
-            foreach (OrderItemAllocation::whereIn('order_item_id', $order->items()->pluck('id'))->with('batch', 'item')->get() as $a) {
+            $old = $this->superseded($order);
+            foreach ($this->current(OrderItemAllocation::whereIn('order_item_id', $order->items()->pluck('id'))->with('batch', 'item')->get(), $old) as $a) {
                 if ($a->packed_at) $this->stock->move($a->batch, 'adjust', $a->qty, $order, 'Order cancelled');
                 else ProductVariant::whereKey($a->batch->variant_id)->decrement('reserved', $a->qty);
                 $a->delete();

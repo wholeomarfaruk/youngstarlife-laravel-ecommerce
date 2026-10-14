@@ -91,7 +91,7 @@ class Dashboard extends Component
         'courier' => ['In courier', ['shipped', 'returning'], 'info'],                                          // with the courier (incl. exchange orders), not back yet
         'delivered' => ['Delivered', ['delivered', 'partially_delivered'], 'ok'],
         'cancelled' => ['Cancelled', ['cancelled'], 'mute'],
-        'returned' => ['Returned', ['returned'], 'bad'],
+        'returned' => ['Return received', ['returned'], 'bad'],
     ];
 
     #[Computed]

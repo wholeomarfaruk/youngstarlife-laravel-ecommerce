@@ -57,6 +57,34 @@ class OrderWorkflow
         ops_log("Order {$order->number}: ".config("ops.order_status.$from.0").' → '.config("ops.order_status.$status.0"), $order);
     }
 
+    /** statuses from which the order can go out again in a new parcel */
+    public const RESENDABLE = ['returning', 'returned', 'on_hold', 'shipped'];
+
+    /**
+     * Send the order again in a NEW parcel (customer sent it back / refused, then asked for it again).
+     * The current parcel is marked replaced (still tracked; when it comes back, Return receive restocks its units without
+     * touching the order), stock is reserved again, and the order restarts at Confirmed → Pack & scan → courier.
+     */
+    public function resend(Order $order, string $reason, ?int $cod = null): void
+    {
+        $order->refresh();
+        abort_unless(in_array($order->status, self::RESENDABLE) && ! $order->is_draft, 422, 'This order can’t be sent again now.');
+        $old = $order->shipment;
+        \Illuminate\Support\Facades\DB::transaction(function () use ($order, $old, $reason, $cod) {
+            if ($old) {
+                // legacy rows: packed units without a parcel id belong to the parcel being replaced
+                \App\Models\Ops\OrderItemAllocation::whereIn('order_item_id', $order->items()->pluck('id'))->whereNotNull('packed_at')->whereNull('shipment_id')->update(['shipment_id' => $old->id]);
+                $old->update(['superseded_at' => now()]);
+            }
+            // a return already received for that parcel counted the items as returned — they go out again now
+            if ($order->status === 'returned') $order->items()->update(['returned_qty' => 0]);
+            $order->update(['status' => 'pending', 'cod' => $cod ?? $order->cod, 'tags' => array_values(array_unique(array_merge($order->tags ?? [], ['Re-send'])))]);
+            $order->log('resend', 'Sending again'.($old ? ' — parcel '.$old->code.' replaced' : '').' · '.$reason.($cod !== null ? ' · COD '.tk($cod) : ''));
+            $this->setStatus($order->fresh(), 'confirmed');   // reserves the stock for the new parcel
+            ops_log("Order {$order->number}: sending again".($old ? " (replaces {$old->code})" : ''), $order);
+        });
+    }
+
     /** Courier status change (webhook or manual on the order page) → parcel + order + customer counters. Returns false if nothing changed. */
     public function courierStatus(Shipment $s, string $status, string $by): bool
     {
@@ -64,6 +92,11 @@ class OrderWorkflow
         if ($status === $s->courier_status) return false;   // repeated callback → no double counting
         $o = $s->order;
         $s->update(['courier_status' => $status, 'status_updated_at' => now(), 'delivered_at' => $status === 'delivered' ? now() : $s->delivered_at]);
+        if ($s->isSuperseded()) {   // a parcel replaced by a re-send: track it, but the order follows its new parcel
+            $o->log('courier', 'Old parcel '.$s->code.': '.$by.' → '.config("ops.courier_status.$status.0"));
+            ops_log("Parcel {$s->code} (replaced): ".config("ops.courier_status.$status.0")." ($by)", $s);
+            return true;
+        }
         if ($status === 'delivered') { $o->update(['status' => 'delivered', 'payment_status' => 'paid']); if (! $o->exchange_of_id) $o->customer->increment('delivered_count'); }   // an exchange is not a new delivery for the delivery rate
         if ($status === 'partial_delivered') $o->update(['status' => 'partially_delivered']);
         if (in_array($status, ['cancelled', 'returning', 'returned'])) $o->update(['status' => 'returning']);   // "returned" once received at the warehouse

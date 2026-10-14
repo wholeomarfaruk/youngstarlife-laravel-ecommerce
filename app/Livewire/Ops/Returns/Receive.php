@@ -18,6 +18,9 @@ class Receive extends Component
 
     public const RETURN_STATUSES = ['returning', 'returned', 'cancelled', 'partial_delivered'];
 
+    /** parcels to receive back: the courier is returning them, or they were replaced by a re-send while still out */
+    public static function comingBack($q) { return $q->whereIn('courier_status', self::RETURN_STATUSES)->orWhere(fn ($r) => $r->whereNotNull('superseded_at')->whereIn('courier_status', ['picked_up', 'in_transit', 'out_for_delivery', 'hold'])); }
+
     #[Url] public ?int $courier = null;
     #[Url(except: '')] public string $order = '';     // ?order=#5 → manual return of a delivered order (Create return)
     #[Url(except: 'all')] public string $view = 'all'; // received panel chips: all | today | inspect | refund | damaged
@@ -84,7 +87,7 @@ class Receive extends Component
         $this->dispatch('toast', message: 'Exchange '.$x->number.' complete');
     }
 
-    #[Computed] public function couriers() { return Courier::where('is_active', true)->withCount(['shipments as returning' => fn ($q) => $q->whereIn('courier_status', self::RETURN_STATUSES)->whereNotExists(fn ($x) => $x->from('ops_customer_returns')->whereColumn('ops_customer_returns.shipment_id', 'ops_shipments.id'))])->orderBy('id')->get(['id', 'name', 'code']); }
+    #[Computed] public function couriers() { return Courier::where('is_active', true)->withCount(['shipments as returning' => fn ($q) => $q->where(fn ($w) => self::comingBack($w))->whereNotExists(fn ($x) => $x->from('ops_customer_returns')->whereColumn('ops_customer_returns.shipment_id', 'ops_shipments.id'))])->orderBy('id')->get(['id', 'name', 'code']); }
 
     /** RRN-MMDD-NN (NN = courier position) */
     #[Computed] public function session(): string { $i = $this->couriers->search(fn ($c) => $c->id === $this->courier); return 'RRN-'.now()->format('md').'-'.str_pad((string) (($i === false ? 0 : $i) + 1), 2, '0', STR_PAD_LEFT); }
@@ -93,7 +96,7 @@ class Receive extends Component
     #[Computed]
     public function expected()
     {
-        return Shipment::where('courier_id', $this->courier)->whereIn('courier_status', self::RETURN_STATUSES)
+        return Shipment::where('courier_id', $this->courier)->where(fn ($w) => self::comingBack($w))
             ->whereNotExists(fn ($q) => $q->from('ops_customer_returns')->whereColumn('ops_customer_returns.shipment_id', 'ops_shipments.id'))
             ->with('order:id,number,customer_id,status,advance,cod,total,delivery_charge,exchange_of_id', 'order.customer:id,name', 'order.items.variant.product:id,name', 'order.items.allocations.batch:id,code,supplier_id,purchase_order_id', 'order.items.allocations.batch.supplier:id,name', 'order.items.allocations.batch.purchaseOrder:id,number')->get();
     }
@@ -162,7 +165,7 @@ class Receive extends Component
         $matches = fn ($p) => in_array($up, [strtoupper($p->code), strtoupper((string) $p->tracking), strtoupper($p->order->number)]) || ($num !== '' && preg_replace('/^\D+/', '', $p->order->number) === $num && ctype_digit($num));
         $s = $this->expected->first($matches);
         if (! $s && ! $this->activeId && ! $this->activeOrderId) {   // parcel belongs to another courier's list → switch to that courier
-            $other = Shipment::whereIn('courier_status', self::RETURN_STATUSES)->where('courier_id', '!=', $this->courier)
+            $other = Shipment::where(fn ($w) => self::comingBack($w))->where('courier_id', '!=', $this->courier)
                 ->whereNotExists(fn ($q) => $q->from('ops_customer_returns')->whereColumn('ops_customer_returns.shipment_id', 'ops_shipments.id'))
                 ->with('order:id,number')->get()->first($matches);
             if ($other) { $this->courier = $other->courier_id; unset($this->expected, $this->active, $this->session); $s = $this->expected->firstWhere('id', $other->id); }
@@ -218,23 +221,32 @@ class Receive extends Component
         $returned = collect($this->lines)->filter(fn ($l) => $l['got'])->keys()->map(fn ($k) => (int) $k)->all();
         if ($kept && ! $returned) { $this->flash = ['tone' => 'warn', 'title' => 'Tick at least one returned item', 'sub' => 'Unticked items stay with the customer']; return; }
         $stock = app(StockService::class);
-        $ret = DB::transaction(function () use ($o, $s, $kept, $returned, $stock) {
+        $replaced = $s?->isSuperseded();   // parcel replaced by a re-send: restock it, the order is already on its new parcel
+        $ret = DB::transaction(function () use ($o, $s, $kept, $returned, $stock, $replaced) {
             $all = count($returned) === $o->items->count();
-            $type = $o->exchange_of_id ? 'exchange' : ($all ? 'full' : 'partial');
+            $type = $replaced ? 'resend' : ($o->exchange_of_id ? 'exchange' : ($all ? 'full' : 'partial'));
             $ret = CustomerReturn::create(['code' => 'R'.(CustomerReturn::max('id') + 1001), 'order_id' => $o->id, 'shipment_id' => $s?->id ?? $o->shipment?->id, 'courier_id' => $s?->courier_id ?? $o->shipment?->courier_id,
                 'session' => $s ? $this->session : null, 'rider' => $this->rider ?: null, 'type' => $type, 'status' => 'inspected', 'note' => $this->note ?: null, 'received_by' => auth()->id(),
-                'photos' => collect($this->photos)->map->store('returns', 'public')->all() ?: null, 'refund_amount' => $this->refundFor($o, $returned)]);
+                'photos' => collect($this->photos)->map->store('returns', 'public')->all() ?: null, 'refund_amount' => $replaced ? 0 : $this->refundFor($o, $returned)]);
             foreach ($o->items as $i) {
                 $l = $this->lines[$i->id] ?? null; if (! $l) continue;
                 if (! $l['got'] && $kept) continue;                    // customer kept it → NOT returned
                 $cond = $l['got'] ? ($l['condition'] ?: null) : 'missing';
                 $action = $cond ? config("ops.return_conditions.$cond.1") : null;
-                $allocs = $i->allocations()->whereNotNull('packed_at')->with('batch')->get();
+                // the units that travelled in THIS parcel (a re-sent order has packed units in two parcels)
+                $allocs = $i->allocations()->whereNotNull('packed_at')->when($s, fn ($q) => $q->where(fn ($w) => $w->where('shipment_id', $s->id)->orWhereNull('shipment_id')))->with('batch')->get();
                 $ret->items()->create(['order_item_id' => $i->id, 'batch_id' => $allocs->first()?->batch_id, 'qty' => $i->qty, 'reason' => $cond === 'missing' ? 'Missing in parcel' : $l['reason'], 'condition' => $cond, 'action' => $action]);
                 $this->applyStock($cond, $allocs, $ret, $stock, $i->qty);
-                if ($l['got']) $i->increment('returned_qty', $i->qty);
+                if ($l['got'] && ! $replaced) $i->increment('returned_qty', $i->qty);
             }
             $partial = $kept && ! $all;
+            if ($replaced) {
+                $s->update(['courier_status' => 'returned', 'status_updated_at' => now()]);
+                $o->log('return', 'Old parcel '.$s->code.' back · '.$ret->code.' (the order goes out in its new parcel)');
+                $this->entrySession()->items()->create(['shipment_id' => $s->id, 'type' => 'returned', 'customer_return_id' => $ret->id, 'note' => 'Replaced parcel', 'user_id' => auth()->id()]);
+                ops_log("Return {$ret->code}: replaced parcel {$s->code} of {$o->number} back", $ret);
+                return $ret;
+            }
             $o->update(['status' => $partial ? 'partially_delivered' : 'returned']); $o->log('return', 'Return '.$ret->code.' received ('.$type.')');
             if ($s && ! $partial) $s->update(['courier_status' => 'returned', 'status_updated_at' => now()]);
             // delivery rate counts courier outcomes only: a parcel coming back = returned; partial parcel = delivered (customer kept some).

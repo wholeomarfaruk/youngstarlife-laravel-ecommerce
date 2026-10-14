@@ -19,7 +19,7 @@ class Shipment extends OpsModel
         });
     }
     protected $casts = ['packed_at' => 'datetime', 'handed_over_at' => 'datetime', 'delivered_at' => 'datetime', 'status_updated_at' => 'datetime',
-        'booked_at' => 'datetime', 'last_tracked_at' => 'datetime', 'courier_meta' => 'array'];
+        'booked_at' => 'datetime', 'last_tracked_at' => 'datetime', 'courier_meta' => 'array', 'superseded_at' => 'datetime'];
     public function order(): BelongsTo { return $this->belongsTo(Order::class); }
     public function courier(): BelongsTo { return $this->belongsTo(Courier::class); }
     public function settlement(): BelongsTo { return $this->belongsTo(CourierSettlement::class); }
@@ -33,6 +33,9 @@ class Shipment extends OpsModel
         $last = (int) static::where('code', 'like', 'P%')->selectRaw('MAX(CAST(SUBSTRING(code, 2) AS UNSIGNED)) n')->value('n');
         return 'P'.max(1001, $last + 1);
     }
+
+    /** replaced by a re-send: still tracked, but it no longer moves the order */
+    public function isSuperseded(): bool { return $this->superseded_at !== null; }
 
     public function isFinal(): bool { return in_array($this->courier_status, self::FINAL, true); }
 

@@ -61,7 +61,7 @@ class BulkCourier extends Component
     /** orders that still need a courier: being worked on, no parcel with a courier yet */
     protected function eligible()
     {
-        return Order::live()->whereIn('status', self::READY)->whereDoesntHave('shipments', fn ($q) => $q->whereNotNull('booked_at'));
+        return Order::live()->whereIn('status', self::READY)->whereDoesntHave('shipments', fn ($q) => $q->whereNotNull('booked_at')->whereNull('superseded_at'));   // a re-sent order's old parcel doesn't count
     }
 
     /** order ids sitting unbooked on someone else's draft sheet → their name */

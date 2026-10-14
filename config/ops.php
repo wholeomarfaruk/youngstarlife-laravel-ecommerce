@@ -33,11 +33,11 @@ return [
         'pending' => ['Pending', 'mute'], 'confirmed' => ['Confirmed', 'info'], 'processing' => ['Processing', 'info'],
         'packed' => ['Packed', 'info'], 'shipped' => ['Shipped', 'warn'], 'delivered' => ['Delivered', 'ok'],
         'partially_delivered' => ['Partially delivered', 'warn'], 'returning' => ['Returning', 'bad'],
-        'returned' => ['Returned', 'bad'], 'on_hold' => ['On hold', 'warn'], 'cancelled' => ['Cancelled', 'mute'],
+        'returned' => ['Return received', 'bad'], 'on_hold' => ['On hold', 'warn'], 'cancelled' => ['Cancelled', 'mute'],
     ],
     // order list tab labels (Returning and Returned are separate tabs)
     'order_tabs' => ['all' => 'All', 'pending' => 'Pending', 'confirmed' => 'Confirmed', 'processing' => 'Processing', 'packed' => 'Packed', 'shipped' => 'Shipped',
-        'delivered' => 'Delivered', 'partially_delivered' => 'Partial', 'returning' => 'Returning', 'returned' => 'Returned', 'on_hold' => 'On hold', 'cancelled' => 'Cancelled'],
+        'delivered' => 'Delivered', 'partially_delivered' => 'Partial', 'returning' => 'Returning', 'returned' => 'Return received', 'on_hold' => 'On hold', 'cancelled' => 'Cancelled'],
     'courier_status' => [
         'pending' => ['Pending', 'mute'], 'picked_up' => ['Picked up', 'info'], 'in_transit' => ['In transit', 'info'],
         'out_for_delivery' => ['Out for delivery', 'warn'], 'delivered' => ['Delivered', 'ok'], 'partial_delivered' => ['Partial delivered', 'warn'],
@@ -49,7 +49,7 @@ return [
     'product_status' => ['active' => ['Active', 'ok'], 'draft' => ['Draft', 'mute'], 'archived' => ['Archived', 'warn']],
     'batch_status' => ['active' => ['Active', 'ok'], 'queued' => ['Next in queue', 'info'], 'low' => ['Low', 'warn'], 'depleted' => ['Depleted', 'mute']],
     'po_status' => ['draft' => ['Draft', 'mute'], 'sent' => ['Sent to supplier', 'info'], 'partial' => ['Partially received', 'warn'], 'received' => ['Received', 'ok'], 'cancelled' => ['Cancelled', 'bad']],
-    'return_types' => ['full' => 'Full', 'partial' => 'Partial', 'exchange' => 'Exchange'],
+    'return_types' => ['full' => 'Full', 'partial' => 'Partial', 'exchange' => 'Exchange', 'resend' => 'Replaced parcel'],
     'return_status' => ['received' => ['Received', 'info'], 'inspected' => ['Inspected', 'ok'], 'closed' => ['Closed', 'mute']],
     'supplier_return_status' => ['pending' => ['Pending', 'mute'], 'sent' => ['Sent', 'info'], 'received' => ['Received by supplier', 'info'], 'approved' => ['Approved', 'warn'], 'resolved' => ['Resolved', 'ok'], 'rejected' => ['Rejected', 'bad'], 'cancelled' => ['Cancelled', 'mute']],
     'supplier_return_resolutions' => ['replacement' => 'Replacement', 'credit' => 'Credit', 'refund' => 'Refund'],

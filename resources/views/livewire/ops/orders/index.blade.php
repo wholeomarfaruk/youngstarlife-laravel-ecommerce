@@ -8,7 +8,7 @@
     </x-ops.kpis>
     <section class="card">
         <div class="border-b border-soft px-3 py-2">
-            <x-ops.chips wire:model.live="status" :options="collect(config('ops.order_tabs'))->mapWithKeys(fn ($l, $key) => [$key => [$l, $key === 'all' ? array_sum($c) : ($c[$key] ?? 0)]])->all()" />
+            <x-ops.chips wire:model.live="status" :options="collect(config('ops.order_tabs') + ['exchange' => 'Exchanges'])->mapWithKeys(fn ($l, $key) => [$key => [$l, $key === 'all' ? array_sum(\Illuminate\Support\Arr::except($c, 'exchange')) : ($c[$key] ?? 0)]])->all()" />
         </div>
         @if (str_starts_with($status, 'group:') && ($grp = \App\Livewire\Ops\Dashboard::GROUPS[substr($status, 6)] ?? null))
             <div class="flex items-center gap-2 border-b border-soft bg-brand-tint px-3 py-2 text-sm">Showing <b>{{ $grp[0] }}</b> <span class="text-ink-muted">({{ collect($grp[1])->map(fn ($s) => config("ops.order_status.$s.0"))->join(', ') }})</span><button wire:click="$set('status','all')" class="ml-auto text-brand">Clear</button></div>
@@ -49,7 +49,7 @@
                         <td class="td"><div class="font-medium">{{ $o->customer->name }}</div><div class="text-xs text-ink-muted">{{ $o->customer->phone }} · {{ $o->customer->area }}@if ($rate !== null) · <span @class(['font-semibold', 'text-bad' => $rate < .75, 'text-ok' => $rate >= .9])>{{ round($rate * 100) }}%</span>@endif</div></td>
                         <td class="td text-right tabular-nums"><div class="font-semibold">{{ tk($o->total) }}</div><div class="text-xs text-ink-muted">COD {{ tk($o->cod) }}</div></td>
                         <td class="td"><x-ops.badge map="payment_status" :status="$o->payment_status" /></td>
-                        <td class="td"><x-ops.badge map="order_status" :status="$o->status" /></td>
+                        <td class="td"><x-ops.badge map="order_status" :status="$o->status" />@include('livewire.ops.orders.partials.exchange-stages', ['o' => $o])</td>
                         <td class="td"><div class="font-medium">{{ $o->shipment?->courier->name ?? '—' }}</div><div class="mono text-xs text-ink-muted">{{ $o->shipment?->tracking }}</div></td>
                         <td class="td"><div class="flex max-w-[200px] flex-wrap gap-1">@foreach ($o->tags ?? [] as $t)<x-ops.badge :tone="$t === 'Advance required' ? 'bad' : ($t === 'Auto-confirmed' ? 'ok' : 'info')">{{ $t }}</x-ops.badge>@endforeach</div></td>
                         <td class="td">@include('livewire.ops.orders.partials.row-menu', ['o' => $o])</td>
@@ -66,7 +66,7 @@
                 <a href="{{ route('ops.orders.show', $o) }}" wire:navigate wire:key="m{{ $o->id }}" class="flex flex-col gap-2 border-b border-soft p-3 text-ink">
                     <div class="flex items-center gap-2"><span class="mono text-md font-semibold text-brand">{{ $o->number }}</span><span class="flex-1 truncate text-xs text-ink-muted">{{ $o->placed_at->format('d M · H:i') }} · {{ ucfirst($o->source) }}</span></div>
                     <div class="flex justify-between gap-2"><div class="min-w-0"><div class="text-md font-semibold">{{ $o->customer->name }}</div><div class="text-sm text-ink-muted">{{ $o->customer->phone }}</div></div><div class="text-right"><div class="text-lg font-bold">{{ tk($o->total) }}</div><div class="text-xs text-ink-muted">COD {{ tk($o->cod) }}</div></div></div>
-                    <div class="flex flex-wrap gap-1.5"><x-ops.badge map="order_status" :status="$o->status" /><x-ops.badge map="payment_status" :status="$o->payment_status" />@foreach ($o->tags ?? [] as $t)<x-ops.badge tone="info">{{ $t }}</x-ops.badge>@endforeach</div>
+                    <div class="flex flex-wrap gap-1.5"><x-ops.badge map="order_status" :status="$o->status" />@include('livewire.ops.orders.partials.exchange-stages', ['o' => $o])<x-ops.badge map="payment_status" :status="$o->payment_status" />@foreach ($o->tags ?? [] as $t)<x-ops.badge tone="info">{{ $t }}</x-ops.badge>@endforeach</div>
                 </a>
             @endforeach
         </div>

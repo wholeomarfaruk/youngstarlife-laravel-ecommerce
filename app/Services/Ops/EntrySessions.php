@@ -48,7 +48,7 @@ class EntrySessions
     {
         return Shipment::query()
             ->where(fn ($q) => $q->whereIn('courier_status', Receive::RETURN_STATUSES)
-                ->orWhere(fn ($x) => $x->whereIn('courier_status', ['picked_up', 'in_transit', 'out_for_delivery', 'hold'])->whereHas('order', fn ($o) => $o->whereIn('status', ['cancelled', 'returning']))))
+                ->orWhere(fn ($x) => $x->whereIn('courier_status', ['picked_up', 'in_transit', 'out_for_delivery', 'hold'])->where(fn ($w) => $w->whereNotNull('superseded_at')->orWhereHas('order', fn ($o) => $o->whereIn('status', ['cancelled', 'returning'])))))   // replaced by a re-send = coming back
             ->whereNotExists(fn ($q) => $q->from('ops_customer_returns')->whereColumn('ops_customer_returns.shipment_id', 'ops_shipments.id'));
     }
 
@@ -67,7 +67,7 @@ class EntrySessions
         if ($p->failed_attempts) $base .= ' · '.$p->failed_attempts.' failed attempts';
         if ($why && ! str_contains($base, 'cancelled after')) $base .= ' · '.preg_replace('/^.*?→\s*/', '', $why);
         if ($p->complaint) $base .= ' · ⚠ '.preg_replace('/^Damaged parcel not accepted \(.*?\): /', 'Rejected: ', $p->complaint);
-        return ($o->exchange_of_id ? 'Exchange · ' : '').$base;
+        return ($p->superseded_at ? 'Replaced parcel (order re-sent) · ' : '').($o->exchange_of_id ? 'Exchange · ' : '').$base;
     }
 
     /** scanned text → parcel (parcel code, tracking, order number #1042 / 1042) */

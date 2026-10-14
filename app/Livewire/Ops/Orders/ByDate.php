@@ -21,7 +21,7 @@ class ByDate extends Component
     #[Computed]
     public function groups()
     {
-        $q = Order::live()->selectRaw("DATE(placed_at) d, COUNT(*) n, SUM(total) v, SUM(status='delivered') delivered, SUM(status IN ('returning','returned')) returned, SUM(status='cancelled') cancelled, SUM(cod) cod")->groupBy('d')->orderByDesc('d');
+        $q = Order::live()->whereNull('exchange_of_id')->selectRaw("DATE(placed_at) d, COUNT(*) n, SUM(total) v, SUM(status='delivered') delivered, SUM(status IN ('returning','returned')) returned, SUM(status='cancelled') cancelled, SUM(cod) cod")->groupBy('d')->orderByDesc('d');
         return $this->dateRange($q, 'placed_at')->limit(90)->get();
     }
 
@@ -30,7 +30,7 @@ class ByDate extends Component
     #[Computed]
     public function orders()
     {
-        return Order::live()->whereDate('placed_at', $this->currentDay())->with('customer:id,name,phone,area', 'shipment.courier:id,name')
+        return Order::live()->whereNull('exchange_of_id')->whereDate('placed_at', $this->currentDay())->with('customer:id,name,phone,area', 'shipment.courier:id,name')
             ->when($this->status !== 'all', fn ($q) => $q->where('status', $this->status))
             ->when($this->search, fn ($q, $s) => $q->where(fn ($q) => $q->where('number', 'like', '%'.ltrim($s, '#').'%')->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%$s%")->orWhere('phone', 'like', "%$s%"))))
             ->latest('placed_at')->get();

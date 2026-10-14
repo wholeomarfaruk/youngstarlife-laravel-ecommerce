@@ -18,7 +18,8 @@ class Order extends OpsModel
     }
     public function customer(): BelongsTo { return $this->belongsTo(Customer::class); }
     public function items(): HasMany { return $this->hasMany(OrderItem::class); }
-    public function shipment(): HasOne { return $this->hasOne(Shipment::class)->latest('id'); } // latest parcel; latestOfMany() breaks column-list eager loads ('shipment:id,order_id') on MySQL
+    /** the parcel that carries the order now (latest, not replaced by a re-send); latestOfMany() breaks column-list eager loads ('shipment:id,order_id') on MySQL */
+    public function shipment(): HasOne { return $this->hasOne(Shipment::class)->whereNull('superseded_at')->latest('id'); }
     public function shipments(): HasMany { return $this->hasMany(Shipment::class); }
     public function events(): HasMany { return $this->hasMany(OrderEvent::class)->latest('id'); }
     public function returns(): HasMany { return $this->hasMany(CustomerReturn::class); }
@@ -45,6 +46,24 @@ class Order extends OpsModel
     }
     public function scopeLive($q) { return $q->where('is_draft', false); }
     public function scopeDrafts($q) { return $q->where('is_draft', true); }
+    /**
+     * An exchange (child record) as one step of its parent order, for the orders list: [label, tone].
+     * pending → confirmed → packed → shipped → delivered (old item coming back) → done · returning (refused) · cancelled
+     */
+    public function exchangeStage(): array
+    {
+        return match ($this->exchange_state) {
+            'cancelled' => ['Exchange cancelled', 'mute'], 'failed' => ['Exchange failed', 'bad'], 'completed' => ['Exchange done', 'ok'],
+            'old_missing' => ['Exchange · old item missing', 'bad'], 'refused' => ['Exchange returning', 'bad'],
+            'collecting' => ['Exchange delivered', 'info'], 'out' => ['Exchange shipped', 'info'],
+            default => match ($this->status) {
+                'pending' => ['Exchange pending', 'warn'], 'packed' => ['Exchange packed', 'info'], 'on_hold' => ['Exchange on hold', 'warn'],
+                'cancelled' => ['Exchange cancelled', 'mute'], default => ['Exchange confirmed', 'info'],
+            },
+        };
+    }
+    public function isOpenExchange(): bool { return in_array($this->exchange_state, ['awaiting', 'out', 'collecting', 'refused']) && $this->status !== 'cancelled'; }
+
     public function log(string $type, string $message): void { $this->events()->create(['type' => $type, 'message' => $message, 'user_id' => auth()->id()]); }
     public function hasTag(string $t): bool { return in_array($t, $this->tags ?? []); }
     public function tag(string $t): void { if (! $this->hasTag($t)) $this->update(['tags' => array_values(array_merge($this->tags ?? [], [$t]))]); }

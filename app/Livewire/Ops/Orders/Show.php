@@ -109,7 +109,35 @@ class Show extends Component
     public string $missingNote = '';
 
     #[Computed] public function exchangeLine() { return $this->order->exchange_of_id ? app(\App\Services\Ops\ExchangeService::class)->line($this->order) : null; }
-    #[Computed] public function exchangesOf() { return $this->order->exchanges()->with('exchangeLine.items.orderItem.variant.product:id,name', 'shipment:id,order_id,code,courier_status,delivered_at')->get(); }
+    #[Computed] public function exchangesOf() { return $this->order->exchanges()->with('items.variant.product:id,name,featured_image', 'exchangeLine.items.orderItem.variant.product:id,name,featured_image', 'shipment.courier:id,name')->get(); }
+
+    /** every parcel of this order: its own (first delivery, re-sends) and its exchanges' — newest first */
+    #[Computed]
+    public function parcels()
+    {
+        $ids = array_merge([$this->order->id], $this->order->exchange_of_id ? [] : $this->exchangesOf->pluck('id')->all());
+        return \App\Models\Ops\Shipment::whereIn('order_id', $ids)->with('courier:id,name,code', 'order:id,number,exchange_of_id')->latest('id')->get();
+    }
+
+    // ── Send again (one order, many parcels): OrderWorkflow::resend
+
+    #[Url(except: false)] public bool $resend = false;   // ?resend=1 from the ⋯ menu opens the modal
+    public string $resendReason = 'Customer found a fault and sent it back';
+    public $resendCod = null;
+
+    public function canResend(): bool { return ! $this->order->exchange_of_id && in_array($this->order->status, OrderWorkflow::RESENDABLE); }
+
+    public function sendAgain(OrderWorkflow $wf): void
+    {
+        abort_unless($this->canResend(), 422);
+        $this->validate(['resendReason' => 'required|max:200', 'resendCod' => 'nullable|integer|min:0|max:1000000'], [], ['resendCod' => 'COD']);
+        $wf->resend($this->order, $this->resendReason, $this->resendCod === null || $this->resendCod === '' ? null : (int) $this->resendCod);
+        $this->resend = false;
+        $this->dispatch('close-modal', 'resend');
+        $this->mount($this->order->fresh());
+        unset($this->parcels);
+        $this->dispatch('toast', message: 'Order '.$this->order->number.' will go out again in a new parcel · confirmed');
+    }
 
     public function cancelExchange(): void
     {

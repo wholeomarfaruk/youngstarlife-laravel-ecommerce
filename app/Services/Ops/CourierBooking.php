@@ -64,7 +64,7 @@ class CourierBooking
             $s = $o->shipment()->first(); $new = ! $s;
             $parcel = ['courier_id' => $c->id, 'cod_amount' => (int) $o->cod, 'weight_kg' => $d['weight'] ?? 0.5];
             if ($new) {
-                $s = $o->shipments()->create($parcel + ['code' => Shipment::nextCode(), 'courier_status' => 'pending', 'status_updated_at' => now()]);
+                $s = $o->shipments()->create($parcel + ['kind' => $o->shipments()->exists() ? 'resend' : 'delivery', 'code' => Shipment::nextCode(), 'courier_status' => 'pending', 'status_updated_at' => now()]);
                 $o->log('courier', 'Parcel '.$s->code.' created for '.$c->name.' (not packed yet)');
             } else $s->update($parcel);
             $pathao = $c->code === 'pathao' ? (($d['pathao'] ?? null) ?: $this->gw->rememberedLocation($s->setRelation('order', $o))) : null;

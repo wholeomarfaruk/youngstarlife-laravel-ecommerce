@@ -33,11 +33,12 @@ class Index extends Component
 
     protected function baseQuery(bool $withStatus = true)
     {
-        $q = Order::live()->select(['id', 'number', 'customer_id', 'source', 'status', 'payment_status', 'total', 'cod', 'advance', 'placed_at', 'tags']);
+        // an exchange is part of its order (shown as a stage on it), not an order of its own
+        $q = Order::live()->whereNull('exchange_of_id')->select(['id', 'number', 'customer_id', 'source', 'status', 'payment_status', 'total', 'cod', 'advance', 'placed_at', 'tags']);
         $this->dateRange($q, 'placed_at');
         if ($s = trim($this->search)) {
             $n = ltrim($s, '#');
-            $q->where(fn ($q) => $q->where('number', 'like', "%$n%")->orWhere('ship_address', 'like', "%$s%")
+            $q->where(fn ($q) => $q->where('number', 'like', "%$n%")->orWhere('ship_address', 'like', "%$s%")->orWhereHas('exchanges', fn ($x) => $x->where('number', 'like', "%$n%"))
                 ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%$s%")->orWhere('phone', 'like', "%$s%")->orWhere('area', 'like', "%$s%"))
                 ->orWhereHas('shipment', fn ($c) => $c->where('tracking', $s)->orWhere('code', strtoupper($s))));
         }
@@ -47,12 +48,18 @@ class Index extends Component
         if ($withStatus && $this->status !== 'all') {
             // "group:pending" etc. from the Dashboard order-group cards
             if (str_starts_with($this->status, 'group:')) $q->whereIn('status', \App\Livewire\Ops\Dashboard::GROUPS[substr($this->status, 6)][1] ?? []);
+            elseif ($this->status === 'exchange') $q->whereHas('exchanges', fn ($x) => $x->live()->whereIn('exchange_state', ['awaiting', 'out', 'collecting', 'refused'])->where('status', '!=', 'cancelled'));
             else $q->where('status', $this->status);
         }
         return $q;
     }
 
-    #[Computed] public function counts(): array { return $this->baseQuery(false)->reorder()->select('status')->selectRaw('count(*) n')->groupBy('status')->pluck('n', 'status')->all(); }
+    #[Computed] public function counts(): array
+    {
+        $c = $this->baseQuery(false)->reorder()->select('status')->selectRaw('count(*) n')->groupBy('status')->pluck('n', 'status')->all();
+        $c['exchange'] = $this->baseQuery(false)->reorder()->whereHas('exchanges', fn ($x) => $x->live()->whereIn('exchange_state', ['awaiting', 'out', 'collecting', 'refused'])->where('status', '!=', 'cancelled'))->count();
+        return $c;
+    }
 
     #[Computed]
     public function kpis(): array
@@ -66,7 +73,8 @@ class Index extends Component
     #[Computed]
     public function orders()
     {
-        return $this->baseQuery()->with(['customer:id,name,phone,area,delivered_count,returned_count', 'shipment:id,order_id,courier_id,tracking,courier_status,code', 'shipment.courier:id,name'])
+        return $this->baseQuery()->with(['customer:id,name,phone,area,delivered_count,returned_count', 'shipment:id,order_id,courier_id,tracking,courier_status,code', 'shipment.courier:id,name',
+                'exchanges' => fn ($x) => $x->live()->select('id', 'number', 'exchange_of_id', 'exchange_state', 'status')])
             ->orderBy($this->sortField === 'id' ? 'placed_at' : $this->sortField, $this->sortDir)->paginate($this->perPage);
     }
 
