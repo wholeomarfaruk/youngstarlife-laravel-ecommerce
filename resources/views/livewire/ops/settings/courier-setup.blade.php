@@ -10,6 +10,7 @@
                 <button type="button" wire:click="toggle({{ $r->id }})" title="Click to turn {{ $r->is_active ? 'off' : 'on' }}"><x-ops.badge :tone="$r->is_active ? 'ok' : 'mute'">{{ $r->is_active ? 'Active' : 'Off' }}</x-ops.badge></button>
                 @if ($meta)
                     <x-ops.badge :tone="$r->isConnected() ? 'info' : 'warn'">{{ $r->isConnected() ? 'API set up' : 'API not set up' }}</x-ops.badge>
+                    @if (! empty($r->credentials['sandbox']))<x-ops.badge tone="warn" title="Calls go to the courier's test server — untick Sandbox in Edit for real parcels">Sandbox (test server)</x-ops.badge>@endif
                 @else<x-ops.badge>No API — manual tracking</x-ops.badge>@endif
                 <div class="flex gap-1">
                     @if ($meta)<button type="button" wire:click="test({{ $r->id }})" wire:loading.attr="disabled" wire:target="test({{ $r->id }})" class="btn-secondary btn-sm" @disabled(! $r->isConnected())><span wire:loading.remove wire:target="test({{ $r->id }})">Test connection</span><span wire:loading wire:target="test({{ $r->id }})">Testing…</span></button>@endif
