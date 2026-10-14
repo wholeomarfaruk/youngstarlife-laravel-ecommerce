@@ -79,6 +79,7 @@ class PathaoDriver extends Driver
     /** an expired / revoked token gets one fresh retry */
     protected function api(string $action, string $method, string $path, array $data = [], ?callable $check = null): array
     {
+        $this->token();   // a failed login is logged once (as "token"), not again as an empty "cities" / "book" row
         try {
             return $this->call($action, $method, $path, $data, null, $check);
         } catch (CourierException $e) {
@@ -119,13 +120,14 @@ class PathaoDriver extends Driver
     public function book(array $p): array
     {
         $loc = $p['meta']['pathao'] ?? [];
-        if (empty($loc['city_id']) || empty($loc['zone_id'])) throw new CourierException('Choose the Pathao city and zone for this address first.', 'needs_location');
+        // city / zone / area are optional for Pathao — without them it works the location out from the address
         $r = $this->api('book', 'POST', '/aladdin/api/v1/orders', array_filter([
             'store_id' => $this->storeId(), 'merchant_order_id' => (string) $p['invoice'],
             'recipient_name' => mb_substr((string) $p['name'], 0, 100), 'recipient_phone' => $this->phone($p['phone']),
             'recipient_secondary_phone' => ! empty($p['alt_phone']) ? $this->phone($p['alt_phone']) : null,
             'recipient_address' => $this->address((string) $p['address'], (string) $p['name']),
-            'recipient_city' => (int) $loc['city_id'], 'recipient_zone' => (int) $loc['zone_id'], 'recipient_area' => ! empty($loc['area_id']) ? (int) $loc['area_id'] : null,
+            'recipient_city' => ! empty($loc['city_id']) ? (int) $loc['city_id'] : null, 'recipient_zone' => ! empty($loc['zone_id']) ? (int) $loc['zone_id'] : null,
+            'recipient_area' => ! empty($loc['area_id']) ? (int) $loc['area_id'] : null,
             'delivery_type' => 48, 'item_type' => 2,   // normal delivery · parcel
             'special_instruction' => $p['note'] ?? null, 'item_quantity' => max(1, (int) ($p['qty'] ?? 1)), 'item_weight' => $this->weight((float) ($p['weight'] ?? 0.5)),
             'item_description' => $p['description'] ?? null, 'amount_to_collect' => (int) round((float) $p['cod']),

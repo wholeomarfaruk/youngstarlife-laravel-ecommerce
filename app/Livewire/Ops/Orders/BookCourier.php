@@ -20,7 +20,7 @@ class BookCourier extends Component
     public ?int $orderId = null;
     public array $f = [];   // form
     public ?string $locationHint = null;
-    public bool $pathaoReady = false;   // Pathao lists load after the modal is open (loadPathao) — they are slow API calls
+    public bool $pathaoReady = false;   // Pathao city / zone lists: only when staff ask for them (loadPathao) — optional, slow API calls
 
     #[Computed] public function order(): ?Order
     {
@@ -54,7 +54,7 @@ class BookCourier extends Component
             'description' => $o->courier_description ?: app(CourierGateway::class)->itemDescription($o),
             'weight' => (float) ($s?->weight_kg ?: 0.5), 'delivery_type' => 0, 'alt_phone' => '', 'city_id' => null, 'zone_id' => null, 'area_id' => null];
         $this->locationHint = null;
-        $this->pathaoReady = false;
+        $this->pathaoReady = false; $this->pathaoLocation(app(CourierGateway::class), api: false);
         $this->dispatch('open-modal', name: 'book-courier-one');
     }
 
@@ -65,16 +65,16 @@ class BookCourier extends Component
         return null;
     }
 
-    /** Pathao needs city / zone: saved on the parcel → this customer's last Pathao parcel → guessed from the address */
-    /** called by the modal once it is visible (x-init) — city / zone lists + the saved / guessed location */
+    /** Pathao city / zone (optional, API guess only when asked): saved on the parcel → this customer's last Pathao parcel → guessed from the address */
+    /** "Choose city / zone" in the modal — loads Pathao's lists (and a guess from the address when nothing is saved) */
     public function loadPathao(): void
     {
         if ($this->pathaoReady || ! $this->order) return;
-        $this->pathaoLocation(app(CourierGateway::class));
+        if (! $this->f['city_id']) $this->pathaoLocation(app(CourierGateway::class));
         $this->pathaoReady = true;
     }
 
-    protected function pathaoLocation(CourierGateway $gw): void
+    protected function pathaoLocation(CourierGateway $gw, bool $api = true): void
     {
         $s = $this->parcel(); $c = $this->courier; $this->locationHint = null;
         if (! $s || $c?->code !== 'pathao' || ! $c->isConnected()) return;
@@ -82,13 +82,13 @@ class BookCourier extends Component
         $loc = $s->exists && $s->courier_id === $c->id ? ($s->courier_meta['pathao'] ?? null) : null;
         if ($loc) $this->locationHint = 'Saved on this parcel';
         elseif ($loc = $gw->rememberedLocation($s)) $this->locationHint = 'Same as this customer’s last Pathao parcel';
-        else { try { $g = $gw->guessLocation($c, $s); if ($g['city_id']) { $loc = $g; $this->locationHint = $g['zone_id'] ? 'Guessed from the address — please check' : 'City guessed from the delivery area — pick the zone'; } } catch (CourierException $e) { $this->addError('book', $e->getMessage()); } }
+        elseif ($api) { try { $g = $gw->guessLocation($c, $s); if ($g['city_id']) { $loc = $g; $this->locationHint = $g['zone_id'] ? 'Guessed from the address — please check' : 'City guessed from the delivery area — pick the zone'; } } catch (CourierException $e) { $this->addError('book', $e->getMessage()); } }
         $this->f = array_merge($this->f, ['city_id' => $loc['city_id'] ?? null, 'zone_id' => $loc['zone_id'] ?? null, 'area_id' => $loc['area_id'] ?? null]);
     }
 
     public function updatedF($value, ?string $key = null): void
     {
-        if ($key === 'courier_id') { unset($this->courier); $this->f['city_id'] = $this->f['zone_id'] = $this->f['area_id'] = null; $this->pathaoReady = false; }   // the modal calls loadPathao() again
+        if ($key === 'courier_id') { unset($this->courier); $this->f['city_id'] = $this->f['zone_id'] = $this->f['area_id'] = null; $this->pathaoReady = false; $this->pathaoLocation(app(CourierGateway::class), api: false); }
         if ($key === 'city_id') $this->f['zone_id'] = $this->f['area_id'] = null;
         if ($key === 'zone_id') $this->f['area_id'] = null;
     }
@@ -118,14 +118,13 @@ class BookCourier extends Component
         $c = $this->courier; $s = $this->parcel();
         $send = $s && $this->f['send'] && $c?->can('book');
         $new = $s && ! $s->exists;
-        $pathao = $send && $c->code === 'pathao';
+        $pathao = $send && $c->code === 'pathao';   // city / zone optional — Pathao reads the address
         $this->validate([
             'f.name' => 'required|max:120', 'f.phone' => ['required', 'regex:/^01\d{9}$/'], 'f.address' => 'required|max:255',
             'f.cod' => 'required|integer|min:0|max:'.max($o->total, 1000000), 'f.courier_id' => 'required|exists:ops_couriers,id', 'f.note' => 'nullable|max:200', 'f.description' => 'required|max:250',
             'f.weight' => 'required|numeric|min:0.1|max:30', 'f.alt_phone' => 'nullable|max:20', 'f.delivery_type' => 'in:0,1',
-            'f.city_id' => $pathao ? 'required|integer' : 'nullable', 'f.zone_id' => $pathao ? 'required|integer' : 'nullable', 'f.area_id' => 'nullable|integer',
-        ], ['f.phone.regex' => 'Enter an 11-digit mobile number (01XXXXXXXXX).', 'f.courier_id.required' => 'Choose a courier.',
-            'f.city_id.required' => 'Choose the Pathao city.', 'f.zone_id.required' => 'Choose the Pathao zone.']);
+            'f.city_id' => 'nullable|integer', 'f.zone_id' => 'nullable|integer', 'f.area_id' => 'nullable|integer',
+        ], ['f.phone.regex' => 'Enter an 11-digit mobile number (01XXXXXXXXX).', 'f.courier_id.required' => 'Choose a courier.']);
 
         // delivery details edited here → order (and the parcel's COD)
         $edits = array_filter(['ship_name' => trim($this->f['name']), 'ship_phone' => trim($this->f['phone']), 'ship_address' => trim($this->f['address']), 'cod' => (int) $this->f['cod']],
@@ -146,13 +145,14 @@ class BookCourier extends Component
             }
             try {
                 $gw->book($s->fresh(['courier', 'order']), ['note' => $o->courier_note, 'weight' => $this->f['weight'], 'delivery_type' => (int) $this->f['delivery_type'], 'alt_phone' => $this->f['alt_phone'] ?: null,
-                    'pathao' => $pathao ? ['city_id' => (int) $this->f['city_id'], 'zone_id' => (int) $this->f['zone_id'], 'area_id' => $this->f['area_id'] ? (int) $this->f['area_id'] : null] : null]);
+                    'pathao' => $pathao && $this->f['city_id'] && $this->f['zone_id'] ? ['city_id' => (int) $this->f['city_id'], 'zone_id' => (int) $this->f['zone_id'], 'area_id' => $this->f['area_id'] ? (int) $this->f['area_id'] : null] : null]);
                 $msg = "Parcel {$s->code} sent to {$c->name}";
                 // booked with the courier = the order is confirmed (stock gets reserved)
                 if (($fresh = $o->fresh())->status === 'pending') { app(\App\Services\Ops\OrderWorkflow::class)->setStatus($fresh, 'confirmed'); $msg .= ' · order confirmed'; }
             } catch (CourierException $e) {
                 if ($new) $s->delete();   // nothing was sent → no half-made parcel on an unpacked order (the API log keeps the request)
-                $this->addError('book', 'Details saved, but '.$c->name.' did not accept the parcel: '.$e->getMessage());
+                $hint = $pathao && ! $this->f['zone_id'] && preg_match('/city|zone|area/i', $e->getMessage()) ? ' — pick the city / zone with "Choose city / zone" and send again.' : '';
+                $this->addError('book', 'Details saved, but '.$c->name.' did not accept the parcel: '.$e->getMessage().$hint);
                 $this->dispatch('ops-order-updated'); return;
             }
         }

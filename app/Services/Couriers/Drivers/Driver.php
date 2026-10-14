@@ -100,7 +100,7 @@ abstract class Driver
                 CourierApiLog::create([
                     'courier_id' => $this->courierId, 'shipment_id' => $this->shipmentId, 'user_id' => auth()->id(), 'action' => $action,
                     'success' => $error === null, 'http_status' => $res?->status(), 'error' => $error ? mb_substr($error, 0, 500) : null,
-                    'request' => ['method' => $method, 'path' => $path, 'body' => $this->redact($data)],
+                    'request' => ['method' => $method, 'url' => (method_exists($this, 'base') ? rtrim($this->base(), '/') : '').$path, 'body' => $this->redact($data)],
                     'response' => $this->redact($res ? $this->raw($res, $json) : []), 'ms' => (int) ((microtime(true) - $t0) * 1000),
                 ]);
             } catch (\Throwable $e) {

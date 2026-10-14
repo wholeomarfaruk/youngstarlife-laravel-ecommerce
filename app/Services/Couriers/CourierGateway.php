@@ -105,7 +105,7 @@ class CourierGateway
                 continue;
             }
             foreach ($todo as $s) {
-                $pathao = $courier->code === 'pathao' ? ($s->courier_meta['pathao'] ?? $this->rememberedLocation($s) ?? $this->confidentGuess($s)) : null;
+                $pathao = $courier->code === 'pathao' ? ($s->courier_meta['pathao'] ?? $this->rememberedLocation($s)) : null;
                 try { $this->book($s, $opts + ['pathao' => $pathao]); $done++; } catch (CourierException $e) { $failed[$s->code] = $e->getMessage(); }
             }
         }

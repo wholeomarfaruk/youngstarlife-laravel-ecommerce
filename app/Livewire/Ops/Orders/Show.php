@@ -173,12 +173,11 @@ class Show extends Component
         $s = $this->order->shipment; abort_unless($s, 404);
         $pathao = $s->courier->code === 'pathao';
         $this->validate(['book.weight' => 'required|numeric|min:0.1|max:30', 'book.note' => 'nullable|max:200', 'book.alt_phone' => 'nullable|max:20', 'book.delivery_type' => 'in:0,1',
-            'book.city_id' => $pathao ? 'required|integer' : 'nullable', 'book.zone_id' => $pathao ? 'required|integer' : 'nullable', 'book.area_id' => 'nullable|integer'],
-            ['book.city_id.required' => 'Choose the Pathao city.', 'book.zone_id.required' => 'Choose the Pathao zone.']);
+            'book.city_id' => 'nullable|integer', 'book.zone_id' => 'nullable|integer', 'book.area_id' => 'nullable|integer']);   // Pathao: optional, it reads the address
         if ((float) $this->book['weight'] !== (float) $s->weight_kg) $s->update(['weight_kg' => $this->book['weight']]);
         try {
             $gw->book($s, ['note' => $this->book['note'] ?: null, 'weight' => $this->book['weight'], 'delivery_type' => (int) $this->book['delivery_type'], 'alt_phone' => $this->book['alt_phone'] ?: null,
-                'pathao' => $pathao ? ['city_id' => (int) $this->book['city_id'], 'zone_id' => (int) $this->book['zone_id'], 'area_id' => $this->book['area_id'] ? (int) $this->book['area_id'] : null] : null]);
+                'pathao' => $pathao && $this->book['city_id'] && $this->book['zone_id'] ? ['city_id' => (int) $this->book['city_id'], 'zone_id' => (int) $this->book['zone_id'], 'area_id' => $this->book['area_id'] ? (int) $this->book['area_id'] : null] : null]);
         } catch (CourierException $e) {
             $this->addError('book', $e->getMessage()); return;
         }

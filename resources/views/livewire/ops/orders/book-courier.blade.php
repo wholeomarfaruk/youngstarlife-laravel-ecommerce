@@ -54,17 +54,21 @@
                         </div>
                         @if ($c?->code === 'pathao' && $c->isConnected())
                             @if (! $pathaoReady)
-                                <div x-init="$wire.loadPathao()" class="flex items-center gap-2 text-sm text-ink-muted"><span class="h-3.5 w-3.5 animate-spin rounded-full border-2 border-line border-t-brand"></span> Loading Pathao cities &amp; zones…</div>
-                            @endif
+                                <div class="flex flex-wrap items-center gap-2 text-sm text-ink-muted">
+                                    <span>{{ $f['zone_id'] ? 'Location: '.$locationHint.'.' : 'City / zone not needed — Pathao reads them from the address.' }}</span>
+                                    <button type="button" wire:click="loadPathao" class="text-brand"><span wire:loading.remove wire:target="loadPathao">{{ $f['zone_id'] ? 'Change' : 'Choose city / zone (optional)' }}</span><span wire:loading wire:target="loadPathao">Loading…</span></button>
+                                </div>
+                            @else
                             @php($pl = $this->pathaoLists)
                             @if (! empty($pl['error']))<div class="rounded bg-bad-bg px-3 py-2 text-sm text-bad">{{ $pl['error'] }}</div>@endif
                             @if ($locationHint)<div class="text-xs text-ink-muted">{{ $locationHint }}</div>@endif
                             <div class="grid gap-2 sm:grid-cols-3">
-                                <x-ops.field label="City" required :error="$errors->first('f.city_id')"><select wire:model.live="f.city_id" class="input"><option value="">Choose…</option>@foreach ($pl['cities'] as $ci)<option value="{{ $ci['id'] }}">{{ $ci['name'] }}</option>@endforeach</select></x-ops.field>
-                                <x-ops.field label="Zone" required :error="$errors->first('f.zone_id')"><select wire:model.live="f.zone_id" class="input" @disabled(! $f['city_id'])><option value="">Choose…</option>@foreach ($pl['zones'] as $z)<option value="{{ $z['id'] }}">{{ $z['name'] }}</option>@endforeach</select></x-ops.field>
+                                <x-ops.field label="City" :error="$errors->first('f.city_id')"><select wire:model.live="f.city_id" class="input"><option value="">From address</option>@foreach ($pl['cities'] as $ci)<option value="{{ $ci['id'] }}">{{ $ci['name'] }}</option>@endforeach</select></x-ops.field>
+                                <x-ops.field label="Zone" :error="$errors->first('f.zone_id')"><select wire:model.live="f.zone_id" class="input" @disabled(! $f['city_id'])><option value="">Choose…</option>@foreach ($pl['zones'] as $z)<option value="{{ $z['id'] }}">{{ $z['name'] }}</option>@endforeach</select></x-ops.field>
                                 <x-ops.field label="Area"><select wire:model.live="f.area_id" class="input" @disabled(! $f['zone_id'])><option value="">Optional</option>@foreach ($pl['areas'] as $a)<option value="{{ $a['id'] }}">{{ $a['name'] }}</option>@endforeach</select></x-ops.field>
                             </div>
                             @if ($pl['quote'])<div class="text-sm">Pathao charge for this zone: <b>{{ tk((int) round($pl['quote']['price'])) }}</b></div>@endif
+                            @endif
                         @endif
                         @if ($c?->can('book'))
                             <label class="flex items-center gap-2 text-sm"><input type="checkbox" wire:model.live="f.send" class="accent-brand"> Send the parcel to the {{ $c->name }} API now @if ($o->status === 'pending')<span class="text-ink-muted">(also confirms the order)</span>@endif</label>
