@@ -62,13 +62,20 @@ abstract class Driver
 
     abstract protected function client(): PendingRequest;
 
+    protected function downKey(): string { return 'courier_down:'.static::class.':'.$this->courierId; }
+    /** forget a recent outage (Test connection always tries for real) */
+    public function clearDown(): static { cache()->forget($this->downKey()); return $this; }
+
     /**
      * One logged HTTP call; returns the decoded JSON. Throws CourierException on transport / HTTP / auth errors, and when
      * $check (fn (array $json): ?string) returns an error — couriers that answer HTTP 200 with a failure inside are logged as failed.
      */
     protected function call(string $action, string $method, string $path, array $data = [], ?PendingRequest $client = null, ?callable $check = null): array
     {
-        $t0 = microtime(true); $res = null; $json = []; $error = null;
+        // courier just failed with a 5xx / timeout → answer at once for a short while instead of waiting ~20 s per call
+        $downKey = $this->downKey();
+        if ($down = cache()->get($downKey)) throw new CourierException($down, 'gateway');
+        $t0 = microtime(true); $res = null; $json = []; $error = null; $outage = false;
         try {
             $client ??= $this->client();
             $res = $method === 'GET' ? $client->get($path, $data) : $client->send($method, $path, ['json' => $data]);
@@ -76,6 +83,7 @@ abstract class Driver
             if (! is_array($json)) $json = ['value' => $json];
             if ($res->failed()) {
                 $error = $this->errorFrom($res, $json);
+                $outage = $res->serverError();   // 500–599, incl. Cloudflare 520–524 (courier server unreachable)
                 throw new CourierException($error, in_array($res->status(), [401, 403]) ? 'auth' : ($res->status() === 422 ? 'validation' : 'failed'), $this->raw($res, $json));
             }
             if ($check && ($error = $check($json))) throw new CourierException($error, 'validation', $json);
@@ -84,9 +92,10 @@ abstract class Driver
             $error ??= $e->getMessage();
             throw $e;
         } catch (\Throwable $e) {
-            $error = 'Could not reach the courier: '.$e->getMessage();
+            $error = 'Could not reach the courier: '.$e->getMessage(); $outage = true;
             throw new CourierException($error, 'gateway');
         } finally {
+            if ($outage) cache()->put($downKey, 'The courier server is not responding ('.($res ? 'error '.$res->status() : 'timeout').') — try again in 2 minutes. Details: Settings → Couriers → API log.', now()->addMinutes(2));
             try {
                 CourierApiLog::create([
                     'courier_id' => $this->courierId, 'shipment_id' => $this->shipmentId, 'user_id' => auth()->id(), 'action' => $action,

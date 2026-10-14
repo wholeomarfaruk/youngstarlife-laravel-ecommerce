@@ -35,7 +35,7 @@ class CourierGateway
 
     public function test(Courier $courier): array
     {
-        $r = $this->driver($courier)->test();
+        $r = $this->driver($courier)->clearDown()->test();
         $courier->update(['last_synced_at' => now()]);
         return $r;
     }
