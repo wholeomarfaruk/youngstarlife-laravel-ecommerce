@@ -11,6 +11,7 @@
     @if ($s === 'packed')<x-ops.menu-item wire:click="setStatus({{ $o->id }}, 'shipped')">Mark shipped</x-ops.menu-item>@endif
     @if (in_array($s, ['pending', 'confirmed', 'shipped']))<x-ops.menu-item wire:click="setStatus({{ $o->id }}, 'on_hold')">Put on hold</x-ops.menu-item>@endif
     @if ($s === 'on_hold')<x-ops.menu-item wire:click="resume({{ $o->id }})">Resume order</x-ops.menu-item>@endif
+    @if ($s === 'cancelled')<x-ops.menu-item x-on:click="opsConfirm({ title: @js('Restore '.$o->number.'?'), text: 'It goes back to Pending — confirm and pack it again as usual. Stock is reserved again on confirm.', confirm: 'Restore' }).then(ok => ok && $wire.restore({{ $o->id }}))">Restore order</x-ops.menu-item>@endif
     <div class="my-1 border-t border-soft"></div>
     <a href="{{ route('ops.orders.print', ['ids' => $o->id]) }}" target="_blank" class="rounded px-2 py-1.5 text-ink hover:bg-soft">Print invoice</a>
     <a href="{{ route('ops.orders.parcel-labels', ['ids' => $o->id]) }}" target="_blank" class="rounded px-2 py-1.5 text-ink hover:bg-soft">Print parcel label</a>

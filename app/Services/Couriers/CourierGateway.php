@@ -46,7 +46,6 @@ class CourierGateway
     public function parcel(Shipment $s, array $opts = []): array
     {
         $o = $s->order->loadMissing('items.variant.product', 'customer');
-        $items = $o->items->map(fn ($i) => trim(($i->variant?->product?->name ?? 'Item').' '.trim(($i->variant?->color ?? '').' '.($i->variant?->size ?? ''))).' ×'.$i->qty);
         // exchange: no courier publishes an exchange field — the rider gets a written instruction to collect the old item
         $exchange = $o->exchange_of_id ? app(\App\Services\Ops\ExchangeService::class)->courierNote($o) : null;
         $userNote = $opts['note'] ?? $o->courier_note ?? null;
@@ -54,10 +53,16 @@ class CourierGateway
             'invoice' => $s->code, 'name' => $o->ship_name ?: $o->customer?->name, 'phone' => $o->ship_phone ?: $o->customer?->phone,
             'alt_phone' => $opts['alt_phone'] ?? null, 'address' => $o->ship_address ?: $o->customer?->address,
             'cod' => $s->cod_amount ?? $o->cod, 'weight' => (float) ($opts['weight'] ?? $s->weight_kg ?: 0.5), 'qty' => max(1, (int) $o->items->sum('qty')),
-            'description' => mb_substr(($exchange ? 'EXCHANGE · ' : '').$items->join(', '), 0, 250), 'note' => trim(collect([$exchange, $userNote])->filter()->join(' · ')) ?: null,
+            'description' => mb_substr(($exchange ? 'EXCHANGE · ' : '').($o->courier_description ?: $this->itemDescription($o)), 0, 250), 'note' => trim(collect([$exchange, $userNote])->filter()->join(' · ')) ?: null,
             'delivery_type' => (int) ($opts['delivery_type'] ?? 0),
             'meta' => ['pathao' => $opts['pathao'] ?? ($s->courier_meta['pathao'] ?? null)],
         ];
+    }
+
+    /** what's in the parcel, from the order lines ("Denim Pant Blue 32 ×1, …") — Book courier lets staff override it (courier_description) */
+    public function itemDescription(\App\Models\Ops\Order $o): string
+    {
+        return $o->loadMissing('items.variant.product')->items->map(fn ($i) => trim(($i->variant?->product?->name ?? 'Item').' '.trim(($i->variant?->color ?? '').' '.($i->variant?->size ?? ''))).' ×'.$i->qty)->join(', ');
     }
 
     /** send one parcel to its courier; true = booked. Errors are kept on the parcel (booking_error) and in the API log. */

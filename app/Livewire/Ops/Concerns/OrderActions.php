@@ -30,6 +30,25 @@ trait OrderActions
         $this->dispatch('ops-order-updated');
     }
 
+    /**
+     * Cancelled → back to Pending, then the normal flow (Confirm → Processing → Pack & scan). Cancelling already put its stock back,
+     * so it is reserved again on confirm (or now, when Settings reserve at "placed"); an unsent parcel from before is dropped and packing makes a new one.
+     */
+    public function restore(int $id): void
+    {
+        $o = Order::with('shipments')->findOrFail($id);
+        if ($o->status !== 'cancelled') return;
+        if ($o->shipments->contains(fn ($s) => $s->booked_at || $s->handed_over_at)) { $this->dispatch('toast', message: "Can’t restore {$o->number}: its parcel was already sent to the courier.", type: 'bad'); return; }
+        \Illuminate\Support\Facades\DB::transaction(function () use ($o) {
+            $o->shipments()->delete();
+            app(OrderWorkflow::class)->setStatus($o, 'pending');
+            $o->log('status', 'Restored from cancelled');
+            if (ops_setting('batch.reserve_when') === 'placed') app(\App\Services\Ops\BatchAllocator::class)->allocate($o);
+        });
+        $this->dispatch('toast', message: "Order {$o->number} restored · Pending");
+        $this->dispatch('ops-order-updated');
+    }
+
     /** copy into a new draft (same customer, address and items) and open it */
     public function duplicate(int $id)
     {

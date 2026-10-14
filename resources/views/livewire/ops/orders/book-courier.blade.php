@@ -34,6 +34,7 @@
                         <select wire:model.live="f.courier_id" class="input"><option value="">Choose…</option>@foreach ($this->couriers as $co)<option value="{{ $co->id }}">{{ $co->name }}{{ $co->isConnected() ? '' : ' (no API)' }}</option>@endforeach</select>
                     </x-ops.field>
                     <x-ops.field label="COD to collect (৳)" required :error="$errors->first('f.cod')" :hint="'Order total '.tk($o->total).($o->advance ? ' · advance '.tk($o->advance) : '')"><input type="number" min="0" wire:model="f.cod" class="input tabular-nums"></x-ops.field>
+                    <x-ops.field label="Item description" required class="sm:col-span-2" :error="$errors->first('f.description')" hint="What the courier sees as the parcel contents — prefilled from the items, edit if needed."><textarea wire:model="f.description" rows="2" maxlength="250" class="input"></textarea></x-ops.field>
                     <x-ops.field label="Note for the rider" class="sm:col-span-2" :error="$errors->first('f.note')"><input wire:model="f.note" class="input" placeholder="e.g. Call before delivery"></x-ops.field>
                 </div>
 

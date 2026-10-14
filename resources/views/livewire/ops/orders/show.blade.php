@@ -11,6 +11,8 @@
             <button wire:click="advance" wire:loading.attr="disabled" class="btn-primary">{{ ['pending' => 'Confirm order', 'confirmed' => 'Start processing', 'packed' => 'Mark shipped'][$o->status] }}</button>
         @elseif ($o->status === 'on_hold')
             <button wire:click="resume({{ $o->id }})" class="btn-primary">Resume order</button>
+        @elseif ($o->status === 'cancelled')
+            <button x-on:click="opsConfirm({ title: @js('Restore '.$o->number.'?'), text: 'It goes back to Pending — confirm and pack it again as usual.', confirm: 'Restore' }).then(ok => ok && $wire.restore({{ $o->id }}))" class="btn-primary">Restore order</button>
         @endif
         @include('livewire.ops.orders.partials.row-menu', ['o' => $o])
     </x-ops.page-header>

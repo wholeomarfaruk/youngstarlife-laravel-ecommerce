@@ -41,6 +41,7 @@ class BookCourier extends Component
         $courier = $s?->courier ?? app(\App\Services\Ops\OrderWorkflow::class)->courierFor($o);
         $this->f = ['name' => $o->ship_name, 'phone' => $o->ship_phone, 'address' => $o->ship_address, 'cod' => (int) ($s?->cod_amount ?? $o->cod),
             'courier_id' => $courier?->id, 'note' => (string) $o->courier_note, 'send' => true,
+            'description' => $o->courier_description ?: app(CourierGateway::class)->itemDescription($o),
             'weight' => (float) ($s?->weight_kg ?: 0.5), 'delivery_type' => 0, 'alt_phone' => '', 'city_id' => null, 'zone_id' => null, 'area_id' => null];
         $this->locationHint = null;
         if ($s) $this->pathaoLocation(app(CourierGateway::class));
@@ -101,7 +102,7 @@ class BookCourier extends Component
         $pathao = $send && $c->code === 'pathao';
         $this->validate([
             'f.name' => 'required|max:120', 'f.phone' => ['required', 'regex:/^01\d{9}$/'], 'f.address' => 'required|max:255',
-            'f.cod' => 'required|integer|min:0|max:'.max($o->total, 1000000), 'f.courier_id' => 'required|exists:ops_couriers,id', 'f.note' => 'nullable|max:200',
+            'f.cod' => 'required|integer|min:0|max:'.max($o->total, 1000000), 'f.courier_id' => 'required|exists:ops_couriers,id', 'f.note' => 'nullable|max:200', 'f.description' => 'required|max:250',
             'f.weight' => 'required|numeric|min:0.1|max:30', 'f.alt_phone' => 'nullable|max:20', 'f.delivery_type' => 'in:0,1',
             'f.city_id' => $pathao ? 'required|integer' : 'nullable', 'f.zone_id' => $pathao ? 'required|integer' : 'nullable', 'f.area_id' => 'nullable|integer',
         ], ['f.phone.regex' => 'Enter an 11-digit mobile number (01XXXXXXXXX).', 'f.courier_id.required' => 'Choose a courier.',
@@ -111,7 +112,8 @@ class BookCourier extends Component
         $edits = array_filter(['ship_name' => trim($this->f['name']), 'ship_phone' => trim($this->f['phone']), 'ship_address' => trim($this->f['address']), 'cod' => (int) $this->f['cod']],
             fn ($v, $k) => $v != $o->$k, ARRAY_FILTER_USE_BOTH);
         $tags = array_values(array_merge(array_filter($o->tags ?? [], fn ($t) => ! preg_match('/^(Auto )?[Cc]ourier: /', $t)), ['Courier: '.$c->name]));
-        $o->update($edits + ['courier_note' => trim((string) $this->f['note']) ?: null, 'tags' => $tags]);
+        $desc = trim($this->f['description']);   // kept only when staff changed it, so later item edits still flow through
+        $o->update($edits + ['courier_note' => trim((string) $this->f['note']) ?: null, 'courier_description' => $desc !== $gw->itemDescription($o) ? $desc : null, 'tags' => $tags]);
         if ($edits) $o->log('edit', 'Delivery details changed before booking: '.collect($edits)->map(fn ($v, $k) => ['ship_name' => 'name', 'ship_phone' => 'phone', 'ship_address' => 'address', 'cod' => 'COD'][$k].' → '.($k === 'cod' ? tk($v) : $v))->join(', '));
         if ($s) $s->update(['courier_id' => $c->id, 'cod_amount' => (int) $this->f['cod'], 'weight_kg' => $this->f['weight']]);
         $o->log('courier', 'Booked with '.$c->name); ops_log("Order {$o->number} booked with {$c->name}", $o);
