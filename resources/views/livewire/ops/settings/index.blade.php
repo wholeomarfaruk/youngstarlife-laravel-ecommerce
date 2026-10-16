@@ -35,6 +35,18 @@
                         <div class="flex gap-2 p-2.5"><input wire:model="newWarehouse" class="input py-1" placeholder="New warehouse, e.g. Uttara WH"><button type="button" wire:click="addWarehouse" class="btn-secondary btn-sm">+ Add</button></div></div>
                 @break
                 @case('orders')
+                    @php($cartOn = (bool) ($s['orders']['cart_enabled'] ?? true))
+                    <div class="mb-4 flex flex-wrap items-center gap-3 rounded-md border border-line p-3">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-center gap-2 text-sm font-semibold">Website cart <x-ops.badge :tone="$cartOn ? 'ok' : 'warn'">{{ $cartOn ? 'On' : 'Off' }}</x-ops.badge></div>
+                            <div class="text-xs text-ink-muted">{{ $cartOn ? 'Customers can add to cart and check out several products at once.' : 'Cart icon, drawer, "Add to cart" and /checkout are hidden. Customers order one product at a time from the product page form. Saved carts are kept.' }}</div>
+                        </div>
+                        @if ($cartOn)
+                            <button type="button" wire:click="setCart(false)" wire:confirm="Disable the website cart?&#10;&#10;The cart icon, cart drawer, &quot;Add to cart&quot; button and checkout page disappear right away. Customers can still order from each product page. Items already in carts are kept for when you enable it again." class="btn-danger btn-sm">Disable cart</button>
+                        @else
+                            <button type="button" wire:click="setCart(true)" wire:confirm="Enable the website cart again?&#10;&#10;Customers will see the cart icon and &quot;Add to cart&quot; button, and their earlier carts come back." class="btn-primary btn-sm">Enable cart</button>
+                        @endif
+                    </div>
                     <div class="grid gap-3 sm:grid-cols-2">
                         <x-ops.field label="Order prefix" required hint="#1042"><input wire:model="s.orders.prefix" class="input mono w-28"></x-ops.field>
                         <x-ops.field label="Auto-cancel unconfirmed after (hours)" hint="0 = never"><input type="number" min="0" wire:model="s.orders.auto_cancel_hours" class="input"></x-ops.field>

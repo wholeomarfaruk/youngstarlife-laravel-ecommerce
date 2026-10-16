@@ -20,6 +20,7 @@ class CheckoutController extends Controller
 
     public function show()
     {
+        if (! site()->cartEnabled()) return redirect()->route('shop');   // cart off: ordering happens on the product page
         $areas = DeliveryZone::where('is_active', true)->orderBy('charge')->orderBy('id')->get();
         return view('checkout', ['state' => 'checkout', 'areas' => $areas, 'summary' => $this->cart->summary($areas->first()?->id),
             'checkoutToken' => (string) Str::uuid(), 'order' => null, 'orderItems' => collect(), 'purchase' => null]);
@@ -35,6 +36,7 @@ class CheckoutController extends Controller
 
     public function place(Request $request)
     {
+        if (! site()->cartEnabled()) throw ValidationException::withMessages(['cart' => 'কার্ট এখন বন্ধ আছে, প্রোডাক্ট পেজ থেকে সরাসরি অর্ডার করুন।']);
         $phone = Phone::normalize($request->phone);
         $data = $request->validate([
             'name' => 'required|string|max:255',

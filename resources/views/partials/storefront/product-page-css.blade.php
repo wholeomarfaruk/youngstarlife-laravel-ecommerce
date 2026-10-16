@@ -89,6 +89,7 @@
     .pp-qty button:disabled { color: #b0b2b0; cursor: default; }
     .pp-qty span { width: 48px; text-align: center; font-size: 17px; font-weight: 600; }
     .pp-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .pp-actions-one { grid-template-columns: 1fr; }   /* cart off: only "order now" */
     .pp-btn, .pp-btn-outline { height: 52px; border-radius: 10px; font-size: 17px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: background .12s; }
     .pp-btn { border: 0; background: #262826; color: #fff; font-weight: 700; }
     .pp-btn:hover:not(:disabled) { background: #3f423f; }

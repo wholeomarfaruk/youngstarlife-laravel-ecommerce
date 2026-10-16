@@ -39,6 +39,7 @@ class ProductBuy extends Component
     #[Renderless]
     public function addToCart(array $pick, CartService $cart): array
     {
+        if (! site()->cartEnabled()) return ['ok' => false, 'error' => 'কার্ট এখন বন্ধ আছে, নিচের ফর্মে সরাসরি অর্ডার করুন।'];
         if ($e = $this->limited('cart', 30)) return $e;
         try {
             $p = $this->product();

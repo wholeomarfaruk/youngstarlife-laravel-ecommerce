@@ -107,11 +107,13 @@
             </div>
         </div>
 
-        <div class="pp-actions">
+        <div @class(['pp-actions', 'pp-actions-one' => ! site()->cartEnabled()])>
+            @if (site()->cartEnabled())
             <button type="button" class="pp-btn-outline" @click="addToCart()" :disabled="adding || !d.inStock" @if (! $d['inStock']) disabled @endif>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h11.5l2-8H6"/></svg>
                 <span x-text="adding ? 'যোগ হচ্ছে…' : 'কার্টে যোগ করুন'">কার্টে যোগ করুন</span>
             </button>
+            @endif
             <button type="button" class="pp-btn" @click="buyNow()" :disabled="!d.inStock" @if (! $d['inStock']) disabled @endif>{{ $d['inStock'] ? 'এখনই অর্ডার করুন' : 'স্টক শেষ' }}</button>
         </div>
         <div x-show="err" x-cloak class="pp-err" x-text="err" role="alert"></div>

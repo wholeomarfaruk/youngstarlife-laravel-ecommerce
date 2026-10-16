@@ -70,7 +70,7 @@ class AppServiceProvider extends ServiceProvider
         View::composer('layouts.app', function ($view) {
             $view->with('menus', $this->app->make(MenuService::class));
             try {
-                $view->with('cartCount', $this->app->make(CartService::class)->count());
+                $view->with('cartCount', site()->cartEnabled() ? $this->app->make(CartService::class)->count() : 0);
             } catch (\Throwable $e) {
                 $view->with('cartCount', 0);
             }

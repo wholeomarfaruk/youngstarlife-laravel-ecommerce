@@ -212,11 +212,13 @@
                     @foreach ($item['children'] as $child)<a href="{{ $child['url'] }}" class="ys-nav-flat" @if ($child['new_tab']) target="_blank" rel="noopener" @endif>{{ $child['label'] }}</a>@endforeach
                 @endforeach
             </nav>
+            @if (site()->cartEnabled())
             {{-- cart (device cart) — badge kept in sync by window.ysCart.setCount(); click opens the drawer (frontend/js/cart-drawer.js) --}}
             <a href="{{ route('checkout') }}" data-cart-open class="ys-round ys-cart-link" aria-label="কার্ট">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="20" r="1.5"/><circle cx="18" cy="20" r="1.5"/><path d="M2 3h3l2.5 12h11.5l2-8H6"/></svg>
                 <span class="ys-cart-badge" data-cart-badge @if (empty($cartCount)) hidden @endif>{{ $cartCount ?? 0 }}</span>
             </a>
+            @endif
             @guest
                 <a href="{{ route('login') }}" class="ys-round" title="লগইন / অ্যাকাউন্ট" aria-label="লগইন"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg></a>
             @else
@@ -232,6 +234,7 @@
         </div>
     </header>
     <aside id="sidebar"></aside>
+    @if (site()->cartEnabled())
     {{-- cart drawer: empty shell, filled by frontend/js/cart-drawer.js --}}
     <div class="offcanvas offcanvas-end ys-drawer" tabindex="-1" id="ysCartDrawer" aria-labelledby="ysCartDrawerTitle"
         data-summary-url="{{ route('cart.summary') }}" data-item-url="{{ url('/cart/items') }}" data-checkout-url="{{ route('checkout') }}"
@@ -249,6 +252,7 @@
             <button type="button" class="ys-dr-btn-o" data-bs-dismiss="offcanvas">কেনাকাটা চালিয়ে যান</button>
         </div>
     </div>
+    @endif
     <main id="Content-body" class="py-3">
         @yield('content')
     </main>
@@ -383,7 +387,9 @@
             }
         };
     </script>
-    <script src="{{ asset('frontend/js/cart-drawer.js') }}?v={{ @filemtime(public_path('frontend/js/cart-drawer.js')) }}"></script>
+    @if (site()->cartEnabled())
+        <script src="{{ asset('frontend/js/cart-drawer.js') }}?v={{ @filemtime(public_path('frontend/js/cart-drawer.js')) }}"></script>
+    @endif
     @stack('scripts')
     <!--Start of Tawk.to Script-->
     {{-- <script type="text/javascript">

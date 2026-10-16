@@ -52,6 +52,9 @@ class SiteSettings
 
     // ── values the website uses in many places
 
+    /** Settings → Orders & delivery → Website cart: off = no cart icon / drawer / add to cart, customers order from the product page form */
+    public function cartEnabled(): bool { return (bool) $this->get('orders.cart_enabled', true); }
+
     public function storeName(): string { return (string) ($this->get('branding.store_name') ?: 'YOUNGSTAR Life'); }
 
     public function logoUrl(): string { return $this->media($this->get('branding.logo')) ?? asset('frontend/img/youngstar logo-circle.png'); }

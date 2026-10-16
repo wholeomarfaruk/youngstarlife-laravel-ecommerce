@@ -28,7 +28,7 @@ class OpsDefaults
         $rule = fn (bool $on, string $when, string $then) => ['on' => $on, 'when' => $when, 'then' => $then];
         return [
             'company' => ['name' => 'YoungStar Life', 'phone' => '01700-000000', 'email' => 'hello@youngstarlife.com', 'address' => 'Mirpur 10, Dhaka', 'warehouse_id' => null, 'currency' => 'BDT (৳)', 'invoice_prefix' => 'INV-', 'timezone' => 'Asia/Dhaka'],
-            'orders' => ['prefix' => '#', 'confirm_call' => true, 'auto_cancel_hours' => 48, 'free_delivery_above' => 3000, 'advance_for_risky' => true, 'allow_partial' => true, 'exchange_charge' => 100, 'exchange_overdue_days' => 5],
+            'orders' => ['prefix' => '#', 'cart_enabled' => true, 'confirm_call' => true, 'auto_cancel_hours' => 48, 'free_delivery_above' => 3000, 'advance_for_risky' => true, 'allow_partial' => true, 'exchange_charge' => 100, 'exchange_overdue_days' => 5],
             'payments' => ['cash' => true, 'bank' => true, 'bank_account' => 'DBBL 123-456-7890', 'bkash' => true, 'bkash_no' => '01700-000000', 'nagad' => true, 'nagad_no' => '01700-000000', 'cod' => true],
             // website defaults = what the storefront showed before it read settings (nothing changes until someone edits a value)
             'branding' => ['store_name' => 'YOUNGSTAR Life', 'tagline' => 'Everyday fashion, delivered', 'logo' => null, 'favicon' => null, 'primary_color' => '#525754', 'footer_note' => ''],

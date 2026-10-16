@@ -14,6 +14,10 @@ class StorefrontCartController extends Controller
     /** add to cart; "buy now" (buy_now=1) goes straight to checkout */
     public function store(Request $request)
     {
+        if (! site()->cartEnabled()) {
+            $msg = 'কার্ট এখন বন্ধ আছে, প্রোডাক্ট পেজ থেকে সরাসরি অর্ডার করুন।';
+            return $request->expectsJson() ? response()->json(['ok' => false, 'message' => $msg], 403) : back()->withErrors(['cart' => $msg]);
+        }
         $data = $request->validate([
             'product_id' => 'required|integer|exists:ops_products,id',
             'quantity' => 'nullable|integer|min:1|max:'.CartService::MAX_QTY,

@@ -112,6 +112,16 @@ class Index extends Component
         ops_log('Settings · removed '.$field); $this->dispatch('toast', message: ucfirst($field).' removed');
     }
 
+    // ── Orders & delivery · website cart on/off (saved at once, after the confirm — never mixed with unsaved form edits)
+    public function setCart(bool $on): void
+    {
+        $orders = (array) Setting::get('orders', []); $orders['cart_enabled'] = $on;
+        Setting::put('orders', $orders);
+        $this->s['orders']['cart_enabled'] = $on;
+        ops_log('Website cart '.($on ? 'enabled' : 'disabled'));
+        $this->dispatch('toast', message: $on ? 'Cart enabled — customers can add to cart again' : 'Cart disabled — customers order from the product page');
+    }
+
     // ── Website texts · FAQ lines
     public function addFaq(): void { $this->s['content']['faq'][] = ''; }
     public function removeFaq(int $i): void { unset($this->s['content']['faq'][$i]); $this->s['content']['faq'] = array_values($this->s['content']['faq']); }
