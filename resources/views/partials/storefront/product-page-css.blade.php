@@ -128,6 +128,18 @@
     .pp-policy { margin-top: 12px; gap: 10px; } .pp-policy li > span:first-child { flex: none; }
     .pp details > summary, details.pp-card > summary { cursor: pointer; }
 
+    /* formatted product description (Ops rich text editor) */
+    .pp-rich { font-size: 15px; line-height: 1.65; color: #3f423f; overflow-wrap: anywhere; }
+    .pp-rich > :last-child { margin-bottom: 0; }
+    .pp-rich p, .pp-rich ul, .pp-rich ol, .pp-rich table, .pp-rich blockquote { margin: 0 0 .7em; }
+    .pp-rich ul, .pp-rich ol { padding-left: 1.4em; }
+    .pp-rich h1, .pp-rich h2, .pp-rich h3, .pp-rich h4 { font-size: 17px; font-weight: 700; margin: .9em 0 .4em; color: #262826; }
+    .pp-rich img, .pp-rich iframe, .pp-rich video { max-width: 100%; height: auto; border-radius: 8px; }
+    .pp-rich iframe { aspect-ratio: 16 / 9; width: 100%; }
+    .pp-rich table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
+    .pp-rich td, .pp-rich th { border: 1px solid #e4e4e0; padding: 6px 8px; }
+    .pp-rich blockquote { border-left: 3px solid #d6d6d1; padding-left: 10px; color: #6b6e6b; }
+    .pp-rich a { color: #1F6FB2; }
     .pp-row-gap { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
     /* order placed modal (teleported to <body>): centred card, bottom sheet on phones */
     .pp-modal { position: fixed; inset: 0; z-index: 1080; background: rgba(20, 22, 20, .55); display: flex; align-items: center; justify-content: center; padding: 16px; font-family: 'Hind Siliguri', sans-serif; }

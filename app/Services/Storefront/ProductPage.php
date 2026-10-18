@@ -67,6 +67,7 @@ class ProductPage
             'sizes' => $sizes, 'combo' => $combo, 'maxQty' => $kind === 'combo' ? $stockMax($comboAvail) : ($kind === 'simple' ? $stockMax($simpleAvail) : $limit),
             'chart' => ['head' => $chartHead, 'rows' => $chartRows, 'image' => $p->size_chart_url],
             'features' => $this->features((string) ($p->description ?: $p->short_description)),
+            'descriptionHtml' => \App\Support\RichText::isRich($p->description) ? \App\Support\RichText::clean($p->description) : null,   // formatted description (Ops rich text editor) shows as written
             'areas' => $areas->map(fn ($a) => ['id' => $a->id, 'name' => $a->name, 'fee' => (int) $a->charge])->all(), 'area' => $default?->id,
         ];
     }

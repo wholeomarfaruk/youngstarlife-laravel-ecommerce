@@ -25,7 +25,7 @@
                     <x-ops.field label="Code" required :error="$errors->first('form.code')"><input wire:model.blur="form.code" class="input mono"></x-ops.field>
                     <x-ops.field label="Brand"><x-ops.searchable-select field="form.brand_id" :options="$brands" placeholder="No brand" searchPlaceholder="Search brands…" /><div class="flex gap-1.5"><input wire:model="newBrand" wire:keydown.enter.prevent="addBrand" class="input py-1" placeholder="New brand…"><button type="button" wire:click="addBrand" class="btn-secondary btn-sm">Add</button></div></x-ops.field>
                     <x-ops.field label="Short description" class="sm:col-span-2"><input wire:model="form.short_description" class="input"></x-ops.field>
-                    <x-ops.field label="Full description" class="sm:col-span-2"><textarea wire:model="form.description" rows="6" class="input"></textarea></x-ops.field>
+                    <x-ops.field label="Full description" class="sm:col-span-2" hint="Plain lines or a simple list show as ✓ points on the product page; bold, headings, images, tables or videos show as written"><x-ops.rich-text wire:model="form.description" :value="$form['description'] ?? ''" /></x-ops.field>
                 </div></x-ops.card>
                 @if ($product->type !== 'variable' && isset($variants[0]))
                     <x-ops.card :title="$product->type === 'combo' ? 'Combo barcode' : 'Product barcode'" :subtitle="$product->type === 'combo' ? 'Scanning it picks the whole set. The linked products keep their own barcodes (Combo tab).' : 'Printed on labels and used by every scanner. Empty = an EAN-13 is generated on save; type a supplier barcode to use that instead.'">

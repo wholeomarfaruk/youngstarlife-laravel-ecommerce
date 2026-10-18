@@ -6,6 +6,9 @@ import TomSelectClearButton from 'tom-select/dist/esm/plugins/clear_button/plugi
 import 'tom-select/dist/css/tom-select.css';
 import Sortable from 'sortablejs';                                  // drag & drop (lists + nested trees, touch)
 import swal from 'sweetalert';                                      // confirm dialogs: window.opsConfirm below
+import { init as initEditor } from 'omar-text-editor';              // rich text editor: Alpine 'richText' below, <x-ops.rich-text>
+import 'omar-text-editor/dist/theme/default.css';
+import 'omar-text-editor/dist/theme/content.css';
 
 TomSelect.define('clear_button', TomSelectClearButton);
 window.Sortable = Sortable;
@@ -72,6 +75,46 @@ document.addEventListener('alpine:init', () => {
     },
     clear() { this.fp.clear(); this.value = ''; },
     destroy() { this.fp?.destroy(); },
+  }));
+
+  // Rich text editor (Omar Text Editor) — used by <x-ops.rich-text wire:model="form.description" />. The editor writes the HTML
+  // into the hidden wire:model textarea itself; images that arrive as data: URLs (upload / paste / drop) are sent to
+  // opts.upload and swapped for the stored file's URL, so the description never carries base64 images.
+  Alpine.data('richText', (opts = {}) => ({
+    editor: null,
+    init() {
+      const ta = this.$refs.input;
+      ta.id ||= 'rte-' + Math.random().toString(36).slice(2, 9);
+      this.editor = initEditor({
+        selector: '#' + ta.id, menubar: false, onboarding: false,
+        plugins: ['link', 'image', 'media', 'table', 'emoticons', 'searchreplace', 'wordcount'],
+        toolbar: opts.toolbar || 'undo redo | blockformat | bold italic underline strikethrough | forecolor backcolor | align | bullist numlist | link image media table | emoticons | removeformat',
+      });
+      this.editor.on('change', () => this.uploadImages(opts.upload));
+    },
+    async uploadImages(url) {
+      const root = this.editor.getEditableElement();
+      const imgs = [...root.querySelectorAll('img[src^="data:image/"]')].filter(i => !i.dataset.uploading);
+      if (!imgs.length || !url) return;
+      for (const img of imgs) {
+        img.dataset.uploading = '1'; img.style.opacity = '.5';
+        try {
+          const body = new FormData();
+          body.append('image', await (await fetch(img.src)).blob(), 'image');
+          const r = await fetch(url, { method: 'POST', body, credentials: 'same-origin',
+            headers: { 'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content, Accept: 'application/json' } });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j.message || 'Upload failed');
+          img.src = j.url;
+        } catch (e) {
+          img.remove(); toast('Image not uploaded: ' + e.message, 'bad');
+        } finally {
+          delete img.dataset.uploading; img.style.opacity = '';
+        }
+      }
+      root.dispatchEvent(new Event('input', { bubbles: true }));   // editor re-syncs the textarea → wire:model
+    },
+    destroy() { this.editor?.destroy(); },
   }));
 
   // Searchable select (Tom Select) — used by <x-ops.select>. Static options, or remote search through a Livewire method

@@ -258,6 +258,7 @@ class Edit extends Component
             $data = collect($this->form)->except(['dim', 'gallery', 'featured_image'])->all();
             $data['dimensions'] = array_filter($this->form['dim'], fn ($v) => $v !== null && $v !== '') ?: null;
             $data['slug'] = $data['slug'] ?: str($data['name'])->slug().'-'.$this->product->id;
+            $data['description'] = \App\Support\RichText::clean($data['description'] ?? null);   // rich text editor HTML, cleaned server-side
             $data['tags'] = $this->tags ?: null; $data['requires_shipping'] = (bool) ($this->form['requires_shipping'] ?? true);
             $data['sold_out'] = (bool) ($this->form['sold_out'] ?? false); $data['sort_order'] = (int) ($this->form['sort_order'] ?? 0);   // website
             if ($this->featured) $data['featured_image'] = $this->featured->store('products', 'public');

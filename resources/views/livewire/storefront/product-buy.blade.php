@@ -222,7 +222,9 @@
             @elseif ($kind === 'simple')
                 <span class="pp-text">ফ্রি সাইজ / একটি ভেরিয়েশন — সাইজ বাছাই করার প্রয়োজন নেই।</span>
             @endif
-            @if ($d['features'])
+            @if ($d['descriptionHtml'])
+                <div class="pp-rich">{!! $d['descriptionHtml'] !!}</div>   {{-- cleaned by App\Support\RichText --}}
+            @elseif ($d['features'])
                 <ul class="pp-features">@foreach ($d['features'] as $f)<li><span class="pp-tick">✓</span><span>{{ $f }}</span></li>@endforeach</ul>
             @endif
         </div>

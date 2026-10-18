@@ -72,3 +72,12 @@
 .sortable-chosen { box-shadow: 0 6px 18px rgba(26,26,23,.12); }
 [data-drag] { cursor: grab; touch-action: none; }
 [data-drag]:active { cursor: grabbing; }
+
+/* Rich text editor (<x-ops.rich-text>, Omar Text Editor) — Tailwind preflight strips lists / headings, put them back inside it */
+.ops-rte .omar-text-editor-content { min-height: var(--rte-min, 260px); max-height: 70vh; overflow-y: auto; border-color: #D9D9D2; border-radius: 0 0 8px 8px; background: #fff; font-family: inherit; font-size: 14px; }
+.ops-rte .omar-text-editor-content ul { list-style: disc; }
+.ops-rte .omar-text-editor-content ol { list-style: decimal; }
+.ops-rte .omar-text-editor-content h1, .ops-rte .omar-text-editor-content h2, .ops-rte .omar-text-editor-content h3, .ops-rte .omar-text-editor-content h4 { font-weight: 700; }
+.ops-rte .omar-text-editor-content a { color: #1F6FB2; text-decoration: underline; }
+.ops-rte .omar-text-editor-content img { display: inline-block; max-width: 100%; height: auto; }
+.ops-rte .omar-text-editor-content table td, .ops-rte .omar-text-editor-content table th { border: 1px solid #D9D9D2; padding: 4px 8px; }
