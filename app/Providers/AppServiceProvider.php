@@ -41,6 +41,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // wire:navigate (Ops panel) never reloads the page: after a deploy the open tab would keep the old ops.js and only half-load
+        // the new one (Alpine components like richText "not defined"). Tracked bundles → a changed file forces a full reload.
+        \Illuminate\Support\Facades\Vite::useScriptTagAttributes(['data-navigate-track' => 'reload']);
+        \Illuminate\Support\Facades\Vite::useStyleTagAttributes(['data-navigate-track' => 'reload']);
+
         // signing in / registering links this browser's device (and its cart) to the account right away
         $link = function ($event) {
             try {
