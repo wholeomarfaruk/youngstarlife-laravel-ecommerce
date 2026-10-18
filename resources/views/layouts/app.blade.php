@@ -91,7 +91,7 @@
         @keyframes ys-bump { 50% { transform: scale(1.15); } }
         .ys-burger { display: none; }
         @media (max-width: 991px) {
-            .ys-burger { display: flex; }
+            .ys-burger { display: flex; order: 10; }   /* far right, after cart + account */
             .ys-nav { display: none; }   /* phones / tablets: the ☰ sidebar has the menu */
             .ys-logo { margin-right: auto; min-width: 0; }
             .ys-logo-name { overflow: hidden; text-overflow: ellipsis; }
@@ -261,7 +261,7 @@
     {{-- mobile sidebar: Mobile sidebar menu, or the Main menu while that one is empty; Top bar links at the bottom --}}
     @php($side = $menus->get('mobile'))
     @php($sideItems = $side['items'] ?: $menus->get('header')['items'])
-    <div class="offcanvas offcanvas-start ys-side" tabindex="-1" id="ysMenu" aria-labelledby="ysMenuTitle">
+    <div class="offcanvas offcanvas-end ys-side" tabindex="-1" id="ysMenu" aria-labelledby="ysMenuTitle">
         <div class="ys-side-head">
             <a href="{{ route('home') }}" class="ys-side-brand"><span class="ys-logo-mark"><img src="{{ site()->logoUrl() }}" alt="" width="34" height="34" loading="lazy"></span><span id="ysMenuTitle">{{ site()->storeName() }}</span></a>
             <button type="button" class="ys-dr-x" data-bs-dismiss="offcanvas" aria-label="বন্ধ করুন">×</button>
