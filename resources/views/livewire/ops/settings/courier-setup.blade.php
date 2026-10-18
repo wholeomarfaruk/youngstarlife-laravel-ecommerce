@@ -107,7 +107,7 @@
             <x-ops.field label="Code" required :error="$errors->first('c.code')" hint="steadfast · pathao connect by API"><input wire:model.live.debounce.400ms="c.code" class="input mono" @readonly($editId)></x-ops.field>
             @if ($this->fields)
                 <div class="flex flex-col gap-3 rounded-md border border-line p-3 sm:col-span-2">
-                    <span class="text-sm font-semibold">API credentials <span class="font-normal text-ink-muted">· saved encrypted@if ($editId) · leave a password blank to keep it@endif</span></span>
+                    <span class="text-sm font-semibold">API credentials <span class="font-normal text-ink-muted">· saved encrypted{{ $editId ? ' · leave a password blank to keep it' : '' }}</span></span>
                     <div class="grid gap-3 sm:grid-cols-2">
                         @foreach ($this->fields as $f)
                             @if ($f['type'] === 'checkbox')

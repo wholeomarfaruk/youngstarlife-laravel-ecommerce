@@ -121,7 +121,7 @@
             {{-- search the whole queue (not only the 40 shown) --}}
             <div class="relative border-b border-soft px-3.5 py-2">
                 <input type="search" wire:model.live.debounce.300ms="queueSearch" class="input py-1.5 pr-7" placeholder="Search order no., name or phone…" aria-label="Search waiting orders" x-on:keydown.escape="$wire.set('queueSearch', '')">
-                @if ($queueSearch !== '')<span class="mt-1 block text-xs text-ink-muted">{{ $this->queueMatches }} {{ \Illuminate\Support\Str::plural('match', $this->queueMatches) }}@if ($this->queueMatches > 40) · showing the first 40@endif</span>@endif
+                @if ($queueSearch !== '')<span class="mt-1 block text-xs text-ink-muted">{{ $this->queueMatches }} {{ \Illuminate\Support\Str::plural('match', $this->queueMatches) }}{{ $this->queueMatches > 40 ? ' · showing the first 40' : '' }}</span>@endif
             </div>
             <div class="max-h-[60vh] overflow-auto">
                 @forelse ($this->queue as $q)
