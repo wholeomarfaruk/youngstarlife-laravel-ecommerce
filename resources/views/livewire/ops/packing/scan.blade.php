@@ -95,19 +95,25 @@
                             <div class="font-medium">{{ $l['label'] }} @if ($l['free'])<x-ops.badge tone="info">Free</x-ops.badge>@endif</div>
                             @if ($l['combo'])<div class="text-xs font-semibold text-info">Part of combo: {{ $l['combo'] }}</div>@endif
                             <div class="mono text-xs text-ink-muted">{{ $l['barcode'] ?: '—' }} · {{ $l['sku'] }}@if ($picks = $picked[$l['key']] ?? []) · <span class="font-sans font-semibold text-ok">batch {{ collect($picks)->map(fn ($n, $bid) => ($this->pickedCodes[$bid] ?? '#'.$bid).' ×'.$n)->join(', ') }}</span>@elseif ($l['batches']) · reserved {{ $l['batches'] }}@endif @if ($hand)<span class="font-sans font-semibold text-warn"> · {{ $hand }} ticked by hand</span>@endif</div>
+                            {{-- batch for this line, no scanner needed — always changeable until Mark packed (Scan::setLineBatch) --}}
+                            @php($opts = $this->batchOptions[$l['variant_id']] ?? []) @php($linked = $picked[$l['key']] ?? [])
+                            @php($cur = count($linked) === 1 ? (string) array_key_first($linked) : (count($linked) > 1 ? 'mixed' : ''))
+                            <select wire:key="lb-{{ $key }}-{{ $cur }}-{{ $n }}" class="input mt-1.5 w-full max-w-[360px] py-1 text-xs" aria-label="Batch for this product"
+                                x-on:change="$event.target.value !== 'mixed' && $wire.setLineBatch('{{ $key }}', $event.target.value)">
+                                <option value="" @selected($cur === '')>Batch: auto (oldest first){{ $opts ? '' : ' — no batch with stock' }}</option>
+                                @if ($cur === 'mixed')<option value="mixed" selected disabled>Batch: mixed ({{ collect($linked)->map(fn ($c, $bid) => ($this->pickedCodes[$bid] ?? '#'.$bid).' ×'.$c)->join(', ') }})</option>@endif
+                                @forelse ($opts as $b)
+                                    <option value="{{ $b['id'] }}" @selected($cur === (string) $b['id'])>Batch: {{ $b['label'] }}</option>
+                                @empty
+                                    <option disabled>No batch with stock — receive it in Purchases first</option>
+                                @endforelse
+                            </select>
                         </div>
                         <div class="flex items-center gap-1">
                             <button type="button" wire:click="minus('{{ $key }}')" @disabled(! $n) class="grid h-7 w-7 place-items-center rounded border border-line text-ink-3 hover:bg-soft">−</button>
                             <span @class(['min-w-[48px] text-center font-semibold tabular-nums', 'text-ok' => $ok])>{{ $n }} / {{ $l['need'] }}</span>
                             <button type="button" wire:click="plus('{{ $key }}')" @disabled($ok) class="grid h-7 w-7 place-items-center rounded border border-line text-ink-3 hover:bg-soft">+</button>
                         </div>
-                        {{-- no scanner / no sticker: add a unit and link it to a batch by hand --}}
-                        @if (! $ok && ($opts = $this->batchOptions[$l['variant_id']] ?? []))
-                            <select class="input w-auto max-w-[190px] py-1 text-xs" aria-label="Add one from a batch" x-on:change="if ($event.target.value) { $wire.addFromBatch('{{ $key }}', $event.target.value); $event.target.value = '' }">
-                                <option value="">+ from batch…</option>
-                                @foreach ($opts as $b)<option value="{{ $b['id'] }}">{{ $b['label'] }}</option>@endforeach
-                            </select>
-                        @endif
                     </div>
                 @endforeach
                 <div class="flex flex-wrap items-center gap-2 border-t border-soft p-3">

@@ -239,16 +239,35 @@ class Scan extends Component
             ->groupBy('variant_id')->map(fn ($g) => $g->map(fn ($b) => ['id' => $b->id, 'label' => $b->code.' · '.($b->supplier?->name ?? 'no supplier').' · '.tk($b->unit_cost).' · '.$b->remaining.' left'])->values()->all())->all();
     }
 
-    /** no scanner / no sticker: put one unit in by hand AND link it to the batch picked — the same record a sticker scan makes */
-    public function addFromBatch(string $key, $batchId): void
+    /**
+     * The per-line batch dropdown (no scanner / no sticker needed), always changeable until "Mark packed":
+     *  - a batch, nothing in yet  → one unit goes in, linked to it (the same record a sticker scan makes)
+     *  - a batch, units already in → all of the line's units are re-linked to it
+     *  - '' (Auto)                → the line is unlinked; packing takes the oldest batch
+     */
+    public function setLineBatch(string $key, $batchId): void
     {
-        $l = $this->lines[$key] ?? null; $b = $batchId ? Batch::find((int) $batchId) : null;
-        if (! $l || ! $b || $b->variant_id != $l['variant_id']) return;
-        if (($this->scanned[$key] ?? 0) >= $l['need']) { $this->beep('warn', 'Already complete', $l['label']); return; }
-        $taken = collect($this->picked)->sum(fn ($bs) => (int) ($bs[$b->id] ?? 0));
-        if ($taken + 1 > $b->remaining) { $this->beep('bad', 'Batch '.$b->code.' is empty in stock', $l['label'].' — the records show '.$b->remaining.' left'); return; }
-        $this->add($key, true, $b->id);
-        $this->beep('ok', '✓ '.$l['label'].' · batch '.$b->code.' (linked by hand)', $this->progress());
+        $l = $this->lines[$key] ?? null; if (! $l) return;
+        $n = (int) ($this->scanned[$key] ?? 0);
+        if (! $batchId) {                                   // Auto
+            unset($this->picked[$key]);
+            foreach ($this->history as $k => $h) if ($h[0] === $key) $this->history[$k][2] = null;
+            $this->beep('info', $l['label'].' · batch: auto', 'Packing takes the oldest batch for it');
+            return;
+        }
+        $b = Batch::find((int) $batchId);
+        if (! $b || $b->variant_id != $l['variant_id']) return;
+        $units = max(1, $n);
+        $elsewhere = collect($this->picked)->except($key)->sum(fn ($bs) => (int) ($bs[$b->id] ?? 0));   // same batch on other lines of this parcel
+        if ($elsewhere + $units > $b->remaining) { $this->beep('bad', 'Batch '.$b->code.' has only '.$b->remaining.' left', $l['label'].' needs '.$units.' from it — pick another batch, or receive stock first'); return; }
+        if ($n === 0) {                                     // nothing in yet → put one in, linked
+            $this->add($key, true, $b->id);
+            $this->beep('ok', '✓ '.$l['label'].' · batch '.$b->code.' (linked by hand)', $this->progress());
+            return;
+        }
+        $this->picked[$key] = [$b->id => $n];               // re-link every unit of the line
+        foreach ($this->history as $k => $h) if ($h[0] === $key) $this->history[$k][2] = $b->id;
+        $this->beep('ok', $l['label'].' · batch changed to '.$b->code, $n.' unit(s) now linked to '.$b->code.' ('.($b->supplier?->name ?? 'no supplier').')');
     }
 
     /** "✓ packed" banner → Unpack: stock back into its batches, order back to Confirmed and open again for re-packing */
