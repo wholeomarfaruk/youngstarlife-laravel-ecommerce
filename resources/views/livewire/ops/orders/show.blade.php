@@ -100,8 +100,9 @@
     @endif
     @if ($errors->any())<div class="rounded-md bg-bad-bg px-3 py-2.5 text-bad">{{ $errors->first() }}</div>@endif
 
+    {{-- below lg the two columns dissolve (display: contents) so cards can be ordered: Customer first … Timeline last --}}
     <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div class="flex min-w-0 flex-col gap-3">
+        <div class="flex min-w-0 flex-col gap-3 max-lg:contents">
             @if ($edit)
                 <x-ops.card title="Edit order" subtitle="Only before packing. Stock is re-reserved from batches when items change.">
                     <div class="grid gap-3 sm:grid-cols-3">
@@ -125,6 +126,24 @@
                 </x-ops.card>
             @endif
             <x-ops.card title="Items · batch traceability" flush>
+                {{-- phones: one block per item (the table below needs 680px) --}}
+                <div class="divide-y divide-soft sm:hidden">
+                    @foreach ($o->items as $i)
+                        <div class="flex gap-2.5 p-3">
+                            @if ($p = $i->variant->product)<a href="{{ $p->image_url }}" target="_blank" class="flex-none"><img src="{{ $p->thumb_url }}" alt="" loading="lazy" class="h-14 w-14 rounded-md bg-soft object-cover"></a>@endif
+                            <div class="min-w-0 flex-1">
+                                <div class="font-medium leading-snug">{{ $i->variant->label }}</div>
+                                @if ($i->combo_text)<div class="text-xs font-semibold text-info">Combo: {{ $i->combo_text }}</div>@endif
+                                <div class="mono text-xs text-ink-muted">{{ $i->variant->sku }}@if ($i->returned_qty) · <span class="font-sans text-bad">{{ $i->returned_qty }} returned</span>@endif</div>
+                                <div class="mt-1 flex items-baseline justify-between gap-2 text-sm"><span class="text-ink-3">{{ $i->qty }} × {{ tk($i->unit_price) }}</span><b class="tabular-nums">{{ tk($i->qty * $i->unit_price) }}</b></div>
+                                @foreach ($i->allocations as $a)
+                                    <div class="text-xs text-ink-muted"><a href="{{ route('ops.trace', ['q' => $a->batch->code]) }}" wire:navigate class="mono font-semibold">{{ $a->batch->code }}</a> ×{{ $a->qty }} → {{ $a->batch->supplier?->name }}{{ $a->batch_scanned ? ' ✓' : '' }}{{ $a->unit_cost !== null ? ' · cost '.tk($a->qty * $a->unit_cost) : '' }}</div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="max-sm:hidden">
                 <x-ops.table min-width="680px">
                     <x-slot:head><th class="th">Product</th><th class="th">Batch → supplier</th><th class="th text-right">Qty</th><th class="th text-right">Price</th><th class="th text-right">Cost (at pack)</th></x-slot:head>
                     @foreach ($o->items as $i)
@@ -137,6 +156,7 @@
                             <td class="td text-right tabular-nums text-ink-muted">{{ $i->allocations->whereNotNull('unit_cost')->isNotEmpty() ? tk($i->allocations->sum(fn ($a) => $a->qty * $a->unit_cost)) : '—' }}</td></tr>
                     @endforeach
                 </x-ops.table>
+                </div>
                 <dl class="ml-auto grid w-full max-w-[280px] grid-cols-[1fr_auto] gap-x-6 gap-y-1 p-3.5 tabular-nums">
                     <dt class="text-ink-muted">Subtotal</dt><dd class="text-right">{{ tk($o->subtotal) }}</dd>
                     <dt class="text-ink-muted">Discount</dt><dd class="text-right">− {{ tk($o->discount) }}</dd>
@@ -147,19 +167,26 @@
                     @if ($o->cost)<dt class="text-ink-muted">Cost (batches)</dt><dd class="text-right text-ink-muted">{{ tk($o->cost) }}</dd>@endif
                 </dl>
             </x-ops.card>
-            <x-ops.card title="Timeline" id="timeline">
+            <x-ops.card title="Timeline" id="timeline" class="max-lg:order-last">
                 @foreach ($o->events as $ev)
                     <div class="grid grid-cols-[100px_minmax(0,1fr)] gap-2.5 border-b border-soft py-2 text-sm last:border-0"><span class="mono text-xs text-ink-muted">{{ $ev->created_at->format('d M H:i') }}</span><span>@if ($ev->type === 'note')<span class="badge-warn mr-1">Note</span>@endif{{ $ev->message }} <span class="text-ink-muted">· {{ $ev->user?->name ?? 'System' }}</span></span></div>
                 @endforeach
                 <form wire:submit="addNote" class="mt-2 flex gap-2"><input wire:model="note" class="input" placeholder="Add an internal note…"><button class="btn-secondary">Add</button></form>
             </x-ops.card>
         </div>
-        <div class="flex flex-col gap-3">
+        <div class="flex flex-col gap-3 max-lg:contents">
             @php($rate = $o->customer->delivery_rate)
-            <x-ops.card title="Customer">
+            <x-ops.card title="Customer" class="max-lg:-order-1">
                 <a href="{{ route('ops.customers.index', ['search' => $o->customer->phone]) }}" wire:navigate class="font-semibold">{{ $o->customer->name }}</a>
                 <div class="text-sm text-ink-muted">{{ $o->customer->orders_count }} orders · <span @class(['font-semibold', 'text-bad' => $rate !== null && $rate < .75, 'text-ok' => $rate !== null && $rate >= .9])>{{ $rate !== null ? round($rate * 100).'% delivered' : 'new customer' }}</span></div>
                 <div class="mt-2 text-sm"><a href="tel:{{ $o->ship_phone }}" class="mono">{{ $o->ship_phone }}</a><br>{{ $o->ship_address }}<br><span class="text-ink-muted">{{ $o->zone?->name }} · {{ tk($o->delivery_charge) }}</span></div>
+                @php($wa = preg_replace('/\D/', '', (string) \App\Support\Phone::toE164($o->ship_phone)))
+                <div class="mt-2 flex flex-wrap gap-1.5">
+                    <a href="tel:{{ $o->ship_phone }}" class="btn-secondary btn-sm">Call</a>
+                    @if ($wa)<a href="https://wa.me/{{ $wa }}" target="_blank" rel="noopener" class="btn-secondary btn-sm">WhatsApp</a>@endif
+                    <button type="button" onclick="opsCopy(@js($o->ship_name.', '.$o->ship_phone.', '.$o->ship_address))" class="btn-secondary btn-sm">Copy address</button>
+                    <a href="{{ route('ops.orders.index', ['search' => $o->ship_phone]) }}" wire:navigate class="btn-ghost btn-sm">All orders →</a>
+                </div>
             </x-ops.card>
             <x-ops.card title="Payment">
                 <dl class="grid grid-cols-[1fr_auto] gap-y-1 text-sm tabular-nums"><dt class="text-ink-muted">Status</dt><dd><x-ops.badge map="payment_status" :status="$o->payment_status" /></dd><dt class="text-ink-muted">Advance paid</dt><dd>{{ tk($o->advance) }}</dd><dt class="text-ink-muted">COD to collect</dt><dd class="font-semibold">{{ tk($o->cod) }}</dd></dl>
@@ -299,6 +326,24 @@
                             <span class="text-xs text-ink-muted">{{ $p->courier?->name }}@if ($p->tracking || $p->consignment_id) · <x-ops.parcel-ref :s="$p" inline />@endif · {{ $p->created_at->format('d M') }}@if ($p->isSuperseded()) · <span class="font-semibold text-warn">replaced {{ $p->superseded_at->format('d M') }}</span>@endif</span>
                         </a>
                     @endforeach
+                </x-ops.card>
+            @endif
+            @php($at = (array) ($o->attribution ?? []))
+            @php($src = array_filter(['Channel' => config('ops.sources.'.$o->source, ucfirst((string) $o->source)), 'Campaign' => $o->campaign?->name,
+                'UTM source' => $at['utm_source'] ?? null, 'UTM medium' => $at['utm_medium'] ?? null, 'UTM campaign' => $at['utm_campaign'] ?? null, 'UTM content' => $at['utm_content'] ?? null,
+                'Ad campaign' => $at['campaign_name'] ?? ($at['campaign_id'] ?? null), 'Ad set' => $at['adset_name'] ?? ($at['adset_id'] ?? null), 'Ad' => $at['ad_name'] ?? ($at['ad_id'] ?? null),
+                'Placement' => $at['placement'] ?? ($at['site_source'] ?? null), 'Click ID' => isset($at['fbclid']) ? 'Facebook' : (isset($at['gclid']) ? 'Google' : null),
+                'Referrer' => $at['referrer'] ?? null, 'Landing page' => $at['landing_page'] ?? null, 'Device' => $o->device_id ? '#'.$o->device_id : null, 'IP' => $o->ip_address]))
+            @if (count($src) > 1 || $o->user_agent)
+                <x-ops.card title="Order source">
+                    <details @if (count($src) <= 3) open @endif>
+                        <summary class="cursor-pointer text-sm text-ink-muted">{{ collect($src)->only(['Channel', 'Campaign', 'UTM source'])->join(' · ') ?: 'Details' }}</summary>
+                        <dl class="mt-2 grid grid-cols-[96px_minmax(0,1fr)] gap-x-2 gap-y-1 text-xs">
+                            @foreach ($src as $label => $value)<dt class="text-ink-muted">{{ $label }}</dt><dd class="break-words">{{ \Illuminate\Support\Str::limit((string) $value, 120) }}</dd>@endforeach
+                            @if ($o->user_agent)<dt class="text-ink-muted">Browser</dt><dd class="break-words text-ink-muted">{{ \Illuminate\Support\Str::limit($o->user_agent, 140) }}</dd>@endif
+                        </dl>
+                        @if ($o->device_id)<a href="{{ route('ops.blacklist.index', ['search' => $o->device_id, 'status' => 'any']) }}" wire:navigate class="mt-2 inline-block text-xs">Check this device on the blacklist →</a>@endif
+                    </details>
                 </x-ops.card>
             @endif
             @if ($o->returns->isNotEmpty())
