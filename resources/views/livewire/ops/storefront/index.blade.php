@@ -10,6 +10,8 @@
     {{-- menu builder saves live (own component), so it sits outside the Publish form --}}
     @if ($tab === 'menus')
         <livewire:ops.storefront.menus />
+    @elseif ($tab === 'products')
+        <livewire:ops.storefront.product-order />   {{-- drag & drop / typed position, saves live --}}
     @else
     <form wire:submit="save" class="card" @input="dirty = true" @change="dirty = true">
         <div class="card-head"><span class="card-title">{{ $this->tabLabel() }}</span>@if ($tab !== 'overview')<a href="{{ url('/') }}" target="_blank" class="text-sm">View store ↗</a>@endif</div>

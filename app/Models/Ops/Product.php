@@ -10,6 +10,21 @@ class Product extends OpsModel
     protected $guarded = [];
     use SoftDeletes;
     protected $casts = ['gallery' => 'array', 'dimensions' => 'array', 'tags' => 'array', 'sale_starts_at' => 'date', 'sale_ends_at' => 'date', 'requires_shipping' => 'bool', 'options' => 'array', 'sold_out' => 'bool'];
+
+    /** a new product goes to the end of Home / Shop (Storefront → Product order), as in the old admin — not to the top with 0 */
+    protected static function booted(): void
+    {
+        static::creating(fn (self $p) => $p->sort_order ??= (int) static::withTrashed()->max('sort_order') + 1);
+    }
+
+    /** attach categories at the end of each category's order (ops_category_product.sort_order); already-linked ones keep their place */
+    public function syncCategoriesAtEnd(array $ids): void
+    {
+        $ids = array_map('intval', $ids);
+        $new = array_diff($ids, $this->categories()->pluck('ops_categories.id')->all());
+        $this->categories()->sync(collect($ids)->mapWithKeys(fn ($id) => [$id => in_array($id, $new)
+            ? ['sort_order' => (int) \Illuminate\Support\Facades\DB::table('ops_category_product')->where('category_id', $id)->max('sort_order') + 1] : []])->all());
+    }
     /** combo: sets that can be made = min over components of floor(available / qty) */
     public function getComboAvailableAttribute(): int { return (int) ($this->comboItems->map(fn ($c) => intdiv(max(0, $c->variant->stock - $c->variant->reserved), max(1, $c->qty)))->min() ?? 0); }
 

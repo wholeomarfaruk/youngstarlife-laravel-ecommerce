@@ -265,7 +265,7 @@ class Edit extends Component
             if ($this->galleryUploads) { $data['gallery'] = array_merge($this->form['gallery'], collect($this->galleryUploads)->map->store('products', 'public')->all()); }
             $data['options'] = array_values(array_filter($this->options, fn ($o) => isset($this->catalog[$o['attribute_id']]))) ?: null;
             $this->product->update($data);
-            $this->product->categories()->sync($this->categoryIds);
+            $this->product->syncCategoriesAtEnd($this->categoryIds);   // a newly ticked category puts the product at the end of its page
             $links = collect($this->supplierLinks)->map(function ($l, $sid) {
                 if ($img = $this->supplierImages[$sid] ?? null) $l['image'] = $img->store('suppliers', 'public');
                 return array_intersect_key($l, array_flip(['supplier_code', 'supplier_name', 'image']));

@@ -14,7 +14,7 @@ class Index extends Component
 {
     public const NAV = [
         'Store' => ['overview' => 'Overview', 'homepage' => 'Homepage', 'menus' => 'Navigation menus', 'pages' => 'Pages'],
-        'Selling' => ['coupons' => 'Coupons'],
+        'Selling' => ['products' => 'Product order', 'coupons' => 'Coupons'],
         'Growth' => ['social' => 'Social & chat', 'announcement' => 'Announcement & popup'],
     ];
 
