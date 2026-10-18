@@ -25,7 +25,7 @@ class Index extends Component
 
     protected function base()
     {
-        return Product::query()->select(['id', 'name', 'code', 'type', 'status', 'price', 'sale_price', 'low_stock_threshold', 'featured_image', 'updated_at'])
+        return Product::query()->select(['id', 'name', 'code', 'type', 'status', 'price', 'sale_price', 'low_stock_threshold', 'featured_image', 'sold_out', 'updated_at'])
             ->withSum('variants as stock', 'stock')->withSum('variants as damaged', 'damaged')->withCount('variants')->with('categories:id,name')
             ->search($this->search)
             ->when($this->filters['category'] ?? null, fn ($q, $c) => $q->whereHas('categories', fn ($x) => $x->whereKey($c)))
