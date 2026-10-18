@@ -129,15 +129,18 @@
     .pp details > summary, details.pp-card > summary { cursor: pointer; }
 
     /* formatted product description (Ops rich text editor) */
-    .pp-rich { font-size: 15px; line-height: 1.65; color: #3f423f; overflow-wrap: anywhere; }
+    .pp-rich { font-size: 15px; line-height: 1.65; color: #3f423f; overflow-wrap: break-word; }
     .pp-rich > :last-child { margin-bottom: 0; }
     .pp-rich p, .pp-rich ul, .pp-rich ol, .pp-rich table, .pp-rich blockquote { margin: 0 0 .7em; }
     .pp-rich ul, .pp-rich ol { padding-left: 1.4em; }
     .pp-rich h1, .pp-rich h2, .pp-rich h3, .pp-rich h4 { font-size: 17px; font-weight: 700; margin: .9em 0 .4em; color: #262826; }
     .pp-rich img, .pp-rich iframe, .pp-rich video { max-width: 100%; height: auto; border-radius: 8px; }
     .pp-rich iframe { aspect-ratio: 16 / 9; width: 100%; }
-    .pp-rich table { width: 100%; border-collapse: collapse; display: block; overflow-x: auto; }
-    .pp-rich td, .pp-rich th { border: 1px solid #e4e4e0; padding: 6px 8px; }
+    /* tables: full size, never a scroll box — sizes dragged in the editor are ignored so they fit any screen */
+    .pp-rich table { width: 100% !important; height: auto !important; border-collapse: collapse; table-layout: auto; }
+    .pp-rich tr, .pp-rich td, .pp-rich th { height: auto !important; }
+    .pp-rich td, .pp-rich th { width: auto !important; border: 1px solid #e4e4e0; padding: 6px 8px; text-align: center; word-break: normal; overflow-wrap: normal; }
+    @media (max-width: 480px) { .pp-rich table { font-size: 12.5px; } .pp-rich td, .pp-rich th { padding: 5px 3px; } }
     .pp-rich blockquote { border-left: 3px solid #d6d6d1; padding-left: 10px; color: #6b6e6b; }
     .pp-rich a { color: #1F6FB2; }
     .pp-row-gap { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }

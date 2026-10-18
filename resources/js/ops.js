@@ -86,9 +86,10 @@ document.addEventListener('alpine:init', () => {
       const ta = this.$refs.input;
       ta.id ||= 'rte-' + Math.random().toString(36).slice(2, 9);
       this.editor = initEditor({
-        selector: '#' + ta.id, menubar: false, onboarding: false,
-        plugins: ['link', 'image', 'media', 'table', 'emoticons', 'searchreplace', 'wordcount'],
-        toolbar: opts.toolbar || 'undo redo | blockformat | bold italic underline strikethrough | forecolor backcolor | align | bullist numlist | link image media table | emoticons | removeformat',
+        // full feature set (same as the editor's examples/basic.html); the first-run tour stays off
+        selector: '#' + ta.id, menubar: opts.menubar ?? true, onboarding: false,
+        plugins: ['link', 'anchor', 'image', 'media', 'embed', 'table', 'codesample', 'emoticons', 'charmap', 'searchreplace', 'wordcount', 'visualblocks', 'elementpath', 'spacing'],
+        toolbar: opts.toolbar || 'undo redo | blockformat fontfamily fontsize lineheight | bold italic underline strikethrough code forecolor backcolor | bullist numlist blockquote hr | alignleft aligncenter alignright alignjustify | indent outdent spacing | link unlink anchor | image media embed table codesample | emoticons charmap | searchreplace visualblocks | removeformat',
       });
       this.editor.on('change', () => this.uploadImages(opts.upload));
     },
