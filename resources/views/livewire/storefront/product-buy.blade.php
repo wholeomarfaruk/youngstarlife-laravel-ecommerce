@@ -18,7 +18,7 @@
         <div class="pp-trust">
             <span class="pp-trust-stock"><span class="pp-dot {{ $d['inStock'] ? 'is-ok' : 'is-out' }}"></span>{{ $d['inStock'] ? 'স্টকে আছে' : 'স্টক শেষ' }}</span>
             <span>ক্যাশ অন ডেলিভারি</span>
-            <span>৩ দিনে এক্সচেঞ্জ</span>
+            <span>২৪ ঘণ্টার মধ্যে এক্সচেঞ্জ</span>
         </div>
     </div>
 
