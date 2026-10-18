@@ -39,6 +39,71 @@ class Shipment extends OpsModel
 
     public function isFinal(): bool { return in_array($this->courier_status, self::FINAL, true); }
 
+    // ── parcel management: stuck / needs attention / contents
+
+    /** statuses in which the courier should keep sending updates (pending only counts once it's booked or handed over) */
+    public const MOVING = ['pending', 'picked_up', 'in_transit', 'out_for_delivery', 'hold'];
+
+    /** Settings → Orders & delivery → "Parcel stuck after N days without a courier update" */
+    public static function stuckDays(): int { return max(1, (int) ops_setting('orders.parcel_stuck_days', 3)); }
+
+    /** with the courier and no status change for N days */
+    public function isStuck(): bool
+    {
+        if ($this->isSuperseded() || ! in_array($this->courier_status, self::MOVING, true)) return false;
+        if ($this->courier_status === 'pending' && ! $this->booked_at && ! $this->handed_over_at) return false;   // still with us, not the courier
+        return ($this->status_updated_at ?? $this->updated_at)?->lt(now()->subDays(self::stuckDays())) ?? false;
+    }
+
+    public function scopeStuck($q)
+    {
+        $before = now()->subDays(self::stuckDays());
+        return $q->whereNull('superseded_at')->whereIn('courier_status', self::MOVING)
+            ->where(fn ($w) => $w->where('courier_status', '!=', 'pending')->orWhereNotNull('booked_at')->orWhereNotNull('handed_over_at'))
+            ->where(fn ($w) => $w->where('status_updated_at', '<', $before)->orWhere(fn ($n) => $n->whereNull('status_updated_at')->where('updated_at', '<', $before)));
+    }
+
+    /** In courier → "Needs attention": stuck, on hold, failed delivery attempts, booking failed, or an open complaint */
+    public function scopeNeedsAttention($q)
+    {
+        return $q->whereNull('superseded_at')->whereNotIn('courier_status', self::FINAL)->where(fn ($w) => $w
+            ->whereIn('id', static::query()->stuck()->select('id'))
+            ->orWhere('courier_status', 'hold')->orWhere('failed_attempts', '>', 0)
+            ->orWhere(fn ($b) => $b->whereNull('booked_at')->whereNotNull('booking_error'))
+            ->orWhereNotNull('complaint'));
+    }
+
+    /** why a parcel needs attention, for badges: ['Stuck 5 days', 'On hold', …] */
+    public function attentionReasons(): array
+    {
+        if ($this->isSuperseded() || $this->isFinal()) return [];
+        return array_values(array_filter([
+            $this->isStuck() ? 'No update for '.(int) ($this->status_updated_at ?? $this->updated_at)->diffInDays(now()).' days' : null,
+            $this->courier_status === 'hold' ? 'On hold' : null,
+            $this->failed_attempts ? $this->failed_attempts.' failed attempt'.($this->failed_attempts > 1 ? 's' : '') : null,
+            ! $this->booked_at && $this->booking_error ? 'Booking failed' : null,
+            $this->complaint ? 'Complaint open' : null,
+        ]));
+    }
+
+    /**
+     * What went in this parcel, from the packed units (OrderItemAllocation.shipment_id): [[label, image, qty, batches => [[code, qty, confirmed]]]].
+     * Parcels packed before units were stamped with their parcel fall back to the order's items (no batches).
+     */
+    public function contents(): array
+    {
+        $units = OrderItemAllocation::where('shipment_id', $this->id)->with('batch:id,code,variant_id', 'batch.variant.product:id,name,featured_image')->get();
+        if ($units->isEmpty()) {
+            return $this->order?->items()->with('variant.product:id,name,featured_image')->get()
+                ->map(fn ($i) => ['label' => $i->variant?->label, 'image' => $i->variant?->product?->thumb_url, 'qty' => (int) $i->qty, 'batches' => []])->all() ?? [];
+        }
+        return $units->groupBy(fn ($a) => $a->batch?->variant_id)->map(function ($g) {
+            $v = $g->first()->batch?->variant;
+            return ['label' => $v?->label, 'image' => $v?->product?->thumb_url, 'qty' => (int) $g->sum('qty'),
+                'batches' => $g->groupBy('batch_id')->map(fn ($b) => ['code' => $b->first()->batch?->code, 'qty' => (int) $b->sum('qty'), 'confirmed' => (bool) $b->contains('batch_scanned', true)])->values()->all()];
+        })->values()->all();
+    }
+
     /** the courier's public tracking page for the customer */
     public function getTrackingUrlAttribute(): ?string
     {

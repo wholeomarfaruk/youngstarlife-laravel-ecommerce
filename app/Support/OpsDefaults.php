@@ -28,7 +28,7 @@ class OpsDefaults
         $rule = fn (bool $on, string $when, string $then) => ['on' => $on, 'when' => $when, 'then' => $then];
         return [
             'company' => ['name' => 'YoungStar Life', 'phone' => '01700-000000', 'email' => 'hello@youngstarlife.com', 'address' => 'Mirpur 10, Dhaka', 'warehouse_id' => null, 'currency' => 'BDT (৳)', 'invoice_prefix' => 'INV-', 'timezone' => 'Asia/Dhaka'],
-            'orders' => ['prefix' => '#', 'cart_enabled' => true, 'confirm_call' => true, 'auto_cancel_hours' => 48, 'free_delivery_above' => 3000, 'advance_for_risky' => true, 'allow_partial' => true, 'exchange_charge' => 100, 'exchange_overdue_days' => 5,
+            'orders' => ['prefix' => '#', 'cart_enabled' => true, 'confirm_call' => true, 'auto_cancel_hours' => 48, 'free_delivery_above' => 3000, 'advance_for_risky' => true, 'allow_partial' => true, 'exchange_charge' => 100, 'exchange_overdue_days' => 5, 'parcel_stuck_days' => 3,
                 // website order limits: per product (off | qty | value ৳) and the whole cart / order value (0 = no limit)
                 'limit' => ['type' => 'off', 'qty' => 5, 'value' => 5000, 'cart_value' => 0]],
             'payments' => ['cash' => true, 'bank' => true, 'bank_account' => 'DBBL 123-456-7890', 'bkash' => true, 'bkash_no' => '01700-000000', 'nagad' => true, 'nagad_no' => '01700-000000', 'cod' => true],

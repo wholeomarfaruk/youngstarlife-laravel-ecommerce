@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Ops\Orders;
 
-use App\Models\Ops\{Account, DeliveryZone, Order, ProductVariant, Transaction};
+use App\Models\Ops\{Account, Courier, DeliveryZone, Order, ProductVariant, Transaction};
 use App\Services\Couriers\{CourierException, CourierGateway};
 use App\Services\Ops\{BatchAllocator, OrderWorkflow};
 use App\Livewire\Ops\Concerns\OrderActions;
@@ -19,6 +19,8 @@ class Show extends Component
     #[Url(except: false)] public bool $edit = false;
     public string $note = '';
     public string $tracking = ''; public string $parcelStatus = '';   // manual parcel update (when the courier has no webhook)
+    public array $parcel = [];                                         // edit parcel before it is sent: courier_id, cod, weight
+    public string $complaintText = '';                                 // complaint to the courier about this parcel
     public array $e = [];                                              // edit form
     public ?int $pick = null;
     public $payAmount = null; public string $payAccount = 'bKash';
@@ -27,6 +29,9 @@ class Show extends Component
     {
         $this->order = $order->load(['customer', 'zone', 'campaign', 'creator:id,name', 'items.variant.product:id,name,featured_image', 'items.allocations.batch:id,code,supplier_id,purchase_order_id', 'items.allocations.batch.supplier:id,name', 'items.allocations.batch.purchaseOrder:id,number', 'shipment.courier', 'events.user:id,name', 'returns:id,order_id,shipment_id,code,type']);
         $this->tracking = (string) $this->order->shipment?->tracking; $this->parcelStatus = (string) $this->order->shipment?->courier_status;
+        $sh = $this->order->shipment;
+        $this->parcel = ['courier_id' => $sh?->courier_id, 'cod' => $sh?->cod_amount, 'weight' => $sh?->weight_kg ? (float) $sh->weight_kg : null];
+        $this->complaintText = (string) $sh?->complaint;
         if ($this->edit && ! $this->editable()) $this->edit = false;
         $o = $this->order;
         $this->e = ['name' => $o->ship_name, 'phone' => $o->ship_phone, 'address' => $o->ship_address, 'zone' => $o->delivery_zone_id, 'discount' => $o->discount, 'note' => $o->note,
@@ -231,6 +236,53 @@ class Show extends Component
         $this->mount($this->order->fresh());
         $this->dispatch('toast', message: 'Parcel '.$s->code.' updated');
     }
+
+    // ── parcel management
+
+    /** courier / COD / weight can change until the parcel is sent to the courier or handed over */
+    public function parcelEditable(): bool
+    {
+        $s = $this->order->shipment;
+        return $s && ! $s->booked_at && ! $s->handed_over_at && ! $s->isSuperseded() && ! in_array($this->order->status, ['cancelled', 'delivered', 'returned']);
+    }
+
+    #[Computed] public function couriers() { return Courier::where('is_active', true)->orderBy('id')->pluck('name', 'id'); }
+
+    public function saveParcel(): void
+    {
+        $s = $this->order->shipment; abort_unless($s, 404);
+        if (! $this->parcelEditable()) { $this->dispatch('toast', message: 'Parcel '.$s->code.' was already sent to the courier — change it in the courier panel', type: 'bad'); return; }
+        $this->validate(['parcel.courier_id' => 'required|exists:ops_couriers,id', 'parcel.cod' => 'required|integer|min:0', 'parcel.weight' => 'nullable|numeric|min:0.1|max:30'],
+            ['parcel.cod.*' => 'COD must be a whole number (0 = nothing to collect).', 'parcel.weight.*' => 'Weight is 0.1–30 kg.']);
+        $changes = [];
+        if ((int) $this->parcel['courier_id'] !== (int) $s->courier_id) $changes[] = 'courier '.$s->courier->name.' → '.Courier::whereKey($this->parcel['courier_id'])->value('name');
+        if ((int) $this->parcel['cod'] !== (int) $s->cod_amount) $changes[] = 'COD '.tk($s->cod_amount).' → '.tk($this->parcel['cod']);
+        $w = $this->parcel['weight'] === null || $this->parcel['weight'] === '' ? null : (float) $this->parcel['weight'];
+        if ($w !== ($s->weight_kg === null ? null : (float) $s->weight_kg)) $changes[] = 'weight '.($s->weight_kg ? (float) $s->weight_kg.' kg' : '—').' → '.($w ? $w.' kg' : '—');
+        if (! $changes) { $this->dispatch('toast', message: 'Nothing changed'); return; }
+        // a new courier starts clean: its own booking, location and error
+        $s->update(['courier_id' => (int) $this->parcel['courier_id'], 'cod_amount' => (int) $this->parcel['cod'], 'weight_kg' => $w]
+            + ((int) $this->parcel['courier_id'] !== (int) $s->courier_id ? ['booking_error' => null, 'courier_meta' => null] : []));
+        $this->order->log('courier', 'Parcel '.$s->code.' changed: '.implode(' · ', $changes));
+        ops_log("Parcel {$s->code}: ".implode(' · ', $changes), $s);
+        $this->mount($this->order->fresh());
+        $this->dispatch('toast', message: 'Parcel '.$s->code.' updated');
+    }
+
+    public function saveComplaint(): void
+    {
+        $s = $this->order->shipment; abort_unless($s, 404);
+        $this->validate(['complaintText' => 'nullable|max:500']);
+        $text = trim($this->complaintText) ?: null;
+        if ($text === $s->complaint) return;
+        $s->update(['complaint' => $text]);
+        $this->order->log('complaint', $text ? 'Complaint to '.$s->courier->name.': '.$text : 'Complaint on '.$s->code.' marked solved');
+        ops_log(($text ? 'Complaint raised' : 'Complaint solved').' on parcel '.$s->code, $s);
+        $this->mount($this->order->fresh());
+        $this->dispatch('toast', message: $text ? 'Complaint saved' : 'Complaint marked solved');
+    }
+
+    public function solveComplaint(): void { $this->complaintText = ''; $this->saveComplaint(); }
 
     public function render() { return view('livewire.ops.orders.show')->title('Order '.$this->order->number); }
 }

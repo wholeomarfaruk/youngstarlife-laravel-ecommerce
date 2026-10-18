@@ -176,6 +176,29 @@
                         @if ($s->charge)<span class="text-xs text-ink-muted">Delivery charge {{ tk($s->charge) }}@if (isset($s->courier_meta['collected'])) · collected {{ tk($s->courier_meta['collected']) }}@endif</span>@endif
                     </div>
 
+                    {{-- needs attention: stuck / hold / failed attempts / booking failed / complaint (Shipment::attentionReasons) --}}
+                    @if ($why = $s->attentionReasons())
+                        <div class="mt-2 rounded-md bg-warn-bg px-2.5 py-1.5 text-xs text-warn"><b>Needs attention:</b> {{ implode(' · ', $why) }}@if ($s->complaint)<div class="mt-0.5 text-ink-3">“{{ $s->complaint }}”</div>@endif</div>
+                    @endif
+                    @if ($s->return_flag || $s->return_note)<div class="mt-2 rounded-md bg-zebra px-2.5 py-1.5 text-xs"><b>Return note</b>{{ $s->return_flag ? ' · '.$s->return_flag : '' }}{{ $s->return_note ? ' — '.$s->return_note : '' }}</div>@endif
+
+                    {{-- what is inside this parcel (packed units → batches) --}}
+                    @if ($s->packed_at)
+                        @php($inside = $s->contents())
+                        <div class="mt-3 border-t border-soft pt-2">
+                            <div class="mb-1 flex items-center justify-between text-xs text-ink-muted"><span>Inside the parcel · {{ collect($inside)->sum('qty') }} unit(s)</span><span>packed by {{ $s->packer?->name ?? '—' }}</span></div>
+                            @foreach ($inside as $c)
+                                <div class="flex items-center gap-2 py-1 text-xs">
+                                    @if ($c['image'])<img src="{{ $c['image'] }}" alt="" class="h-8 w-8 flex-none rounded object-cover" loading="lazy">@endif
+                                    <span class="min-w-0 flex-1"><span class="block truncate">{{ $c['label'] }} × {{ $c['qty'] }}</span>
+                                        @if ($c['batches'])<span class="mono text-ink-muted">@foreach ($c['batches'] as $b){{ $loop->first ? '' : ', ' }}<a href="{{ route('ops.trace', ['q' => $b['code']]) }}" wire:navigate class="text-ink-muted hover:text-ink">{{ $b['code'] }}</a>{{ count($c['batches']) > 1 ? ' ×'.$b['qty'] : '' }}{{ $b['confirmed'] ? ' ✓' : '' }}@endforeach</span>@endif
+                                    </span>
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                    <a href="{{ route('ops.orders.parcel-labels', ['ids' => $o->id]) }}" target="_blank" class="btn-secondary btn-sm mt-2 w-full">Print parcel label</a>
+
                     {{-- courier API --}}
                     @if ($api)
                         @if (! $s->booked_at)
@@ -200,6 +223,32 @@
                                     <span class="whitespace-nowrap text-ink-muted" title="{{ ucfirst($ev->source) }}">{{ $ev->created_at->format('d M H:i') }}</span></li>
                             @endforeach
                         </ol>
+                    @endif
+
+                    {{-- before it is sent: courier, COD, weight --}}
+                    @if ($this->parcelEditable())
+                        <details class="mt-3 border-t border-soft pt-2 text-sm">
+                            <summary class="cursor-pointer text-xs text-ink-muted">Edit parcel (courier · COD · weight)</summary>
+                            <form wire:submit="saveParcel" class="mt-2 flex flex-col gap-2">
+                                <x-ops.field label="Courier" :error="$errors->first('parcel.courier_id')"><select wire:model="parcel.courier_id" class="input">@foreach ($this->couriers as $id => $n)<option value="{{ $id }}">{{ $n }}</option>@endforeach</select></x-ops.field>
+                                <div class="grid grid-cols-2 gap-2">
+                                    <x-ops.field label="COD (৳)" :error="$errors->first('parcel.cod')" :hint="'Order COD '.tk($o->cod)"><input type="number" min="0" wire:model="parcel.cod" class="input"></x-ops.field>
+                                    <x-ops.field label="Weight (kg)" :error="$errors->first('parcel.weight')"><input type="number" step="0.1" min="0.1" wire:model="parcel.weight" class="input" placeholder="0.5"></x-ops.field>
+                                </div>
+                                <button class="btn-secondary">Save parcel</button>
+                            </form>
+                        </details>
+                    @endif
+
+                    {{-- complaint to the courier (also In courier → Complaint) --}}
+                    @if ($s->booked_at || $s->handed_over_at || $s->complaint)
+                        <details class="mt-3 border-t border-soft pt-2 text-sm" @if ($s->complaint) open @endif>
+                            <summary class="cursor-pointer text-xs text-ink-muted">Complaint to {{ $s->courier->name }}{{ $s->complaint ? ' · open' : '' }}</summary>
+                            <form wire:submit="saveComplaint" class="mt-2 flex flex-col gap-2">
+                                <textarea wire:model="complaintText" rows="2" class="input" placeholder="e.g. Stuck in transit 5 days, rider never called the customer"></textarea>
+                                <div class="flex gap-2"><button class="btn-secondary flex-1">Save complaint</button>@if ($s->complaint)<button type="button" wire:click="solveComplaint" class="btn-ghost">Mark solved</button>@endif</div>
+                            </form>
+                        </details>
                     @endif
 
                     <details class="mt-3 border-t border-soft pt-2 text-sm" @if (! $api) open @endif>

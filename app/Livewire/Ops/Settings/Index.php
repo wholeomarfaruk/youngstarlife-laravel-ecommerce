@@ -67,7 +67,7 @@ class Index extends Component
     {
         $rules = match ($this->tab) {
             'company' => ['s.company.name' => 'required|max:120', 's.company.email' => 'nullable|email', 's.company.invoice_prefix' => 'nullable|max:10'],
-            'orders' => ['s.orders.prefix' => 'required|max:6', 's.orders.auto_cancel_hours' => 'nullable|integer|min:0', 's.orders.free_delivery_above' => 'nullable|integer|min:0', 's.orders.exchange_charge' => 'required|integer|min:0',
+            'orders' => ['s.orders.prefix' => 'required|max:6', 's.orders.auto_cancel_hours' => 'nullable|integer|min:0', 's.orders.free_delivery_above' => 'nullable|integer|min:0', 's.orders.exchange_charge' => 'required|integer|min:0', 's.orders.parcel_stuck_days' => 'required|integer|min:1|max:30',
                 's.orders.limit.type' => 'required|in:off,qty,value', 's.orders.limit.qty' => 'required_if:s.orders.limit.type,qty|nullable|integer|min:1|max:50', 's.orders.limit.value' => 'required_if:s.orders.limit.type,value|nullable|integer|min:1', 's.orders.limit.cart_value' => 'nullable|integer|min:0'],
             'delivery' => ['zones.*.name' => 'required|max:120', 'zones.*.charge' => 'required|integer|min:0', 'zones.*.per_kg' => 'nullable|integer|min:0'],
             'branding' => ['s.branding.store_name' => 'required|max:120', 'logo' => 'nullable|image|max:2048', 'favicon' => 'nullable|image|max:512', 's.branding.primary_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'], 's.branding.footer_note' => 'nullable|max:200'],

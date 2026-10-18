@@ -52,6 +52,7 @@
                         <x-ops.field label="Auto-cancel unconfirmed after (hours)" hint="0 = never"><input type="number" min="0" wire:model="s.orders.auto_cancel_hours" class="input"></x-ops.field>
                         <x-ops.field label="Free delivery above (৳)"><input type="number" min="0" wire:model="s.orders.free_delivery_above" class="input"></x-ops.field>
                         <x-ops.field label="Exchange charge (৳)" required><input type="number" min="0" wire:model="s.orders.exchange_charge" class="input"></x-ops.field>
+                        <x-ops.field label="Parcel stuck after (days without a courier update)" hint="Flagged on the order page and in In courier → Needs attention"><input type="number" min="1" max="30" wire:model="s.orders.parcel_stuck_days" class="input"></x-ops.field>
                         <x-ops.field label="Exchange old item overdue after (days)" hint="Alert when the old item is not back this long after the new one was delivered"><input type="number" min="1" wire:model="s.orders.exchange_overdue_days" class="input"></x-ops.field>
                         <label class="flex items-center gap-2"><input type="checkbox" wire:model="s.orders.confirm_call" class="h-4 w-4 accent-brand"> Confirmation call required</label>
                         <label class="flex items-center gap-2"><input type="checkbox" wire:model="s.orders.advance_for_risky" class="h-4 w-4 accent-brand"> Advance payment for risky customers</label>
