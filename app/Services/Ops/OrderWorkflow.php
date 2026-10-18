@@ -48,6 +48,8 @@ class OrderWorkflow
         // reserve from batches on confirm unless Settings say "reserve when packed" or allocation is Manual (then it happens at packing)
         if ($status === 'confirmed' && $reserve !== 'packed' && ops_setting('batch.allocation', 'FIFO') !== 'Manual') $this->allocator->allocate($order);
         if ($status === 'cancelled') $this->allocator->release($order);
+        // packed → back to Confirmed / Pending: stock goes back into its batches (not just a status change)
+        if ($order->status === 'packed' && in_array($status, ['confirmed', 'pending'])) $this->allocator->unpack($order, false);
         if ($status === 'shipped') $order->shipment?->update(['handed_over_at' => now(), 'status_updated_at' => now()]
             + ($order->shipment->courier_status === 'pending' ? ['courier_status' => 'picked_up'] : []));
 

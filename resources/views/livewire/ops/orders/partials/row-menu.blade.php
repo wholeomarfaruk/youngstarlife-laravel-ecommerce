@@ -7,7 +7,8 @@
     <div class="my-1 border-t border-soft"></div>
     @if ($s === 'pending')<x-ops.menu-item wire:click="setStatus({{ $o->id }}, 'confirmed')">Confirm order</x-ops.menu-item>@endif
     @if (in_array($s, ['pending', 'confirmed']))<a href="{{ route('ops.packing.scan', ['order' => $o->number]) }}" wire:navigate class="rounded px-2 py-1.5 text-ink hover:bg-soft">Pack & scan</a>@endif
-    @if ($s === 'packed')<x-ops.menu-item wire:click="setStatus({{ $o->id }}, 'shipped')">Mark shipped</x-ops.menu-item>@endif
+    @if ($s === 'packed')<x-ops.menu-item wire:click="setStatus({{ $o->id }}, 'shipped')">Mark shipped</x-ops.menu-item>
+        <x-ops.menu-item wire:click="setStatus({{ $o->id }}, 'confirmed')" wire:confirm="Unpack {{ $o->number }}? The units go back into the same batches and stay reserved for this order; it returns to Confirmed for re-packing. An unsent parcel is removed.">Unpack (back to Confirmed)</x-ops.menu-item>@endif
     @if (in_array($s, ['pending', 'confirmed', 'shipped']))<x-ops.menu-item wire:click="setStatus({{ $o->id }}, 'on_hold')">Put on hold</x-ops.menu-item>@endif
     @if ($s === 'on_hold')<x-ops.menu-item wire:click="resume({{ $o->id }})">Resume order</x-ops.menu-item>@endif
     @if (\App\Services\Ops\OrderWorkflow::canResend($o))<a href="{{ route('ops.orders.show', ['order' => $o, 'resend' => 1]) }}" wire:navigate class="rounded px-2 py-1.5 text-ink hover:bg-soft">Send again (new parcel)…</a>@endif

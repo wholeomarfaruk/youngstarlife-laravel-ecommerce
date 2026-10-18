@@ -109,7 +109,8 @@ class EntrySessions
                 'session' => $s->code, 'rider' => $s->rider, 'type' => $o->exchange_of_id ? 'exchange' : 'full', 'status' => 'received', 'note' => collect([static::flagText($p), $note])->filter()->join(' · ') ?: null, 'received_by' => auth()->id(),
                 'refund_amount' => (new Receive)->refundFor($o, $o->items->pluck('id')->all())]);
             foreach ($o->items as $i) {
-                $ret->items()->create(['order_item_id' => $i->id, 'batch_id' => $i->allocations()->whereNotNull('packed_at')->value('batch_id'), 'qty' => $i->qty, 'reason' => 'Returned by courier', 'condition' => null]);
+                // one row per batch this parcel was packed from; inspected later (no stock change until a condition is set)
+                ReturnStock::record($ret, $i, (int) $i->qty, null, ['reason' => 'Returned by courier'], [], $p->id);
                 $i->increment('returned_qty', $i->qty);
             }
             $wasDelivered = $p->courier_status === 'delivered';

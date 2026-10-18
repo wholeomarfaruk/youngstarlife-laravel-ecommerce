@@ -147,9 +147,15 @@ class ExchangeService
             foreach ($line->items as $it) {
                 $cond = array_key_exists($it->order_item_id, $conditions) ? ($conditions[$it->order_item_id] ?: null) : null;
                 $it->update(['condition' => $cond, 'action' => $cond ? config("ops.return_conditions.$cond.1") : null, 'reason' => $cond === 'missing' ? 'Not handed back' : $it->reason]);
-                if ($cond !== 'missing') {
-                    $original->items->firstWhere('id', $it->order_item_id)?->increment('returned_qty', $it->qty);
-                    ReturnStock::apply($cond, $it->orderItem->allocations()->whereNotNull('packed_at')->with('batch')->get(), $line, $it->qty);
+                if ($cond !== 'missing') $original->items->firstWhere('id', $it->order_item_id)?->increment('returned_qty', $it->qty);
+                // the old item goes back to the batch it was packed from (sticker scanned at Return receive first): one row per batch
+                $parts = ReturnStock::batchesFor($it->orderItem, (int) $it->qty, $ctx['stickers'][$it->order_item_id] ?? [], null, $line->id);
+                $first = true;
+                foreach ($parts as $batchId => $n) {
+                    $row = $first ? tap($it)->update(['batch_id' => $batchId ?: null, 'qty' => $n]) : $it->replicate()->fill(['batch_id' => $batchId ?: null, 'qty' => $n]);
+                    if (! $first) $row->save();
+                    $first = false;
+                    if ($cond !== 'missing') ReturnStock::applyRow($row, $line);
                 }
             }
             $inspected = $line->items()->whereNull('condition')->doesntExist();

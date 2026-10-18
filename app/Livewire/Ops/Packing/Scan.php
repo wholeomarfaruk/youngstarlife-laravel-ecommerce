@@ -26,6 +26,8 @@ class Scan extends Component
     public array $history = [];          // line keys in scan order (undo)
     public ?array $flash = null;         // ['tone' => ok|bad|warn|info, 'title', 'sub']
     public ?int $extraId = null;         // scanned product that is NOT on the order → add it?
+    public ?int $extraBatchId = null;    // …and the batch sticker it was scanned from
+    public array $picked = [];           // line key => [batch_id => units scanned from that batch's sticker] (traceability)
     public ?int $pick = null;            // "Add product to parcel" picker
     public bool $autoNext = true;        // open the next order in the queue after packing
     public ?array $done = null;          // last packed: ['number', 'id', 'parcel']
@@ -121,7 +123,7 @@ class Scan extends Component
      */
     protected function openOrder(string $code, bool $exact = false): void
     {
-        $this->reset('scanned', 'manual', 'history', 'extraId', 'done', 'choices'); $this->order = null; unset($this->current, $this->lines, $this->parcels);
+        $this->reset('scanned', 'manual', 'history', 'extraId', 'extraBatchId', 'picked', 'done', 'choices'); $this->order = null; unset($this->current, $this->lines, $this->parcels);
         $o = Order::live()->numbered($code)->first();
         if (! $o) { $this->beep('bad', 'Order not found', $code); return; }
         $exact = $exact || $o->exchange_of_id;   // an exchange number was scanned → that exchange's parcel
@@ -170,40 +172,102 @@ class Scan extends Component
     {
         $code = trim($code); if ($code === '') return;
         if (preg_match('/^P\d+$/i', $code) && ($parcel = Shipment::where('code', strtoupper($code))->with('order:id,number')->first())) { $this->openOrder($parcel->order->number, true); return; }
-        $v = $this->variantFor($code);
+        [$v, $batch] = $this->resolve($code);
         // digits = order number, unless it is a product barcode (EAN / UPC are all digits too)
         if (str_starts_with($code, '#') || (ctype_digit($code) && ! $v) || (! $v && Order::live()->numbered($code)->exists())) { $this->openOrder($code); return; }
         if (! $this->current) { $this->beep('warn', 'Scan the order first', $code); return; }
         if (! $v) { $this->beep('bad', 'Unknown code', $code.' is not a product, batch or order'); return; }
-        $this->count($v, false);
+        // Settings → Batch & stock: the stock-in sticker says which batch (supplier, purchase price) the unit came from
+        if (! $batch && self::stickerRequired() && $v->batches()->exists()) {
+            $this->beep('warn', 'Scan the batch sticker', $v->label.' — scan the stock-in sticker ('.$v->sku.'-B…), not the product barcode, so we know which batch / supplier it came from');
+            return;
+        }
+        $this->count($v, false, $batch);
     }
 
-    /** barcode / SKU / SKU-B014 → variant; a bare batch code (B014) → that batch's variant */
-    protected function variantFor(string $code): ?ProductVariant
-    {
-        return ProductVariant::findByScan($code) ?? (($b = Batch::where('code', strtoupper($code))->first()) ? ProductVariant::find($b->variant_id) : null);
-    }
+    public static function stickerRequired(): bool { return (bool) ops_setting('batch.scan_at_packing', true); }
+
+    /** code → [variant, batch] (shared with Return receive: ProductVariant::resolveScan) */
+    protected function resolve(string $code): array { return ProductVariant::resolveScan($code); }
 
     /** one unit of $v into the parcel: the first open line for it, else the "not on this order" warning */
-    protected function count(ProductVariant $v, bool $byHand): void
+    protected function count(ProductVariant $v, bool $byHand, ?Batch $batch = null): void
     {
+        if ($batch) {
+            $taken = collect($this->picked)->sum(fn ($bs) => (int) ($bs[$batch->id] ?? 0));
+            if ($taken + 1 > $batch->remaining) { $this->beep('bad', 'Batch '.$batch->code.' is empty in stock', $v->label.' — the records show '.$batch->remaining.' left in '.$batch->code.'. Check the sticker, or receive / adjust the stock first'); return; }
+        }
         $lines = collect($this->lines)->where('variant_id', $v->id);
         $line = $lines->first(fn ($l) => ($this->scanned[$l['key']] ?? 0) < $l['need']);
         if (! $line) {
             if ($lines->isNotEmpty()) { $this->beep('warn', 'Already complete', $v->label.' — '.$lines->sum('need').' needed, all in'); return; }
-            $this->extraId = $v->id;
+            $this->extraId = $v->id; $this->extraBatchId = $batch?->id;
             $this->beep('bad', 'Not on this order', $v->label.' — add it to the parcel anyway?');
             return;
         }
-        $this->add($line['key'], $byHand);
-        $this->beep('ok', '✓ '.$v->label.($byHand ? ' (ticked by hand)' : ''), $this->progress());
+        $this->add($line['key'], $byHand, $batch?->id);
+        $this->beep('ok', '✓ '.$v->label.($batch ? ' · batch '.$batch->code : '').($byHand ? ' (ticked by hand)' : ''), $this->progress());
     }
 
-    protected function add(string $key, bool $byHand): void
+    protected function add(string $key, bool $byHand, ?int $batchId = null): void
     {
         $this->scanned[$key] = ($this->scanned[$key] ?? 0) + 1;
         if ($byHand) $this->manual[$key] = ($this->manual[$key] ?? 0) + 1;
-        $this->history[] = [$key, $byHand];
+        if ($batchId) $this->picked[$key][$batchId] = ($this->picked[$key][$batchId] ?? 0) + 1;
+        $this->history[] = [$key, $byHand, $batchId];
+    }
+
+    /** take one unit back out (−, undo): the scan / tick / batch that history says put it in */
+    protected function takeBack(string $key, ?array $entry): void
+    {
+        $this->scanned[$key] = max(0, ($this->scanned[$key] ?? 0) - 1);
+        if ($entry ? $entry[1] : ($this->manual[$key] ?? 0) > 0) $this->manual[$key] = max(0, ($this->manual[$key] ?? 0) - 1);
+        if ($b = $entry[2] ?? null) {
+            $this->picked[$key][$b] = max(0, ($this->picked[$key][$b] ?? 0) - 1);
+            if (! $this->picked[$key][$b]) unset($this->picked[$key][$b]);
+            if (! $this->picked[$key]) unset($this->picked[$key]);
+        }
+    }
+
+    /** "+ from batch…" picker per line: that product's batches with stock, oldest first — [variant_id => [[id, label]]] */
+    #[Computed]
+    public function batchOptions(): array
+    {
+        $vids = collect($this->lines)->pluck('variant_id')->unique()->all();
+        if (! $vids) return [];
+        return Batch::whereIn('variant_id', $vids)->where('remaining', '>', 0)->with('supplier:id,name')->orderBy('received_at')->get()
+            ->groupBy('variant_id')->map(fn ($g) => $g->map(fn ($b) => ['id' => $b->id, 'label' => $b->code.' · '.($b->supplier?->name ?? 'no supplier').' · '.tk($b->unit_cost).' · '.$b->remaining.' left'])->values()->all())->all();
+    }
+
+    /** no scanner / no sticker: put one unit in by hand AND link it to the batch picked — the same record a sticker scan makes */
+    public function addFromBatch(string $key, $batchId): void
+    {
+        $l = $this->lines[$key] ?? null; $b = $batchId ? Batch::find((int) $batchId) : null;
+        if (! $l || ! $b || $b->variant_id != $l['variant_id']) return;
+        if (($this->scanned[$key] ?? 0) >= $l['need']) { $this->beep('warn', 'Already complete', $l['label']); return; }
+        $taken = collect($this->picked)->sum(fn ($bs) => (int) ($bs[$b->id] ?? 0));
+        if ($taken + 1 > $b->remaining) { $this->beep('bad', 'Batch '.$b->code.' is empty in stock', $l['label'].' — the records show '.$b->remaining.' left'); return; }
+        $this->add($key, true, $b->id);
+        $this->beep('ok', '✓ '.$l['label'].' · batch '.$b->code.' (linked by hand)', $this->progress());
+    }
+
+    /** "✓ packed" banner → Unpack: stock back into its batches, order back to Confirmed and open again for re-packing */
+    public function unpack(int $id): void
+    {
+        $o = Order::find($id); if (! $o) return;
+        try { app(\App\Services\Ops\OrderWorkflow::class)->setStatus($o, 'confirmed'); }
+        catch (\Illuminate\Validation\ValidationException $e) { $this->beep('bad', 'Can’t unpack '.$o->number, collect($e->errors())->flatten()->first()); return; }
+        $this->done = null; unset($this->queue, $this->queueCount, $this->packedToday);
+        $this->openOrder($o->number, true);
+        $this->beep('info', $o->number.' unpacked', 'Stock is back in its batches — pack it again');
+    }
+
+    /** batch codes for the "batch B014 ×1" line under each product */
+    #[Computed]
+    public function pickedCodes(): array
+    {
+        $ids = collect($this->picked)->flatMap(fn ($bs) => array_keys($bs))->unique()->all();
+        return $ids ? Batch::whereIn('id', $ids)->pluck('code', 'id')->all() : [];
     }
 
     // ── by hand
@@ -219,10 +283,10 @@ class Scan extends Component
     public function minus(string $key): void
     {
         if (($this->scanned[$key] ?? 0) < 1) return;
-        $this->scanned[$key]--;
-        if (($this->manual[$key] ?? 0) > 0) $this->manual[$key]--;
-        foreach (array_reverse(array_keys($this->history)) as $k) if ($this->history[$k][0] === $key) { unset($this->history[$k]); break; }
+        $entry = null;
+        foreach (array_reverse(array_keys($this->history)) as $k) if ($this->history[$k][0] === $key) { $entry = $this->history[$k]; unset($this->history[$k]); break; }
         $this->history = array_values($this->history);
+        $this->takeBack($key, $entry);
         $this->flash = ['tone' => 'info', 'title' => 'Removed one', 'sub' => ($this->lines[$key]['label'] ?? '').' · '.$this->progress()];
     }
 
@@ -235,13 +299,12 @@ class Scan extends Component
     public function undo(): void
     {
         if (! $last = array_pop($this->history)) return;
-        [$key, $byHand] = $last;
-        $this->scanned[$key] = max(0, ($this->scanned[$key] ?? 0) - 1);
-        if ($byHand) $this->manual[$key] = max(0, ($this->manual[$key] ?? 0) - 1);
+        $key = $last[0];
+        $this->takeBack($key, $last);
         $this->flash = ['tone' => 'info', 'title' => 'Undone', 'sub' => ($this->lines[$key]['label'] ?? '').' · '.$this->progress()];
     }
 
-    public function resetScans(): void { $this->reset('scanned', 'manual', 'history', 'extraId'); $this->flash = ['tone' => 'info', 'title' => 'Scans cleared', 'sub' => 'Start again']; }
+    public function resetScans(): void { $this->reset('scanned', 'manual', 'history', 'extraId', 'extraBatchId', 'picked'); $this->flash = ['tone' => 'info', 'title' => 'Scans cleared', 'sub' => 'Start again']; }
 
     // ── a product that is not on the order
 
@@ -267,11 +330,12 @@ class Scan extends Component
         });
         $this->extraId = null; unset($this->current, $this->lines);
         $line = collect($this->lines)->first(fn ($l) => $l['variant_id'] === $v->id && ($this->scanned[$l['key']] ?? 0) < $l['need']);
-        if ($line) $this->add($line['key'], false);
+        if ($line) $this->add($line['key'], false, $this->extraBatchId);
+        $this->extraBatchId = null;
         $this->beep('warn', 'Added to the parcel: '.$v->label, ($price ? 'Charged '.tk($price).' — COD is now '.tk($o->fresh()->cod) : 'Free (gift / replacement)').' · '.$this->progress());
     }
 
-    public function skipExtra(): void { $this->extraId = null; $this->flash = ['tone' => 'info', 'title' => 'Not added', 'sub' => 'Keep it out of the parcel']; }
+    public function skipExtra(): void { $this->extraId = null; $this->extraBatchId = null; $this->flash = ['tone' => 'info', 'title' => 'Not added', 'sub' => 'Keep it out of the parcel']; }
 
     // ── packing
 
@@ -282,8 +346,13 @@ class Scan extends Component
         if (! in_array($o->fresh()->status, self::PACKABLE)) { $this->beep('warn', 'Order '.$o->number.' can no longer be packed', 'Status: '.$o->fresh()->status); return; }
         $allocator = app(BatchAllocator::class);
         $allocator->allocate($o);
+        // the units in the parcel come from the batches whose stickers were scanned (supplier / cost traceability)
+        $picks = [];
+        foreach ($this->picked as $key => $bs) foreach ($bs as $bid => $n) if ($n > 0 && isset($this->lines[$key])) $picks[] = ['item_id' => $this->lines[$key]['item_id'], 'batch_id' => (int) $bid, 'qty' => (int) $n];
+        $allocator->useScannedBatches($o, $picks);
         if ($short = $allocator->shortfall($o)) { $this->beep('bad', 'Not enough stock in batches', $short.' unit(s) have no batch — receive stock in Purchases first'); return; }
         $allocator->pack($o);
+        if ($picks) $o->log('packed', 'Batches confirmed at packing (sticker / picked): '.collect($picks)->groupBy('batch_id')->map(fn ($g, $bid) => ($this->pickedCodes[$bid] ?? '#'.$bid).' ×'.$g->sum('qty'))->join(', '));
         if ($byHand = array_sum($this->manual)) $o->log('packed', $byHand.' item(s) ticked by hand at packing (not scanned)');
         $parcel = $o->shipment()->value('code');
         $this->done = ['number' => $o->number, 'id' => $o->id, 'parcel' => $parcel];
@@ -291,7 +360,7 @@ class Scan extends Component
         $this->dispatch('ops-beep', tone: 'done');
         $done = $this->done;
         // the queue search found this order — clear it so "next order" continues the real queue, not the search matches
-        $this->reset('order', 'scanned', 'manual', 'history', 'extraId', 'flash', 'choices', 'queueSearch'); unset($this->current, $this->lines, $this->parcels, $this->queue, $this->queueCount, $this->queueMatches, $this->packedToday);
+        $this->reset('order', 'scanned', 'manual', 'history', 'extraId', 'extraBatchId', 'picked', 'flash', 'choices', 'queueSearch'); unset($this->current, $this->lines, $this->parcels, $this->queue, $this->queueCount, $this->queueMatches, $this->packedToday);
         $this->done = $done;
         if ($this->autoNext && ($next = $this->queue->first())) { $this->openOrder($next->number, true); $this->done = $done; }
     }

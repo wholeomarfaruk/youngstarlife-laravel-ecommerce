@@ -66,7 +66,7 @@ class Tracer
         $nodes = [
             $n('Supplier', $b->supplier->name, '', route('ops.suppliers.index', ['search' => $b->supplier->name])),
             $b->purchaseOrder ? $n('PO', $b->purchaseOrder->number, ops_date($b->purchaseOrder->ordered_at), route('ops.purchases.edit', $b->purchase_order_id)) : $n('PO', '—', 'no PO'),
-            $n('Batch', $b->code, tk($b->unit_cost).' · '.$b->remaining.'/'.$b->qty.' left', route('ops.batches.index', ['search' => $b->code])),
+            $n('Batch', $b->code, tk($b->unit_cost).' · '.$b->remaining.'/'.$b->qty.' left'.($a && $a->packed_at ? ($a->batch_scanned ? ' · ✓ batch confirmed at packing' : ' · auto: oldest first') : ''), route('ops.batches.index', ['search' => $b->code]), $a && $a->batch_scanned ? 'ok' : 'ink'),
             $n('Product', $b->variant->label, $b->variant->sku, route('ops.products.edit', ['product' => $b->variant->product_id, 'tab' => 'stock'])),
         ];
         if (! $a) return array_merge($nodes, [$n('Order', 'Not sold yet', '', null, 'mute')]);
@@ -76,7 +76,9 @@ class Tracer
         if ($s) $nodes[] = $n('Courier', $s->courier->name, config("ops.courier_status.{$s->courier_status}.0"), route('ops.orders.in-courier', ['search' => $s->code]));
         $outcome = match (true) { in_array($o->status, ['delivered']) => ['Delivered', 'ok'], in_array($o->status, ['returned', 'returning']) => [ucfirst($o->status), 'bad'], $o->status === 'partially_delivered' => ['Partially delivered', 'warn'], default => [config("ops.order_status.{$o->status}.0"), 'info'] };
         $nodes[] = $n('Outcome', $outcome[0], '', null, $outcome[1]);
-        $ri = CustomerReturnItem::where('order_item_id', $a->order_item_id)->with('customerReturn:id,code')->first();
+        // returns are recorded per batch: this batch's row first, else (older returns) any row of the line
+        $ri = CustomerReturnItem::where('order_item_id', $a->order_item_id)->where('batch_id', $a->batch_id)->with('customerReturn:id,code')->first()
+            ?? CustomerReturnItem::where('order_item_id', $a->order_item_id)->whereNull('batch_id')->with('customerReturn:id,code')->first();
         if ($ri) {
             $nodes[] = $n('Return', $ri->customerReturn->code, $ri->reason.' · '.config("ops.return_conditions.{$ri->condition}.0", 'Not inspected'), route('ops.trace', ['q' => $ri->customerReturn->code]), $ri->condition === 'good' ? 'ok' : 'bad');
             $sri = SupplierReturnItem::where('customer_return_item_id', $ri->id)->with('supplierReturn')->first();

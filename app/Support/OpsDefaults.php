@@ -78,7 +78,7 @@ class OpsDefaults
                 'supplier_reminder' => $rule(true, 'Supplier due is older than 15 days', 'Remind accounts'),
                 'allocation' => 'FIFO',
             ],
-            'batch' => ['format' => 'B{###}', 'create_on_receive' => true, 'low_threshold' => 15, 'website_stock' => false, 'reserve_when' => 'confirmed', 'allow_negative' => false, 'track_expiry' => false, 'allocation' => 'FIFO'],
+            'batch' => ['format' => 'B{###}', 'create_on_receive' => true, 'low_threshold' => 15, 'website_stock' => false, 'reserve_when' => 'confirmed', 'allow_negative' => false, 'track_expiry' => false, 'allocation' => 'FIFO', 'scan_at_packing' => true],
             'barcode' => ['product' => 'EAN-13', 'prefix' => '890123', 'batch_label' => 'code128', 'parcel_label' => true, 'size' => '50x30', 'printer' => 'Xprinter XP-365B', 'price_on_label' => true],
             'returns' => ['reasons' => config('ops.return_reasons')],
             'sms' => ['templates' => [

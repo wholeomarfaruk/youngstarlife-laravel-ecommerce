@@ -43,5 +43,22 @@ class ProductVariant extends OpsModel
         return static::where('barcode', $code)->orWhere('sku', $code)->first()
             ?? (preg_match('/^(.+)-(B\d+)$/i', $code, $m) ? static::where('sku', $m[1])->first() : null);
     }
+    /**
+     * Scanner input → [variant, batch]. Product barcode / SKU → [variant, null]. The stock-in batch sticker SKU-B014 (or a bare
+     * batch code B014) → [that batch's variant, batch]. A sticker whose SKU part isn't the batch's product is not trusted.
+     * Packing scan and Return receive both use this, so a unit is traced to the same batch going out and coming back.
+     */
+    public static function resolveScan(string $code): array
+    {
+        $code = trim($code); $up = strtoupper($code);
+        if ($code === '') return [null, null];
+        if ($v = static::where('barcode', $code)->orWhere('sku', $code)->first()) return [$v, null];
+        $b = Batch::where('code', $up)->with('variant')->first();
+        if (! $b && ($pos = strrpos($up, '-')) !== false) {
+            $b = Batch::where('code', substr($up, $pos + 1))->with('variant')->first();
+            if ($b && strcasecmp((string) $b->variant?->sku, substr($code, 0, $pos)) !== 0) $b = null;   // B014 belongs to another product
+        }
+        return $b?->variant ? [$b->variant, $b] : [static::findByScan($code), null];
+    }
     public function getEffectivePriceAttribute(): int { return (int) ($this->sale_price ?? $this->price ?? $this->product->sale_price ?? $this->product->price); }
 }

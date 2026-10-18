@@ -3,7 +3,7 @@
     <div class="flex min-w-0 flex-col gap-3">
         {{-- scanner --}}
         <section class="card flex flex-col gap-2.5 p-3.5" x-data="scanner('scan')" @ops-refocus.window="$refs.input?.focus()">
-            <div class="flex flex-wrap items-baseline justify-between gap-2"><span class="text-md font-semibold">Scan the order, then each product</span><span class="text-xs text-ink-muted">Order no. · parcel P1005 · barcode · SKU · batch label (SKU-B014) · batch code (B014)</span></div>
+            <div class="flex flex-wrap items-baseline justify-between gap-2"><span class="text-md font-semibold">Scan the order, then each product</span><span class="text-xs text-ink-muted">Order no. · parcel P1005 · then {{ \App\Livewire\Ops\Packing\Scan::stickerRequired() ? 'each unit’s batch sticker (SKU-B014)' : 'barcode · SKU · batch sticker (SKU-B014) · batch code (B014)' }}</span></div>
             <form @submit.prevent="submit" class="flex flex-wrap gap-2">
                 <div class="flex min-w-0 flex-[1_1_260px] items-center gap-2.5 rounded-md border-2 border-ink bg-white px-3">
                     <span class="mono rounded-sm border border-line px-1 text-xs text-ink-muted">SCAN</span>
@@ -51,6 +51,7 @@
                         <a href="{{ route('ops.orders.parcel-labels', ['ids' => $done['id']]) }}" target="_blank" class="btn-secondary btn-sm">Print label</a>
                         <button x-data @click="$dispatch('open-modal', 'book-courier-one'); $dispatch('book-courier', { id: {{ $done['id'] }} })" class="btn-secondary btn-sm">Book courier…</button>
                         <a href="{{ route('ops.orders.show', $done['id']) }}" wire:navigate class="btn-ghost btn-sm">Open order</a>
+                        <button type="button" wire:click="unpack({{ $done['id'] }})" wire:confirm="Unpack {{ $done['number'] }}? The units go back into the same batches; the order opens again for re-packing." class="btn-ghost btn-sm text-bad">Unpack</button>
                     </span>
                 </div>
             @endif
@@ -93,13 +94,20 @@
                         <div class="min-w-0 flex-1">
                             <div class="font-medium">{{ $l['label'] }} @if ($l['free'])<x-ops.badge tone="info">Free</x-ops.badge>@endif</div>
                             @if ($l['combo'])<div class="text-xs font-semibold text-info">Part of combo: {{ $l['combo'] }}</div>@endif
-                            <div class="mono text-xs text-ink-muted">{{ $l['barcode'] ?: '—' }} · {{ $l['sku'] }}@if ($l['batches']) · batch {{ $l['batches'] }}@endif @if ($hand)<span class="font-sans font-semibold text-warn"> · {{ $hand }} ticked by hand</span>@endif</div>
+                            <div class="mono text-xs text-ink-muted">{{ $l['barcode'] ?: '—' }} · {{ $l['sku'] }}@if ($picks = $picked[$l['key']] ?? []) · <span class="font-sans font-semibold text-ok">batch {{ collect($picks)->map(fn ($n, $bid) => ($this->pickedCodes[$bid] ?? '#'.$bid).' ×'.$n)->join(', ') }}</span>@elseif ($l['batches']) · reserved {{ $l['batches'] }}@endif @if ($hand)<span class="font-sans font-semibold text-warn"> · {{ $hand }} ticked by hand</span>@endif</div>
                         </div>
                         <div class="flex items-center gap-1">
                             <button type="button" wire:click="minus('{{ $key }}')" @disabled(! $n) class="grid h-7 w-7 place-items-center rounded border border-line text-ink-3 hover:bg-soft">−</button>
                             <span @class(['min-w-[48px] text-center font-semibold tabular-nums', 'text-ok' => $ok])>{{ $n }} / {{ $l['need'] }}</span>
                             <button type="button" wire:click="plus('{{ $key }}')" @disabled($ok) class="grid h-7 w-7 place-items-center rounded border border-line text-ink-3 hover:bg-soft">+</button>
                         </div>
+                        {{-- no scanner / no sticker: add a unit and link it to a batch by hand --}}
+                        @if (! $ok && ($opts = $this->batchOptions[$l['variant_id']] ?? []))
+                            <select class="input w-auto max-w-[190px] py-1 text-xs" aria-label="Add one from a batch" x-on:change="if ($event.target.value) { $wire.addFromBatch('{{ $key }}', $event.target.value); $event.target.value = '' }">
+                                <option value="">+ from batch…</option>
+                                @foreach ($opts as $b)<option value="{{ $b['id'] }}">{{ $b['label'] }}</option>@endforeach
+                            </select>
+                        @endif
                     </div>
                 @endforeach
                 <div class="flex flex-wrap items-center gap-2 border-t border-soft p-3">

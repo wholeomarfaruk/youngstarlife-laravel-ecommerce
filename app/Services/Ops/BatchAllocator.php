@@ -4,6 +4,7 @@ namespace App\Services\Ops;
 
 use App\Models\Ops\{Batch, Courier, Order, OrderItemAllocation, ProductVariant, Shipment};
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /** FIFO allocation on confirm (reserves), cost captured on pack. */
 class BatchAllocator
@@ -50,6 +51,71 @@ class BatchAllocator
                 }
             }
         });
+    }
+
+    /**
+     * Packing scan read the batch stickers: the units in this parcel come from THOSE batches. Moves this order's unpacked
+     * reservations onto them (same variant, so reserved counts don't change). If other orders had reserved the scanned
+     * batch, their reservation is swapped onto the batch this order just freed — no batch is promised twice.
+     * $picks = [['item_id' => 12, 'batch_id' => 14, 'qty' => 1], …]
+     */
+    public function useScannedBatches(Order $order, array $picks): void
+    {
+        if (! $picks) return;
+        DB::transaction(function () use ($order, $picks) {
+            $own = $order->items()->pluck('id')->all();
+            foreach (collect($picks)->groupBy('item_id') as $itemId => $rows) {
+                $itemId = (int) $itemId;
+                if (! in_array($itemId, $own)) continue;
+                $want = $rows->groupBy('batch_id')->map->sum('qty');   // batch_id => units scanned from it
+                $batches = Batch::whereIn('id', $want->keys())->lockForUpdate()->get()->keyBy('id');
+                $mine = OrderItemAllocation::where('order_item_id', $itemId)->whereNull('packed_at')->with('batch:id,variant_id')->get();
+
+                foreach ($batches->groupBy('variant_id') as $vid => $scannedBatches) {
+                    $have = $mine->filter(fn ($a) => $a->batch?->variant_id == $vid);
+                    // units reserved on a batch beyond what was scanned there: those move to the scanned batches
+                    $spare = $have->filter(fn ($a) => $a->qty > (int) ($want[$a->batch_id] ?? 0))->values();
+                    $freed = [];   // batch_id => units this order gave up (room for a swapped reservation)
+                    foreach ($scannedBatches as $b) {
+                        $need = $missing = (int) $want[$b->id] - (int) $have->where('batch_id', $b->id)->sum('qty');
+                        foreach ($spare as $a) {
+                            if ($need <= 0) break;
+                            $t = min($need, $a->qty - (int) ($want[$a->batch_id] ?? 0));
+                            if ($t <= 0) continue;
+                            $a->qty -= $t; $a->qty ? $a->save() : $a->delete();
+                            $freed[$a->batch_id] = ($freed[$a->batch_id] ?? 0) + $t; $need -= $t;
+                        }
+                        $moved = $missing - max(0, $need);   // units now taken from the scanned batch instead
+                        if ($moved > 0) {
+                            $row = $have->firstWhere('batch_id', $b->id);
+                            $row ? $row->increment('qty', $moved) : $mine->push($row = OrderItemAllocation::create(['order_item_id' => $itemId, 'batch_id' => $b->id, 'qty' => $moved]));
+                            if (! $have->contains('id', $row->id)) $have->push($row);
+                            $this->makeRoom($b, $itemId, $freed);
+                        }
+                        OrderItemAllocation::where('order_item_id', $itemId)->where('batch_id', $b->id)->whereNull('packed_at')->update(['batch_scanned' => true]);
+                    }
+                }
+            }
+        });
+    }
+
+    /** the scanned batch now holds more reservations than it has units → move other orders' (newest first) onto the freed batches */
+    protected function makeRoom(Batch $b, int $itemId, array &$freed): void
+    {
+        $over = (int) OrderItemAllocation::where('batch_id', $b->id)->whereNull('packed_at')->sum('qty') - (int) $b->remaining;
+        if ($over <= 0) return;
+        foreach (OrderItemAllocation::where('batch_id', $b->id)->whereNull('packed_at')->where('order_item_id', '!=', $itemId)->where('batch_scanned', false)->latest('id')->get() as $other) {
+            foreach ($freed as $to => $room) {
+                if ($over <= 0 || $other->qty <= 0) break;
+                $t = min($over, $other->qty, $room);
+                if ($t <= 0) continue;
+                $other->qty -= $t; $other->qty ? $other->save() : $other->delete();
+                $dest = OrderItemAllocation::firstOrNew(['order_item_id' => $other->order_item_id, 'batch_id' => $to, 'packed_at' => null]);
+                $dest->qty = (int) $dest->qty + $t; $dest->save();
+                $freed[$to] -= $t; $over -= $t;
+            }
+            if ($over <= 0) return;
+        }
     }
 
     /** Units of the order that could not be allocated from batches (0 = fully covered). */
@@ -103,13 +169,47 @@ class BatchAllocator
         });
     }
 
+    /**
+     * Undo "Mark packed": the packed units go back into the SAME batches they were taken from and are reserved for the order
+     * again (batch links, incl. stickers scanned, stay — re-packing keeps them); the cost comes off the order. The parcel made at
+     * packing is removed — or, when it was booked with the courier before packing, only marked not packed. Refused once the
+     * courier has the parcel. $setStatus false = the caller (OrderWorkflow::setStatus) sets the new status itself.
+     */
+    public function unpack(Order $order, bool $setStatus = true): void
+    {
+        if ($order->fresh()->status !== 'packed') throw ValidationException::withMessages(['unpack' => "{$order->number} is not packed."]);
+        $s = $order->shipment()->first();
+        if ($s && ($s->handed_over_at || ! in_array($s->courier_status, [null, 'pending'])))
+            throw ValidationException::withMessages(['unpack' => "Parcel {$s->code} is already with the courier (".config("ops.courier_status.{$s->courier_status}.0", $s->courier_status).') — it can’t be unpacked here.']);
+        DB::transaction(function () use ($order, $s, $setStatus) {
+            $old = $this->superseded($order); $cost = 0; $units = 0;
+            $packed = OrderItemAllocation::whereIn('order_item_id', $order->items()->pluck('id'))->whereNotNull('packed_at')->with('batch')->get();
+            foreach ($this->current($packed, $old) as $a) {
+                if ($s && $a->shipment_id && $a->shipment_id != $s->id) continue;   // units of another parcel (e.g. a delivered part)
+                $this->stock->move($a->batch, 'sale', $a->qty, $order, 'Unpacked — back into '.$a->batch->code);   // a reversed sale: "sold" per batch nets out
+                ProductVariant::whereKey($a->batch->variant_id)->increment('reserved', $a->qty);   // reserved for the order again
+                $cost += $a->qty * (int) $a->unit_cost; $units += $a->qty;
+                $a->update(['packed_at' => null, 'unit_cost' => null, 'shipment_id' => null]);
+            }
+            $order->update(['cost' => max(0, (int) $order->cost - $cost)] + ($setStatus ? ['status' => 'confirmed'] : []));
+            $note = '';
+            if ($s) {
+                $linked = \App\Models\Ops\CustomerReturn::where('shipment_id', $s->id)->exists() || \App\Models\Ops\CourierSessionItem::where('shipment_id', $s->id)->exists();
+                if ($s->booked_at || $s->tracking || $linked) { $s->update(['packed_at' => null, 'packed_by' => null]); $note = ' · parcel '.$s->code.' kept (booked with '.($s->courier?->name ?? 'the courier').'), not packed'; }
+                else { $s->delete(); $note = ' · parcel '.$s->code.' removed'; }
+            }
+            $order->log('packed', "Unpacked: $units unit(s) back into their batches".$note);
+            ops_log("Unpacked {$order->number} · $units unit(s) back in stock", $order);
+        });
+    }
+
     /** Cancelling: drop unpacked reservations and put already-packed units back into their original batch. */
     public function release(Order $order): void
     {
         DB::transaction(function () use ($order) {
             $old = $this->superseded($order);
             foreach ($this->current(OrderItemAllocation::whereIn('order_item_id', $order->items()->pluck('id'))->with('batch', 'item')->get(), $old) as $a) {
-                if ($a->packed_at) $this->stock->move($a->batch, 'adjust', $a->qty, $order, 'Order cancelled');
+                if ($a->packed_at) $this->stock->move($a->batch, 'sale', $a->qty, $order, 'Order cancelled');   // reversed sale: a cancelled parcel isn't "sold"
                 else ProductVariant::whereKey($a->batch->variant_id)->decrement('reserved', $a->qty);
                 $a->delete();
             }

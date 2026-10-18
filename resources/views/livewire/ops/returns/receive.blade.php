@@ -31,14 +31,14 @@
                         <div class="flex gap-1.5"><button wire:click="cancelActive" class="btn-ghost btn-sm">Cancel</button><button wire:click="markAllGood" class="btn-secondary btn-sm">Mark all good</button><button wire:click="confirmExchange" wire:loading.attr="disabled" class="btn-primary">Confirm old item received</button></div></div>
                     <p class="px-3.5 pt-2 text-xs text-ink-muted">The customer already has the new item ({{ $x->shipment?->courier?->name }} · {{ config('ops.exchange_state.'.$x->exchange_state.'.0') }}). Tick what the rider handed back; unticked = missing → courier claim. No refund{{ $line?->refund_amount ? ' — except the price difference '.tk($line->refund_amount).' (Refund due after confirming)' : '' }}.</p>
                     <div class="overflow-x-auto">@foreach ($line?->items ?? [] as $it)
-                        @php($l = $lines[$it->order_item_id] ?? ['got' => false, 'condition' => 'good']) @php($b = $it->orderItem->allocations->first()?->batch)
+                        @php($l = $lines[$it->order_item_id] ?? ['got' => false, 'condition' => 'good']) @php($bp = $this->batchPreview($it->orderItem, (int) $it->qty)) @php($codes = collect($bp)->pluck('code')->filter()->join(', '))
                         @php($act = $l['got'] ? config('ops.return_conditions.'.($l['condition'] ?: 'none')) : config('ops.return_conditions.missing'))
                         <div @class(['grid min-w-[760px] grid-cols-[24px_minmax(180px,1fr)_150px_150px_150px] items-center gap-2.5 border-b border-soft px-3 py-2', 'bg-brand-tint' => $l['got']])>
                             <input type="checkbox" wire:model.live="lines.{{ $it->order_item_id }}.got" class="h-5 w-5 accent-brand">
                             <div><div class="font-medium">{{ $it->orderItem->variant->label }} × {{ $it->qty }}</div><div class="text-xs text-ink-muted">{{ $it->reason }} · {{ $it->orderItem->variant->barcode ?: $it->orderItem->variant->sku }}</div></div>
-                            <div class="text-sm">@if ($b)<span class="mono font-semibold">{{ $b->code }}</span>@else<span class="text-ink-muted">no batch</span>@endif</div>
+                            <div class="text-sm">@include('livewire.ops.returns.partials.batch-preview', ['bp' => $bp])</div>
                             <select wire:model.live="lines.{{ $it->order_item_id }}.condition" class="input py-1" @disabled(! $l['got'])><option value="">Not inspected</option>@foreach (config('ops.return_conditions') as $k => [$lbl]) @continue($k === 'missing')<option value="{{ $k }}">{{ $lbl }}</option>@endforeach</select>
-                            <span>@if ($act)<x-ops.badge :tone="$act[3]">{{ $act[2] }}{{ $act[1] === 'restock' && $b ? ' → '.$b->code : '' }}</x-ops.badge>@else<x-ops.badge tone="mute">Not inspected</x-ops.badge>@endif</span>
+                            <span>@if ($act)<x-ops.badge :tone="$act[3]">{{ $act[2] }}{{ $act[1] === 'restock' && $codes ? ' → '.$codes : '' }}</x-ops.badge>@else<x-ops.badge tone="mute">Not inspected</x-ops.badge>@endif</span>
                         </div>@endforeach</div>
                     <div class="grid gap-3 p-3 sm:grid-cols-[1fr_220px]">
                         <textarea wire:model="note" rows="2" class="input" placeholder="Note, e.g. Old pant came back with tag, slightly used."></textarea>
@@ -56,15 +56,15 @@
                     @if ($o->advance > 0 || $refund > 0)<div class="mx-3.5 mt-3 rounded-md bg-warn-bg px-3 py-2 text-sm text-warn">Customer paid {{ tk($o->advance + ($o->payment_status === 'paid' ? $o->cod : 0)) }} in advance. Delivery charge {{ tk($o->delivery_charge) }} is still billed → refund {{ tk($refund) }} after confirming.</div>@endif
                     <p class="px-3.5 pt-2 text-xs text-ink-muted">{{ $kept ? 'Tick the items that came back. Unticked items stay with the customer (partial).' : 'Tick each item found in the parcel. Unticked items are recorded as Missing → courier claim.' }}</p>
                     <div class="overflow-x-auto">@foreach ($o->items as $i)
-                        @php($l = $lines[$i->id] ?? ['got' => false, 'condition' => 'good', 'reason' => '']) @php($b = $i->allocations->first()?->batch)
+                        @php($l = $lines[$i->id] ?? ['got' => false, 'condition' => 'good', 'reason' => '']) @php($bp = $this->batchPreview($i, (int) $i->qty, $p?->id)) @php($codes = collect($bp)->pluck('code')->filter()->join(', '))
                         @php($act = $l['got'] ? config('ops.return_conditions.'.($l['condition'] ?: 'none')) : ($kept ? null : config('ops.return_conditions.missing')))
                         <div @class(['grid min-w-[860px] grid-cols-[24px_minmax(160px,1fr)_170px_150px_150px_130px] items-center gap-2.5 border-b border-soft px-3 py-2', 'bg-brand-tint' => $l['got']])>
                             <input type="checkbox" wire:model.live="lines.{{ $i->id }}.got" class="h-5 w-5 accent-brand">
                             <div><div class="font-medium">{{ $i->variant->label }} × {{ $i->qty }}</div><div class="mono text-xs text-ink-muted">{{ $i->variant->barcode ?: $i->variant->sku }}</div></div>
-                            <div class="text-sm">@if ($b)<span class="mono font-semibold">{{ $b->code }}</span><div class="text-xs text-ink-muted">{{ $b->supplier->name }} · {{ $b->purchaseOrder?->number ?? '—' }}</div>@else<span class="text-ink-muted">no batch</span>@endif</div>
+                            <div class="text-sm">@include('livewire.ops.returns.partials.batch-preview', ['bp' => $bp])</div>
                             <select wire:model="lines.{{ $i->id }}.reason" class="input py-1">@foreach (ops_setting('returns.reasons', config('ops.return_reasons')) as $r)<option>{{ $r }}</option>@endforeach</select>
                             <select wire:model.live="lines.{{ $i->id }}.condition" class="input py-1"><option value="">Not inspected</option>@foreach (config('ops.return_conditions') as $k => [$lbl]) @continue($k === 'missing')<option value="{{ $k }}">{{ $lbl }}</option>@endforeach</select>
-                            <span>@if ($act)<x-ops.badge :tone="$act[3]">{{ $act[2] }}{{ $act[1] === 'restock' && $b ? ' → '.$b->code : '' }}</x-ops.badge>@elseif ($l['got'])<x-ops.badge tone="mute">Not inspected</x-ops.badge>@else<span class="text-xs text-ink-muted">{{ $kept ? 'kept by customer' : '' }}</span>@endif</span>
+                            <span>@if ($act)<x-ops.badge :tone="$act[3]">{{ $act[2] }}{{ $act[1] === 'restock' && $codes ? ' → '.$codes : '' }}</x-ops.badge>@elseif ($l['got'])<x-ops.badge tone="mute">Not inspected</x-ops.badge>@else<span class="text-xs text-ink-muted">{{ $kept ? 'kept by customer' : '' }}</span>@endif</span>
                         </div>@endforeach</div>
                     <div class="grid gap-3 p-3 sm:grid-cols-[1fr_220px]">
                         <textarea wire:model="note" rows="2" class="input" placeholder="Note, e.g. Customer received 2 items, Blue XL was damaged, returned only XL."></textarea>

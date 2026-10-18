@@ -15,8 +15,10 @@ trait OrderActions
     public function setStatus(int $id, string $status): void
     {
         $o = Order::findOrFail($id);
-        app(OrderWorkflow::class)->setStatus($o, $status);
-        $this->dispatch('toast', message: "Order {$o->number} · ".config("ops.order_status.$status.0"));
+        $wasPacked = $o->status === 'packed';
+        try { app(OrderWorkflow::class)->setStatus($o, $status); }
+        catch (\Illuminate\Validation\ValidationException $e) { $this->dispatch('toast', message: collect($e->errors())->flatten()->first(), type: 'bad'); return; }   // e.g. unpacking a parcel the courier already has
+        $this->dispatch('toast', message: "Order {$o->number} · ".config("ops.order_status.$status.0").($wasPacked && in_array($status, ['confirmed', 'pending']) ? ' · unpacked, stock back in its batches' : ''));
         $this->dispatch('ops-order-updated');
     }
 

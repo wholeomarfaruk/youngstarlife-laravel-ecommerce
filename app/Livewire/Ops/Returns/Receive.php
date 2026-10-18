@@ -2,7 +2,7 @@
 
 namespace App\Livewire\Ops\Returns;
 
-use App\Models\Ops\{Account, Courier, CustomerReturn, CustomerReturnItem, Order, ProductVariant, Shipment, Transaction};
+use App\Models\Ops\{Account, Batch, Courier, CustomerReturn, CustomerReturnItem, Order, OrderItem, ProductVariant, Shipment, Transaction};
 use App\Services\Ops\{ExchangeService, ReturnStock, StockService};
 use App\Livewire\Ops\Concerns\WithTable;
 use Illuminate\Support\Facades\DB;
@@ -28,6 +28,7 @@ class Receive extends Component
     public ?int $activeId = null;                      // shipment being checked
     public ?int $activeOrderId = null;                 // manual (delivered order) return
     public array $lines = [];                          // order_item_id => [got, condition, reason]
+    public array $stickers = [];                       // order_item_id => [batch_id => units] batch stickers read on the returned units
     public string $note = ''; public string $rider = '';
     public array $photos = [];
     public ?array $flash = null;
@@ -65,7 +66,7 @@ class Receive extends Component
         $this->reset('activeId', 'activeOrderId'); $this->exchangeId = $x->id; unset($this->activeExchange, $this->active, $this->activeOrder);
         if ($x->shipment?->courier_id && $x->shipment->courier_id !== $this->courier) { $this->courier = $x->shipment->courier_id; unset($this->expected, $this->session, $this->exchangeDue); }
         $this->lines = $this->activeExchange?->exchangeLine?->items->mapWithKeys(fn ($i) => [$i->order_item_id => ['got' => true, 'condition' => 'good', 'reason' => $i->reason]])->all() ?? [];
-        $this->note = ''; $this->photos = [];
+        $this->note = ''; $this->photos = []; $this->stickers = [];
         $this->flash = ['tone' => 'info', 'title' => 'Exchange old item · '.$x->number.' (original '.$x->exchangeOf?->number.')', 'sub' => 'Check what the rider brought back. Untick what is missing — no refund, the customer has the new item.'];
     }
 
@@ -75,14 +76,14 @@ class Receive extends Component
         $this->validate(['photos.*' => 'image|max:4096']);
         $conds = collect($this->lines)->map(fn ($l) => $l['got'] ? ($l['condition'] ?: null) : 'missing')->all();
         try {
-            $line = app(ExchangeService::class)->receiveOld($x, $conds, ['session' => $this->session, 'rider' => $this->rider ?: null, 'note' => $this->note ?: null, 'courier_id' => $this->courier,
+            $line = app(ExchangeService::class)->receiveOld($x, $conds, ['stickers' => $this->stickers, 'session' => $this->session, 'rider' => $this->rider ?: null, 'note' => $this->note ?: null, 'courier_id' => $this->courier,
                 'photos' => collect($this->photos)->map->store('returns', 'public')->all() ?: null]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             $this->flash = ['tone' => 'bad', 'title' => 'Not received', 'sub' => collect($e->errors())->flatten()->first()]; return;
         }
         if ($x->shipment) $this->entrySession()->items()->create(['shipment_id' => $x->shipment->id, 'type' => 'returned', 'customer_return_id' => $line->id, 'note' => 'Exchange old item', 'user_id' => auth()->id()]);
         $this->logScan($line->code, 'Old item of '.$x->number, 'ok');
-        $this->reset('exchangeId', 'exchange', 'lines', 'note', 'photos'); unset($this->exchangeDue, $this->activeExchange, $this->received, $this->receivedCounts, $this->summary);
+        $this->reset('exchangeId', 'exchange', 'lines', 'stickers', 'note', 'photos'); unset($this->exchangeDue, $this->activeExchange, $this->received, $this->receivedCounts, $this->summary);
         $this->flash = ['tone' => 'ok', 'title' => '✓ '.$line->code.' · old item of '.$x->number.' received', 'sub' => $line->status === 'inspected' ? 'Stock updated · exchange complete' : 'Set the condition below to finish'];
         $this->dispatch('toast', message: 'Exchange '.$x->number.' complete');
     }
@@ -98,7 +99,7 @@ class Receive extends Component
     {
         return Shipment::where('courier_id', $this->courier)->where(fn ($w) => self::comingBack($w))
             ->whereNotExists(fn ($q) => $q->from('ops_customer_returns')->whereColumn('ops_customer_returns.shipment_id', 'ops_shipments.id'))
-            ->with('order:id,number,customer_id,status,advance,cod,total,delivery_charge,exchange_of_id', 'order.customer:id,name', 'order.items.variant.product:id,name', 'order.items.allocations.batch:id,code,supplier_id,purchase_order_id', 'order.items.allocations.batch.supplier:id,name', 'order.items.allocations.batch.purchaseOrder:id,number')->get();
+            ->with('order:id,number,customer_id,status,advance,cod,total,delivery_charge,exchange_of_id', 'order.customer:id,name', 'order.items.variant.product:id,name', 'order.items.allocations.batch:id,code,variant_id,supplier_id,purchase_order_id', 'order.items.allocations.batch.supplier:id,name', 'order.items.allocations.batch.purchaseOrder:id,number')->get();
     }
 
     #[Computed] public function active(): ?Shipment { return $this->activeId ? ($this->expected->firstWhere('id', $this->activeId) ?? Shipment::with('order.items.variant.product', 'order.items.allocations.batch.supplier', 'order.items.allocations.batch.purchaseOrder', 'order.customer')->find($this->activeId)) : null; }
@@ -146,7 +147,7 @@ class Receive extends Component
     protected function startLines(Order $o, bool $got): void
     {
         $this->lines = $o->items->mapWithKeys(fn ($i) => [$i->id => ['got' => $got, 'condition' => 'good', 'reason' => 'Customer Changed Mind']])->all();
-        $this->note = ''; $this->photos = [];
+        $this->note = ''; $this->photos = []; $this->stickers = [];
     }
 
     protected function openManual(Order $o): void
@@ -179,30 +180,60 @@ class Receive extends Component
             if ($this->fast) $this->confirm();
             return;
         }
-        if ($this->exchangeId && ($v = ProductVariant::findByScan($code))) {
-            $it = $this->activeExchange?->exchangeLine?->items->first(fn ($i) => $i->orderItem->variant_id === $v->id);
-            if ($it) { $this->lines[$it->order_item_id]['got'] = true; $this->flash = ['tone' => 'ok', 'title' => '✓ '.$v->label, 'sub' => 'Old item verified']; $this->logScan($code, '✓ '.$v->label, 'ok'); return; }
-            $this->flash = ['tone' => 'bad', 'title' => 'Not the old item of this exchange', 'sub' => $v->label]; $this->logScan($code, 'Wrong item', 'bad'); return;
-        }
+        if ($this->exchangeId && ($x = $this->activeExchange) && $this->checkUnit($x->exchangeLine?->items->map->orderItem ?? collect(), $code, 'Not the old item of this exchange')) return;
         if (! $this->activeId && ! $this->activeOrderId && ! $this->exchangeId && ($x = app(ExchangeService::class)->findReceivable($code, $this->courier))) {
             $this->openExchange($x); $this->logScan($code, 'Exchange '.$x->number, 'info');
             if ($this->fast) $this->confirmExchange();
             return;
         }
-        if (($o = $this->activeOrder) && ($v = ProductVariant::findByScan($code))) {
-            $item = $o->items->firstWhere('variant_id', $v->id);
-            if ($item) { $this->lines[$item->id]['got'] = true; $this->flash = ['tone' => 'ok', 'title' => '✓ '.$v->label, 'sub' => 'Item verified']; $this->logScan($code, '✓ '.$v->label, 'ok'); return; }
-            $this->flash = ['tone' => 'bad', 'title' => 'Wrong item for this parcel', 'sub' => $v->label]; $this->logScan($code, 'Wrong item', 'bad'); return;
-        }
+        if (($o = $this->activeOrder) && $this->checkUnit($o->items, $code, 'Wrong item for this parcel')) return;
         if (! $this->activeId && ! $this->activeOrderId && ($o = Order::live()->numbered($code)->first()) && in_array($o->status, ['delivered', 'partially_delivered'])) { $this->openManual($o); $this->logScan($code, 'Manual return '.$o->number, 'info'); return; }
         if (! in_array($code, $this->unexpected)) $this->unexpected[] = $code;
         $this->flash = ['tone' => 'bad', 'title' => 'Not in this courier\'s return list', 'sub' => $code.' · added to unexpected scans'];
         $this->logScan($code, 'Unexpected', 'bad');
     }
 
+    /**
+     * A unit scanned while checking a return. Its batch sticker (SKU-B014) pins which batch it goes back to — when the line was
+     * packed from that batch. A sticker of the right product but another batch: still ticked, restocked where the stock was
+     * deducted (the records stay true), with a warning. Returns false when the code isn't a product at all.
+     */
+    protected function checkUnit($items, string $code, string $wrong): bool
+    {
+        [$v, $b] = ProductVariant::resolveScan($code);
+        if (! $v) return false;
+        $packed = fn (OrderItem $i) => $i->allocations->whereNotNull('packed_at');
+        if ($b && ($i = $items->first(fn ($i) => $packed($i)->contains('batch_id', $b->id)))) {
+            $max = (int) $packed($i)->where('batch_id', $b->id)->sum('qty');
+            if (($this->stickers[$i->id][$b->id] ?? 0) < $max) $this->stickers[$i->id][$b->id] = ($this->stickers[$i->id][$b->id] ?? 0) + 1;
+            $this->lines[$i->id]['got'] = true;
+            $this->flash = ['tone' => 'ok', 'title' => '✓ '.$v->label.' · batch '.$b->code, 'sub' => 'Goes back to batch '.$b->code.' ('.($b->supplier?->name ?? 'no supplier').')'];
+            $this->logScan($code, '✓ '.$v->label.' · '.$b->code, 'ok');
+            return true;
+        }
+        $i = $items->first(fn ($i) => $i->variant_id == $v->id || $packed($i)->contains(fn ($a) => $a->batch?->variant_id == $v->id));   // combos: a component's batch
+        if (! $i) { $this->flash = ['tone' => 'bad', 'title' => $wrong, 'sub' => $v->label.($b ? ' · batch '.$b->code : '')]; $this->logScan($code, 'Wrong item', 'bad'); return true; }
+        $this->lines[$i->id]['got'] = true;
+        $sent = $packed($i)->map(fn ($a) => $a->batch?->code)->filter()->unique()->join(', ');
+        $this->flash = $b
+            ? ['tone' => 'warn', 'title' => '✓ '.$v->label.' — but sticker '.$b->code.' was not packed in this parcel', 'sub' => 'Restocks to '.($sent ?: 'its packed batch').' (where the stock was deducted). Check the unit is really ours.']
+            : ['tone' => 'ok', 'title' => '✓ '.$v->label, 'sub' => 'Item verified · scan the batch sticker to pin its batch'];
+        $this->logScan($code, '✓ '.$v->label.($b ? ' · sticker '.$b->code.' not packed here' : ''), $b ? 'warn' : 'ok');
+        return true;
+    }
+
+    /** which batches a line goes back to (stickers first, then where it was packed from) — same rule as the restock itself */
+    public function batchPreview(OrderItem $i, int $qty, ?int $shipmentId = null): array
+    {
+        $map = ReturnStock::batchesFor($i, $qty, $this->stickers[$i->id] ?? [], $shipmentId);
+        $batches = Batch::with('supplier:id,name', 'purchaseOrder:id,number')->whereIn('id', array_keys(array_filter($map, fn ($n, $b) => $b, ARRAY_FILTER_USE_BOTH)))->get()->keyBy('id');
+        return collect($map)->map(fn ($n, $b) => ['code' => $batches[$b]->code ?? null, 'supplier' => $batches[$b]?->supplier?->name, 'po' => $batches[$b]?->purchaseOrder?->number, 'n' => $n,
+            'scanned' => (int) ($this->stickers[$i->id][$b] ?? 0)])->values()->all();
+    }
+
     public function markAllGood(): void { foreach ($this->lines as $id => $l) $this->lines[$id] = ['got' => true, 'condition' => 'good', 'reason' => $l['reason'] ?? '']; }
 
-    public function cancelActive(): void { $this->reset('activeId', 'activeOrderId', 'exchangeId', 'exchange', 'lines', 'note', 'photos', 'flash'); unset($this->active, $this->activeOrder, $this->activeExchange); }
+    public function cancelActive(): void { $this->reset('activeId', 'activeOrderId', 'exchangeId', 'exchange', 'lines', 'stickers', 'note', 'photos', 'flash'); unset($this->active, $this->activeOrder, $this->activeExchange); }
 
     /** what the customer paid that must come back (delivery charge is still billed) */
     public function refundFor(Order $o, array $returnedIds): int
@@ -233,10 +264,9 @@ class Receive extends Component
                 if (! $l['got'] && $kept) continue;                    // customer kept it → NOT returned
                 $cond = $l['got'] ? ($l['condition'] ?: null) : 'missing';
                 $action = $cond ? config("ops.return_conditions.$cond.1") : null;
-                // the units that travelled in THIS parcel (a re-sent order has packed units in two parcels)
-                $allocs = $i->allocations()->whereNotNull('packed_at')->when($s, fn ($q) => $q->where(fn ($w) => $w->where('shipment_id', $s->id)->orWhereNull('shipment_id')))->with('batch')->get();
-                $ret->items()->create(['order_item_id' => $i->id, 'batch_id' => $allocs->first()?->batch_id, 'qty' => $i->qty, 'reason' => $cond === 'missing' ? 'Missing in parcel' : $l['reason'], 'condition' => $cond, 'action' => $action]);
-                $this->applyStock($cond, $allocs, $ret, $stock, $i->qty);
+                // one row per batch the units came from (stickers scanned here, else the batches THIS parcel was packed from) →
+                // good units back into exactly those batches, damaged ones booked on them
+                ReturnStock::record($ret, $i, $i->qty, $cond, ['reason' => $cond === 'missing' ? 'Missing in parcel' : $l['reason'], 'action' => $action], $this->stickers[$i->id] ?? [], $s?->id);
                 if ($l['got'] && ! $replaced) $i->increment('returned_qty', $i->qty);
             }
             $partial = $kept && ! $all;
@@ -261,7 +291,7 @@ class Receive extends Component
         ops_notify('returnIn', 'Return '.$ret->code.' received · '.$o->number.($ret->refund_amount ? ' · refund due '.tk($ret->refund_amount) : ''), route('ops.returns.receive', ['view' => $ret->refund_amount ? 'refund' : 'all']));
         $this->dispatch('toast', message: $ret->code.' received · stock updated');
         $this->logScan($ret->code, 'Confirmed '.$o->number, 'ok');
-        $this->reset('activeId', 'activeOrderId', 'lines', 'note', 'photos', 'order'); unset($this->expected, $this->received, $this->active, $this->activeOrder, $this->couriers, $this->summary);
+        $this->reset('activeId', 'activeOrderId', 'lines', 'stickers', 'note', 'photos', 'order'); unset($this->expected, $this->received, $this->active, $this->activeOrder, $this->couriers, $this->summary);
         $this->flash = ['tone' => 'ok', 'title' => $ret->code.' received', 'sub' => $ret->refund_amount ? 'Prepaid — refund '.tk($ret->refund_amount).' due' : 'Scan the next parcel'];
     }
 
@@ -279,7 +309,9 @@ class Receive extends Component
         abort_if($it->condition !== null, 422);
         DB::transaction(function () use ($it, $cond) {
             $it->update(['condition' => $cond, 'action' => config("ops.return_conditions.$cond.1")]);
-            $this->applyStock($cond, $it->orderItem->allocations()->whereNotNull('packed_at')->with('batch')->get(), $it->customerReturn, app(StockService::class), $it->qty);
+            $it->batch_id
+                ? ReturnStock::applyRow($it, $it->customerReturn)   // this row's own batch
+                : $this->applyStock($cond, $it->orderItem->allocations()->whereNotNull('packed_at')->with('batch')->get(), $it->customerReturn, app(StockService::class), $it->qty);   // rows recorded before per-batch rows
             // last item of an exchange old-item line inspected → line done, exchange complete
             $r = $it->customerReturn;
             if ($r->status === 'received' && $r->items()->whereNull('condition')->doesntExist()) $r->update(['status' => 'inspected']);
@@ -321,7 +353,7 @@ class Receive extends Component
                 $o = $s->order;
                 $ret = CustomerReturn::create(['code' => 'R'.(CustomerReturn::max('id') + 1001), 'order_id' => $o->id, 'shipment_id' => $s->id, 'courier_id' => $s->courier_id, 'session' => $this->session, 'rider' => $this->rider ?: null,
                     'type' => 'full', 'status' => 'inspected', 'note' => 'Not handed over in session '.$this->session.' — courier claim', 'received_by' => auth()->id(), 'refund_amount' => 0]);
-                foreach ($o->items as $i) $ret->items()->create(['order_item_id' => $i->id, 'batch_id' => $i->allocations->first()?->batch_id, 'qty' => $i->qty, 'reason' => 'Missing in parcel', 'condition' => 'missing', 'action' => 'courier_claim']);
+                foreach ($o->items as $i) ReturnStock::record($ret, $i, $i->qty, 'missing', ['reason' => 'Missing in parcel', 'action' => 'courier_claim'], [], $s->id);
                 $s->update(['courier_status' => 'lost', 'status_updated_at' => now(), 'complaint' => 'Courier claim: parcel not returned ('.$this->session.')']);
                 $o->log('return', 'Parcel '.$s->code.' not returned by courier → courier claim');
                 $this->entrySession()->items()->create(['shipment_id' => $s->id, 'type' => 'rejected', 'customer_return_id' => $ret->id, 'note' => 'Missing — courier claim', 'user_id' => auth()->id()]);
