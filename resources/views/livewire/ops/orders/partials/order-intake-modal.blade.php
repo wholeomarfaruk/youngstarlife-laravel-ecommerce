@@ -1,5 +1,5 @@
 {{-- AI Order intake — part of the bulkSheet Alpine component (bulk-order-create.blade.php). --}}
-<div x-show="intake.open" x-cloak x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+<div x-show="intake.open" x-cloak x-transition.opacity class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4"
      @keydown.escape.window="if (intake.open && !intake.busy) closeIntake()">
     <div class="w-full max-w-4xl max-h-[92vh] flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden">
 

@@ -171,7 +171,116 @@
                 {{-- Grid --}}
                 {{-- Fixed column widths (table-fixed + colgroup): the sheet is wider than the
                      screen and scrolls sideways instead of squeezing cells; # and Phone stay pinned. --}}
-                <div class="sheet-scroll overflow-auto max-h-[68vh] overscroll-x-contain">
+                {{-- phones / small tablets: one card per row, bound to the same row.cells as the grid --}}
+                <div class="divide-y divide-gray-100 pb-20 md:hidden">
+                    <template x-for="(row, r) in rows" :key="'m' + row.key">
+                        <div class="flex flex-col gap-2 p-3" :class="rowClass(row)" @input="if (row.result && !row.result.ok) row.result = null" @change="if (row.result && !row.result.ok) row.result = null">
+                            {{-- head: select · # · AI % · result · actions --}}
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" x-model="row.selected" class="h-5 w-5 rounded border-gray-300 text-indigo-600" :aria-label="`Select row ${r + 1}`">
+                                <span class="text-xs font-semibold text-gray-500 tabular-nums" x-text="`Row ${r + 1}`"></span>
+                                <template x-if="row.meta">
+                                    <span class="px-1 rounded text-[10px] font-semibold leading-4"
+                                        :class="row.meta.reviewed || row.meta.confidence >= 0.85 ? 'bg-emerald-50 text-emerald-700' : (row.meta.confidence >= 0.6 ? 'bg-amber-50 text-amber-700' : 'bg-red-50 text-red-700')"
+                                        :title="intakeTitle(row)" x-text="row.meta.reviewed ? '✓ Checked' : `${row.meta.via === 'ai' ? 'AI' : 'Auto'} ${Math.round(row.meta.confidence * 100)}%`"></span>
+                                </template>
+                                <template x-if="row.result?.ok"><a :href="row.result.url" target="_blank" class="text-xs font-semibold text-emerald-600" x-text="`✓ Placed #${row.result.id}`"></a></template>
+                                <div class="ml-auto flex items-center gap-1">
+                                    <template x-if="row.meta?.sourceText && config.intake.aiAvailable && !isPlaced(row)">
+                                        <button type="button" @click="retryRowWithAi(row)" :disabled="row.retrying" class="rounded px-2 py-1 text-xs font-medium text-violet-600 bg-violet-50 disabled:opacity-40" x-text="row.retrying ? 'AI…' : 'Retry AI'"></button>
+                                    </template>
+                                    <button type="button" @click="duplicateRow(r)" class="rounded px-2 py-1 text-xs text-gray-600 bg-gray-100">Copy</button>
+                                    <button type="button" @click="removeRow(r)" class="rounded px-2 py-1 text-xs text-red-600 bg-red-50">Delete</button>
+                                </div>
+                            </div>
+                            {{-- customer --}}
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="flex flex-col gap-0.5 text-[11px] text-gray-500">Phone
+                                    <input type="text" x-model="row.cells.phone" :readonly="isPlaced(row)" inputmode="tel" placeholder="01XXXXXXXXX"
+                                        class="rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm text-gray-900" :class="info(row).phoneBad && '!border-red-400 text-red-600'"></label>
+                                <label class="flex flex-col gap-0.5 text-[11px] text-gray-500">Name
+                                    <input type="text" x-model="row.cells.name" :readonly="isPlaced(row)" :placeholder="info(row).customer?.found ? info(row).customer.name : 'Name'"
+                                        class="rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm text-gray-900"></label>
+                            </div>
+                            <template x-if="info(row).customer">
+                                <div class="flex flex-wrap items-center gap-1 text-[11px]">
+                                    <template x-if="info(row).customer.found"><a :href="info(row).customer.url" target="_blank" class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-600" x-text="`Existing · ${info(row).customer.orders} order${info(row).customer.orders === 1 ? '' : 's'}`"></a></template>
+                                    <template x-if="!info(row).customer.found"><span class="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-600">New customer</span></template>
+                                    <template x-if="info(row).customer.blacklist"><span class="px-1.5 py-0.5 rounded font-semibold" :class="info(row).customer.blacklist === 'block' ? 'bg-red-600 text-white' : 'bg-amber-100 text-amber-700'" x-text="info(row).customer.blacklist === 'block' ? 'Blacklisted' : 'Blacklist: review'"></span></template>
+                                    <template x-if="info(row).customer.found && info(row).customer.cancelled"><span class="px-1.5 py-0.5 rounded bg-red-50 text-red-600" x-text="`${info(row).customer.cancelled} cancelled/returned`"></span></template>
+                                </div>
+                            </template>
+                            <label class="flex flex-col gap-0.5 text-[11px] text-gray-500">Address
+                                <textarea x-model="row.cells.address" :readonly="isPlaced(row)" rows="2" :placeholder="info(row).customer?.found && info(row).customer.address ? info(row).customer.address : 'Full address'"
+                                    class="rounded-lg border border-gray-300 px-2.5 py-1.5 text-sm text-gray-900"></textarea></label>
+                            {{-- products --}}
+                            <label class="flex flex-col gap-0.5 text-[11px] text-gray-500">Products
+                                <input type="text" x-model="row.cells.products" :readonly="isPlaced(row)" placeholder="Code / SKU / name x qty, …" class="rounded-lg border border-gray-300 px-2.5 py-1.5 font-mono text-xs text-gray-900"></label>
+                            <button type="button" @click="openEditor(row)" :disabled="isPlaced(row) || !catalogReady"
+                                class="flex min-h-9 w-full flex-wrap items-center gap-1 rounded-lg border border-dashed border-gray-300 px-2 py-1.5 text-left">
+                                <template x-for="(it, i) in info(row).tokens" :key="i">
+                                    <span class="inline-flex items-center gap-1 max-w-full px-1.5 py-0.5 rounded text-[11px] border"
+                                        :class="it.ok ? (it.match === 'exact' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-amber-50 border-amber-200 text-amber-700') : 'bg-red-50 border-red-200 text-red-600'">
+                                        <span class="truncate max-w-56" x-text="it.ok ? `${it.product.name}${it.variant ? ' · ' + it.variant.label : ''}` : (it.product ? `${it.product.name}: ${it.problem}` : `✕ ${it.raw}`)"></span>
+                                        <span x-show="it.ok" class="font-semibold" x-text="`×${fmtQty(it.qty)}`"></span>
+                                    </span>
+                                </template>
+                                <span x-show="!info(row).tokens.length && !isPlaced(row)" class="text-xs text-indigo-500">+ Pick products</span>
+                            </button>
+                            {{-- money --}}
+                            <div class="grid grid-cols-4 gap-2">
+                                <label class="flex flex-col gap-0.5 text-[11px] text-gray-500">Qty<input type="text" x-model="row.cells.qty" :readonly="isPlaced(row) || info(row).multi" inputmode="decimal" :placeholder="info(row).multi ? 'multi' : '1'" class="rounded-lg border border-gray-300 px-2 py-1.5 text-right text-sm text-gray-900"></label>
+                                <label class="flex flex-col gap-0.5 text-[11px] text-gray-500">Price<input type="text" x-model="row.cells.price" :readonly="isPlaced(row) || info(row).multi" inputmode="decimal" :placeholder="info(row).multi ? 'multi' : (info(row).tokens[0]?.ok ? String(info(row).tokens[0].defaultPrice) : 'auto')" class="rounded-lg border border-gray-300 px-2 py-1.5 text-right text-sm text-gray-900"></label>
+                                <label class="flex flex-col gap-0.5 text-[11px] text-gray-500">Discount<input type="text" x-model="row.cells.discount" :readonly="isPlaced(row)" inputmode="decimal" placeholder="0" class="rounded-lg border border-gray-300 px-2 py-1.5 text-right text-sm text-gray-900"></label>
+                                <label class="flex flex-col gap-0.5 text-[11px] text-gray-500">Advance<input type="text" x-model="row.cells.advance" :readonly="isPlaced(row)" inputmode="decimal" placeholder="0" class="rounded-lg border border-gray-300 px-2 py-1.5 text-right text-sm text-gray-900"></label>
+                            </div>
+                            <template x-if="info(row).isLead">
+                                <div class="grid grid-cols-[minmax(0,1fr)_96px] gap-2">
+                                    <label class="flex flex-col gap-0.5 text-[11px] text-gray-500">Delivery zone
+                                        <select x-model="row.cells.method" :disabled="isPlaced(row)" class="rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-gray-900" :class="!row.cells.method && 'text-gray-500'">
+                                            <option value="" x-text="`Auto: ${methodLabel(info(row).methodId) || 'none'}`"></option>
+                                            <template x-for="m in config.methods" :key="m.id"><option :value="String(m.id)" x-text="m.label" :selected="row.cells.method === String(m.id)"></option></template>
+                                        </select></label>
+                                    <label class="flex flex-col gap-0.5 text-[11px] text-gray-500">Delivery ৳
+                                        <input type="text" x-model="row.cells.delivery" :readonly="isPlaced(row)" inputmode="decimal" :placeholder="info(row).quotePending ? '…' : (info(row).autoDelivery !== null ? `${info(row).autoDelivery} auto` : '0')" class="rounded-lg border border-gray-300 px-2 py-1.5 text-right text-sm text-gray-900"></label>
+                                </div>
+                            </template>
+                            <template x-if="!info(row).isLead"><p class="text-xs text-gray-400" x-text="`↳ merged with row ${info(row).leadIndex + 1} (same phone) — delivery is charged there`"></p></template>
+                            <details class="text-xs">
+                                <summary class="cursor-pointer text-gray-500">Source & delivery note</summary>
+                                <div class="mt-1.5 grid grid-cols-2 gap-2">
+                                    <select x-model="row.cells.source" :disabled="isPlaced(row)" class="rounded-lg border border-gray-300 px-2 py-1.5 text-sm" :class="!row.cells.source && 'text-gray-500'">
+                                        <option value="" x-text="`Default (${sourceLabel(settings.source)})`"></option>
+                                        <template x-for="s in config.sources" :key="s.value"><option :value="s.value" x-text="s.label" :selected="row.cells.source === s.value"></option></template>
+                                    </select>
+                                    <input type="text" x-model="row.cells.note" :readonly="isPlaced(row)" placeholder="Delivery note" class="rounded-lg border border-gray-300 px-2 py-1.5 text-sm">
+                                </div>
+                            </details>
+                            {{-- totals + messages --}}
+                            <template x-if="info(row).isLead && info(row).group.items.length">
+                                <div class="flex items-baseline justify-between rounded-lg bg-gray-50 px-2.5 py-1.5 text-sm tabular-nums">
+                                    <span class="text-xs text-gray-500" x-text="`${money(info(row).group.subtotal)} + ${money(info(row).group.delivery)}${info(row).group.discount ? ' − ' + money(info(row).group.discount) : ''}`"></span>
+                                    <span><b class="text-gray-900" x-text="money(info(row).group.total)"></b> · COD <b :class="info(row).group.due > 0 ? 'text-red-500' : 'text-emerald-600'" x-text="money(info(row).group.due)"></b></span>
+                                </div>
+                            </template>
+                            <template x-if="!row.result?.ok">
+                                <div class="space-y-0.5 text-xs leading-snug">
+                                    <template x-if="row.result && !row.result.ok"><p class="font-medium text-red-600" x-text="`✕ ${row.result.error}`"></p></template>
+                                    <template x-for="e in info(row).errors" :key="e"><p class="text-red-600" x-text="`• ${e}`"></p></template>
+                                    <template x-for="w in info(row).warnings" :key="w"><p class="text-amber-600" x-text="`• ${w}`"></p></template>
+                                    <template x-if="info(row).recent"><p class="text-amber-600">• Ordered <a :href="info(row).recent.url" target="_blank" class="underline" x-text="`#${info(row).recent.id}`"></a> <span x-text="info(row).recent.ago"></span></p></template>
+                                    <template x-if="!info(row).empty && !info(row).errors.length && !info(row).warnings.length && !info(row).recent && !row.result"><p class="text-emerald-600" x-text="info(row).isLead ? 'Ready' : `Merged into row ${info(row).leadIndex + 1}`"></p></template>
+                                </div>
+                            </template>
+                        </div>
+                    </template>
+                    <div class="flex gap-2 p-3">
+                        <button type="button" @click="addRows(1)" class="flex-1 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700">+ 1 row</button>
+                        <button type="button" @click="addRows(10)" class="flex-1 rounded-lg bg-gray-100 px-3 py-2 text-sm font-medium text-gray-700">+ 10 rows</button>
+                    </div>
+                </div>
+
+                <div class="sheet-scroll overflow-auto max-h-[68vh] overscroll-x-contain max-md:hidden">
                     <table class="table-fixed text-sm border-separate border-spacing-0" style="width: 2606px">
                         <colgroup>
                             <col style="width: 56px">  {{-- select + # --}}
@@ -444,8 +553,18 @@
         </div>
     </div>
 
+    {{-- phones / small tablets: totals + Place stay in view (above the phone bottom nav) --}}
+    <div x-show="calc.ready.length || calc.errorGroups" x-cloak
+        class="fixed inset-x-2 bottom-2 max-[479px]:bottom-[calc(64px+env(safe-area-inset-bottom))] z-[56] flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2 shadow-lg md:hidden">
+        <div class="min-w-0 flex-1 text-xs leading-snug">
+            <div><b class="text-gray-900" x-text="calc.ready.length"></b> order(s) · <b class="text-indigo-600" x-text="money(calc.totals.total)"></b> · COD <b class="text-red-500" x-text="money(calc.totals.due)"></b></div>
+            <div x-show="calc.errorGroups" class="font-medium text-red-600" x-text="`${calc.errorGroups} need fixing`"></div>
+        </div>
+        <button type="button" @click="openConfirm()" :disabled="submitting || !catalogReady || !calc.ready.length" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50">Place</button>
+    </div>
+
     {{-- Items editor --}}
-    <div x-show="editor.open" x-cloak x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4" @keydown.escape.window="editor.open = false">
+    <div x-show="editor.open" x-cloak x-transition.opacity class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4" @keydown.escape.window="editor.open = false">
         <div class="w-full max-w-3xl max-h-[90vh] flex flex-col bg-white rounded-2xl shadow-2xl overflow-hidden" @click.outside="editor.open = false">
             <div class="flex items-center gap-3 px-6 py-4 border-b border-gray-100">
                 <div class="flex-1">
@@ -534,7 +653,7 @@
     @include('livewire.ops.orders.partials.order-intake-modal')
 
     {{-- Confirm & progress --}}
-    <div x-show="confirm.open" x-cloak x-transition.opacity class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+    <div x-show="confirm.open" x-cloak x-transition.opacity class="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 p-4">
         <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
             <div class="px-6 py-5 space-y-3">
                 <h2 class="text-base font-semibold text-gray-900" x-text="submitting ? 'Placing orders…' : 'Place bulk orders?'"></h2>
