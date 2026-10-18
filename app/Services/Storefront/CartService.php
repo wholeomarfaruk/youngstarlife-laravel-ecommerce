@@ -48,6 +48,11 @@ class CartService
     public function add(Product $product, int $qty, ?string $size, ?array $comboSizes = null): CartItem
     {
         $line = $this->line($product, $qty, $size, $comboSizes);
+        // order limits: everything of this product already in the cart (any size) + the whole cart value
+        $now = collect($this->summary()['lines'])->where('available', true);
+        $mine = $now->where('product_id', $product->id);
+        [$room, $why] = $this->room((int) $line->price, (int) $mine->sum('qty'), (int) $mine->sum('line'), (int) $now->sum('line'));
+        if (max(1, $qty) > $room) throw ValidationException::withMessages(['quantity' => $room > 0 ? $why.' কার্টে আরও '.ProductPage::bn($room).'টি যোগ করা যাবে।' : $why]);
         $cart = $this->cart(true);
         $item = $cart->items()->firstOrNew(['variant_id' => $line->variant_id, 'selection_key' => $line->selection_key]);
         $item->combo_selection = $line->combo_selection;
@@ -84,6 +89,10 @@ class CartService
     public function update(int $itemId, int $qty): void
     {
         $item = $this->find($itemId);
+        if ($qty > $item->quantity) {
+            $l = collect($this->summary()['lines'])->firstWhere('id', $item->id);
+            if ($l && $qty > $l['max']) throw ValidationException::withMessages(['quantity' => $l['limit']]);
+        }
         $qty < 1 ? $item->delete() : $item->update(['quantity' => min(self::MAX_QTY, $qty)]);
     }
 
@@ -105,11 +114,39 @@ class CartService
                 'size' => $combo ? $i->selection_key : $v?->size, 'variant_text' => $combo ?? ($v?->size ? 'সাইজ '.$v->size : null), 'combo_selection' => $i->combo_selection,
                 'qty' => (int) $i->quantity, 'price' => $price, 'regular' => max($regular, $price), 'line' => $price * $i->quantity, 'available' => $ok];
         });
+        // order limits per line, next to the rest of the cart: 'max' = most units this line may have
+        $lines = $lines->map(function ($l, $k) use ($lines) {
+            $others = $lines->where('available', true)->except($k);
+            $same = $others->where('product_id', $l['product_id']);
+            [$l['max'], $l['limit']] = $this->room((int) $l['price'], (int) $same->sum('qty'), (int) $same->sum('line'), (int) $others->sum('line'));
+            return $l;
+        });
         $ok = $lines->where('available', true);
+        $limitError = $ok->first(fn ($l) => $l['qty'] > $l['max'])['limit'] ?? null;
         $area = $areaId ? DeliveryZone::where('is_active', true)->find($areaId) : null;
         $subtotal = (float) $ok->sum('line');
         $delivery = (float) ($area?->charge ?? 0);
-        return ['lines' => $lines->values()->all(), 'count' => (int) $ok->sum('qty'), 'subtotal' => $subtotal, 'delivery' => $delivery, 'total' => $subtotal + $delivery, 'has_unavailable' => $ok->count() !== $lines->count()];
+        return ['lines' => $lines->values()->all(), 'count' => (int) $ok->sum('qty'), 'subtotal' => $subtotal, 'delivery' => $delivery, 'total' => $subtotal + $delivery, 'has_unavailable' => $ok->count() !== $lines->count(), 'limit_error' => $limitError];
+    }
+
+    /**
+     * Settings → Orders & delivery → Order limits. How many units of one line fit next to what is already taken:
+     * $units / $value = the same product's other lines, $cartValue = every other line. One unit is always allowed when
+     * nothing else is taken (a product dearer than the value limit can still be ordered on its own).
+     * @return array{0:int, 1:string} [room, message for the limit that decides it]
+     */
+    public function room(int $price, int $units = 0, int $value = 0, int $cartValue = 0): array
+    {
+        $l = (array) site('orders.limit', []); $price = max(1, $price);
+        $type = $l['type'] ?? 'off'; $maxQty = (int) ($l['qty'] ?? 0); $maxValue = (int) ($l['value'] ?? 0); $maxCart = (int) ($l['cart_value'] ?? 0);
+        $fit = fn (int $limit, int $taken) => $taken > 0 ? intdiv(max(0, $limit - $taken), $price) : max(1, intdiv($limit, $price));
+        $tk = fn (int $n) => '৳'.ProductPage::bn(number_format($n));
+        $rooms = [[self::MAX_QTY, 'পরিমাণ ১ থেকে ৫০ এর মধ্যে দিন']];   // the built-in cap stays per line, as before the limits
+        if ($type === 'qty' && $maxQty > 0) $rooms[] = [$maxQty - $units, 'একটি প্রোডাক্ট সর্বোচ্চ '.ProductPage::bn($maxQty).'টি অর্ডার করা যাবে।'];
+        if ($type === 'value' && $maxValue > 0) $rooms[] = [$fit($maxValue, $value), 'একটি প্রোডাক্ট সর্বোচ্চ '.$tk($maxValue).' পর্যন্ত অর্ডার করা যাবে।'];
+        if ($maxCart > 0) $rooms[] = [$fit($maxCart, $cartValue), 'একটি অর্ডারে সর্বোচ্চ '.$tk($maxCart).' পর্যন্ত কেনা যাবে।'];
+        [$room, $why] = collect($rooms)->sortBy(0)->first();
+        return [max(0, min(self::MAX_QTY, $room)), $why];
     }
 
     /** a line of THIS device's cart (never another visitor's) */

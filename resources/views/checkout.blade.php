@@ -82,7 +82,7 @@
                                             <div class="d-flex align-items-center justify-content-between mt-2">
                                                 <div class="ck-qty">
                                                     <button type="button" data-step="-1" aria-label="কমান">−</button>
-                                                    <input type="number" min="1" max="{{ \App\Services\Storefront\CartService::MAX_QTY }}" value="{{ $l['qty'] }}" inputmode="numeric" aria-label="পরিমাণ">
+                                                    <input type="number" min="1" max="{{ max($l['qty'], $l['max']) }}" value="{{ $l['qty'] }}" inputmode="numeric" aria-label="পরিমাণ">
                                                     <button type="button" data-step="1" aria-label="বাড়ান">+</button>
                                                 </div>
                                                 <strong class="fs-5" data-line-total>৳ {{ number_format($l['line']) }}</strong>
@@ -220,7 +220,7 @@
                     document.querySelectorAll('[data-line]').forEach(function(row) {
                         var line = data.lines.find(l => String(l.id) === row.dataset.line);
                         if (!line) return row.remove();
-                        row.querySelector('input').value = line.qty;
+                        row.querySelector('input').value = line.qty; row.querySelector('input').max = Math.max(line.qty, line.max);
                         row.querySelector('[data-line-total]').textContent = tk(line.line);
                     });
                     render();
@@ -232,8 +232,12 @@
                         method: method, credentials: 'same-origin',
                         headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': token },
                         body: JSON.stringify(Object.assign({ delivery_area: area.value }, body || {})),
-                    }).then(r => r.ok ? r.json() : Promise.reject(r)).then(apply)
-                      .catch(() => Swal.fire({ icon: 'error', text: 'আপডেট করা যায়নি, পেজটি রিফ্রেশ করুন।' }))
+                    }).then(r => r.ok ? r.json() : r.json().catch(() => ({})).then(j => Promise.reject(j))).then(apply)
+                      .catch(j => {
+                          var msg = j && j.errors && Object.values(j.errors)[0][0];   // e.g. Settings → Order limits
+                          Swal.fire({ icon: msg ? 'warning' : 'error', text: msg || 'আপডেট করা যায়নি, পেজটি রিফ্রেশ করুন।' });
+                          if (msg) fetch(@json(route('cart.summary')), { credentials: 'same-origin', headers: { 'Accept': 'application/json' } }).then(r => r.json()).then(apply);   // put the old quantity back
+                      })
                       .finally(() => row && row.classList.remove('ck-busy'));
                 }
                 var timers = {};
@@ -242,7 +246,13 @@
                     var id = row.dataset.line, input = row.querySelector('input');
                     if (e.target.closest('[data-remove]')) return send('DELETE', id);
                     var step = e.target.closest('[data-step]'); if (!step) return;
-                    var qty = Math.max(0, Math.min(parseInt(input.max), (parseInt(input.value) || 1) + parseInt(step.dataset.step)));
+                    var want = (parseInt(input.value) || 1) + parseInt(step.dataset.step);
+                    if (want > parseInt(input.max)) {   // Settings → Order limits: say why + stops
+                        var line = summary.lines.find(l => String(l.id) === id);
+                        if (line && line.limit) Swal.fire({ icon: 'info', text: line.limit, timer: 3000 });
+                        return;
+                    }
+                    var qty = Math.max(0, want);
                     input.value = qty;
                     clearTimeout(timers[id]); timers[id] = setTimeout(() => send('PATCH', id, { quantity: qty }), 350);   // taps are batched
                 });

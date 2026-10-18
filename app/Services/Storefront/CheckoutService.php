@@ -38,6 +38,7 @@ class CheckoutService
 
             $summary = $quick ?? $this->cart->summary((int) $data['delivery_area']);
             if (! $summary['lines']) throw ValidationException::withMessages(['cart' => 'আপনার কার্ট খালি। আগে প্রোডাক্ট যোগ করুন।']);
+            if (! empty($summary['limit_error'])) throw ValidationException::withMessages(['quantity' => $summary['limit_error']]);
             if ($summary['has_unavailable']) throw ValidationException::withMessages(['cart' => 'কার্টের কিছু প্রোডাক্ট এখন স্টকে নেই — সেগুলো সরিয়ে আবার চেষ্টা করুন।']);
             $this->guard($request, $data['phone'], $device, $data['name'] ?? null);
             $zone = DeliveryZone::where('is_active', true)->findOrFail($data['delivery_area']);

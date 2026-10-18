@@ -67,7 +67,8 @@ class Index extends Component
     {
         $rules = match ($this->tab) {
             'company' => ['s.company.name' => 'required|max:120', 's.company.email' => 'nullable|email', 's.company.invoice_prefix' => 'nullable|max:10'],
-            'orders' => ['s.orders.prefix' => 'required|max:6', 's.orders.auto_cancel_hours' => 'nullable|integer|min:0', 's.orders.free_delivery_above' => 'nullable|integer|min:0', 's.orders.exchange_charge' => 'required|integer|min:0'],
+            'orders' => ['s.orders.prefix' => 'required|max:6', 's.orders.auto_cancel_hours' => 'nullable|integer|min:0', 's.orders.free_delivery_above' => 'nullable|integer|min:0', 's.orders.exchange_charge' => 'required|integer|min:0',
+                's.orders.limit.type' => 'required|in:off,qty,value', 's.orders.limit.qty' => 'required_if:s.orders.limit.type,qty|nullable|integer|min:1|max:50', 's.orders.limit.value' => 'required_if:s.orders.limit.type,value|nullable|integer|min:1', 's.orders.limit.cart_value' => 'nullable|integer|min:0'],
             'delivery' => ['zones.*.name' => 'required|max:120', 'zones.*.charge' => 'required|integer|min:0', 'zones.*.per_kg' => 'nullable|integer|min:0'],
             'branding' => ['s.branding.store_name' => 'required|max:120', 'logo' => 'nullable|image|max:2048', 'favicon' => 'nullable|image|max:512', 's.branding.primary_color' => ['nullable', 'regex:/^#[0-9a-fA-F]{6}$/'], 's.branding.footer_note' => 'nullable|max:200'],
             'seo' => ['s.seo.title' => 'required|max:120', 's.seo.title_format' => ['required', 'max:60', 'regex:/\{page\}/'], 's.seo.description' => 'nullable|max:300', 'shareImage' => 'nullable|image|max:2048'],
@@ -78,6 +79,7 @@ class Index extends Component
             default => [],
         };
         if ($rules) $this->validate($rules, ['zones.*.name.required' => 'Every delivery area needs a name.', 'zones.*.charge.*' => 'Delivery charge must be a whole number.', 's.batch.format.regex' => 'Batch format needs a number placeholder like B{###}.',
+            's.orders.limit.qty.*' => 'Max quantity per product must be 1–50.', 's.orders.limit.value.*' => 'Max value per product must be a whole number above 0.', 's.orders.limit.cart_value.*' => 'Max cart value must be a whole number (0 = no limit).',
             's.branding.primary_color.regex' => 'Brand colour must look like #525754.', 's.seo.title_format.regex' => 'Title format needs {page}, e.g. {page} · {site}.',
             's.pixels.gtm.regex' => 'GTM container looks like GTM-XXXXXXX.', 's.pixels.ga4.regex' => 'GA4 ID looks like G-XXXXXXX.', 's.pixels.fb_pixel.digits_between' => 'Facebook Pixel ID is a number.']);
         if ($this->tab === 'content') $this->s['content']['faq'] = array_values(array_filter(array_map('trim', $this->s['content']['faq'] ?? []), 'strlen'));

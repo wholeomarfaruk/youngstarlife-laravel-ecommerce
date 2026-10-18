@@ -97,9 +97,13 @@
                 method: qty < 1 ? 'DELETE' : 'PATCH', credentials: 'same-origin',
                 headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': cfg.csrf },
                 body: qty < 1 ? null : JSON.stringify({ quantity: qty }),
-            }).then(function (r) { if (!r.ok) throw r; return r.json(); })
+            }).then(function (r) { if (!r.ok) return r.json().catch(function () { return {}; }).then(function (j) { throw j; }); return r.json(); })
               .then(function (srv) { delete timers[id]; fetchedAt = Date.now(); store(srv); if (!hasPending()) render(srv); })
-              .catch(function () { delete timers[id]; load(true); if (window.Swal) Swal.fire({ icon: 'error', text: 'আপডেট করা যায়নি, আবার চেষ্টা করুন।', timer: 2500 }); });
+              .catch(function (j) {
+                  delete timers[id]; load(true);
+                  var msg = j && j.errors && Object.values(j.errors)[0][0];   // e.g. Settings → Order limits
+                  if (window.Swal) Swal.fire({ icon: msg ? 'info' : 'error', text: msg || 'আপডেট করা যায়নি, আবার চেষ্টা করুন।', timer: 3000 });
+              });
         }, 350);
     }
 
@@ -110,7 +114,11 @@
         if (!line) return;
         if (e.target.closest('[data-x]')) return change(line.id, 0);
         var q = e.target.closest('[data-q]');
-        if (q) change(line.id, Math.max(0, Math.min(50, line.qty + parseInt(q.dataset.q))));
+        if (q) {
+            var want = line.qty + parseInt(q.dataset.q), max = line.max != null ? Math.max(line.qty, line.max) : 50;
+            if (want > max) { if (window.Swal && line.limit) Swal.fire({ icon: 'info', text: line.limit, timer: 3000 }); return; }   // Settings → Order limits
+            change(line.id, Math.max(0, want));
+        }
     });
 
     // ── public API (setCount lives in the layout; this adds open/refresh)

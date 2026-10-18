@@ -57,6 +57,19 @@
                         <label class="flex items-center gap-2"><input type="checkbox" wire:model="s.orders.advance_for_risky" class="h-4 w-4 accent-brand"> Advance payment for risky customers</label>
                         <label class="flex items-center gap-2"><input type="checkbox" wire:model="s.orders.allow_partial" class="h-4 w-4 accent-brand"> Allow partial delivery</label>
                     </div>
+                    {{-- website order limits: CartService::room() — add to cart, cart quantity, product page order and checkout --}}
+                    <div class="mt-4 rounded-md border border-line" x-data="{ type: $wire.entangle('s.orders.limit.type') }">
+                        <div class="border-b border-soft px-3 py-2"><div class="text-sm font-semibold">Website order limits</div><div class="text-xs text-ink-muted">Checked on add to cart, cart quantity changes, the product page order form and checkout. Orders made here in Ops are not limited.</div></div>
+                        <div class="grid gap-3 p-3 sm:grid-cols-3">
+                            <x-ops.field label="Limit per product" hint="All sizes of one product together">
+                                <select x-model="type" class="input"><option value="off">No limit</option><option value="qty">By quantity</option><option value="value">By value (৳)</option></select>
+                            </x-ops.field>
+                            <div x-show="type === 'qty'" x-cloak><x-ops.field label="Max quantity per product" hint="1–50 pcs"><input type="number" min="1" max="50" wire:model="s.orders.limit.qty" class="input"></x-ops.field></div>
+                            <div x-show="type === 'value'" x-cloak><x-ops.field label="Max value per product (৳)" hint="One piece is always allowed, even if it costs more"><input type="number" min="1" wire:model="s.orders.limit.value" class="input"></x-ops.field></div>
+                            <div x-show="type === 'off'" x-cloak class="hidden sm:block"></div>
+                            <x-ops.field label="Max cart / order value (৳)" hint="0 = no limit"><input type="number" min="0" wire:model="s.orders.limit.cart_value" class="input"></x-ops.field>
+                        </div>
+                    </div>
                 @break
                 @case('delivery')
                     @foreach ($zones as $i => $z)

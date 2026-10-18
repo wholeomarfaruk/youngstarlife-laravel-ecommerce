@@ -31,7 +31,7 @@ class ProductPage
     /** cached payload for the page */
     public function data(Product $p): array
     {
-        $key = 'pp:'.$p->id.':'.$p->updated_at?->timestamp.':'.(int) self::trackStock();
+        $key = 'pp:'.$p->id.':'.$p->updated_at?->timestamp.':'.(int) self::trackStock().':'.md5(json_encode(site('orders.limit')));   // order limits change the max qty
         return cache()->remember($key, 60, fn () => $this->build($p->loadMissing(['variants' => fn ($q) => $q->orderBy('id'), 'comboItems.variant.product.variants'])));
     }
 
@@ -46,7 +46,8 @@ class ProductPage
         $sizes = $kind === 'variable' ? $sized->map(fn ($v) => $this->sizeOption($v->setRelation('product', $p), $orderable))->unique('v')->values()->all() : [];
         $simpleAvail = $kind === 'simple' ? ($p->variants->where('is_active', true)->first()?->available ?? 0) : null;
         $comboAvail = $combo ? $p->loadMissing('comboItems.variant')->combo_available : null;
-        $stockMax = fn (?int $n) => self::trackStock() && $n !== null ? max(0, min(self::MAX_QTY, $n)) : self::MAX_QTY;
+        $limit = app(CartService::class)->room((int) $price)[0];   // Settings → Order limits (one product, empty cart)
+        $stockMax = fn (?int $n) => self::trackStock() && $n !== null ? max(0, min($limit, $n)) : $limit;
         $inStock = $orderable && match ($kind) {
             'variable' => collect($sizes)->contains('out', false),
             'combo' => collect($combo)->every(fn ($r) => collect($r['sizes'])->contains('out', false)),
@@ -63,7 +64,7 @@ class ProductPage
             'id' => $p->id, 'kind' => $kind, 'name' => $p->name, 'catalogId' => $p->catalogId(), 'gaCategory' => site('pixels.item_category'), 'gaBrand' => site('pixels.item_brand'),
             'price' => $price, 'old' => $old, 'inStock' => $inStock, 'orderable' => $orderable,
             'images' => $images->all(), 'thumbs' => $thumbs,
-            'sizes' => $sizes, 'combo' => $combo, 'maxQty' => $kind === 'combo' ? $stockMax($comboAvail) : ($kind === 'simple' ? $stockMax($simpleAvail) : self::MAX_QTY),
+            'sizes' => $sizes, 'combo' => $combo, 'maxQty' => $kind === 'combo' ? $stockMax($comboAvail) : ($kind === 'simple' ? $stockMax($simpleAvail) : $limit),
             'chart' => ['head' => $chartHead, 'rows' => $chartRows, 'image' => $p->size_chart_url],
             'features' => $this->features((string) ($p->description ?: $p->short_description)),
             'areas' => $areas->map(fn ($a) => ['id' => $a->id, 'name' => $a->name, 'fee' => (int) $a->charge])->all(), 'area' => $default?->id,
@@ -74,8 +75,9 @@ class ProductPage
     protected function sizeOption(ProductVariant $v, bool $orderable): array
     {
         $price = $v->effective_price; $regular = (int) ($v->price ?? $v->product->price);
+        $limit = app(CartService::class)->room((int) $price)[0];
         return ['v' => (string) $v->size, 'id' => $v->id, 'price' => $price, 'old' => $regular > $price ? $regular : 0,
-            'out' => ! $orderable || (self::trackStock() && $v->available <= 0), 'max' => self::trackStock() ? max(0, min(self::MAX_QTY, $v->available)) : self::MAX_QTY];
+            'out' => ! $orderable || (self::trackStock() && $v->available <= 0), 'max' => self::trackStock() ? max(0, min($limit, $v->available)) : $limit];
     }
 
     /** combo rows: the admin's component variant fixes product + colour; the customer picks the size among that product's variants in that colour */
