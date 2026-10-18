@@ -61,7 +61,7 @@
                     @php([$label, $tone] = \App\Models\Ops\CourierSessionItem::TYPES[$it->type])
                     <div wire:key="it{{ $it->id }}" class="flex items-start gap-2.5 border-t border-soft px-3.5 py-2 text-sm first:border-0 hover:bg-zebra">
                         <div class="min-w-0 flex-1">
-                            <div class="flex flex-wrap items-center gap-2"><span class="mono font-semibold">{{ $it->shipment->code }}</span><x-ops.badge :tone="$tone">{{ $label }}</x-ops.badge><span class="ml-auto tabular-nums">{{ tk($it->shipment->cod_amount) }}</span></div>
+                            <div class="flex flex-wrap items-center gap-2"><span class="mono font-semibold">{{ $it->shipment->code }}</span><x-ops.parcel-ref :s="$it->shipment" inline empty="" class="text-xs text-ink-muted" /><x-ops.badge :tone="$tone">{{ $label }}</x-ops.badge><span class="ml-auto tabular-nums">{{ tk($it->shipment->cod_amount) }}</span></div>
                             <div class="mt-0.5 truncate text-xs text-ink-muted"><a href="{{ route('ops.orders.show', $it->shipment->order_id) }}" wire:navigate class="mono">{{ $it->shipment->order?->number }}</a> {{ $it->shipment->order?->customer?->name }} · {{ $it->created_at?->format('d M H:i') }} · {{ $it->user?->name ?? '—' }}@if ($it->customerReturn) · <span class="mono text-brand">{{ $it->customerReturn->code }}</span>@endif{{ $it->note ? ' · '.$it->note : '' }}</div>
                         </div>
                         @if ($open)@php($why = \App\Services\Ops\EntrySessions::undoBlocked($it))

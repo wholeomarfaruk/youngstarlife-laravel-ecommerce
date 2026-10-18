@@ -29,7 +29,7 @@ class InCourier extends Component
         $q = Shipment::with('order:id,number,customer_id,total,cod', 'order.customer:id,name,phone,area', 'courier:id,name')
             ->when($this->courier, fn ($q, $c) => $q->where('courier_id', $c))->when($this->status !== 'all', fn ($q) => $q->where('courier_status', $this->status))
             ->when($this->attention, fn ($q) => $q->needsAttention())
-            ->when($this->search, fn ($q, $s) => $q->where(fn ($q) => $q->where('code', 'like', "%$s%")->orWhere('tracking', 'like', "%$s%")->orWhereHas('order', fn ($o) => $o->where('number', 'like', '%'.ltrim($s, '#').'%'))));
+            ->when($this->search, fn ($q, $s) => $q->where(fn ($q) => $q->where('code', 'like', "%$s%")->orWhere('tracking', 'like', "%$s%")->orWhere('consignment_id', 'like', "%$s%")->orWhereHas('order', fn ($o) => $o->where('number', 'like', '%'.ltrim($s, '#').'%'))));
         return $this->dateRange($q, 'packed_at')->latest('status_updated_at')->paginate($this->perPage);
     }
 

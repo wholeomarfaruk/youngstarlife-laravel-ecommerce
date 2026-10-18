@@ -18,7 +18,7 @@ class Tracer
         $up = strtoupper($q); $num = ltrim($q, '#');
 
         if (ctype_digit(preg_replace('/^\D+/', '', $num)) && ($o = Order::live()->numbered($q)->first(['id', 'number', 'ship_name', 'total']))) $add('Order', $o->number, $o->ship_name.' · '.tk($o->total), route('ops.orders.show', $o), true);
-        foreach (Shipment::where('code', $up)->orWhere('tracking', $q)->with('order:id,number')->limit(2)->get() as $s) $add('Parcel', $s->code, $s->order->number.' · '.$s->tracking, route('ops.orders.show', $s->order_id), true);
+        foreach (Shipment::where('code', $up)->orWhere('tracking', $q)->orWhere('consignment_id', $q)->with('order:id,number')->limit(2)->get() as $s) $add('Parcel', $s->code, $s->order->number.' · '.$s->tracking, route('ops.orders.show', $s->order_id), true);
         $batchCode = preg_match('/-(B\d+)$/i', $q, $m) ? strtoupper($m[1]) : $up;
         if ($b = Batch::where('code', $batchCode)->with('variant.product:id,name')->first()) $add('Batch', $b->code, $b->variant->label, route('ops.trace', ['q' => $b->code]), true);
         if ($po = PurchaseOrder::where('number', $up)->with('supplier:id,name')->first()) $add('PO', $po->number, $po->supplier->name, route('ops.purchases.edit', $po), true);
@@ -42,7 +42,7 @@ class Tracer
         $allocs = collect(); $anchor = null; $bare = collect();
 
         if (($o = Order::live()->numbered($q)->first())) { $anchor = 'Order '.$o->number; $allocs = $this->allocsWhere(fn ($a) => $a->whereIn('order_item_id', $o->items()->pluck('id'))); }
-        elseif ($s = Shipment::where('code', $up)->orWhere('tracking', $q)->first()) { $anchor = 'Parcel '.$s->code; $allocs = $this->allocsWhere(fn ($a) => $a->whereIn('order_item_id', $s->order->items()->pluck('id'))); }
+        elseif ($s = Shipment::where('code', $up)->orWhere('tracking', $q)->orWhere('consignment_id', $q)->first()) { $anchor = 'Parcel '.$s->code; $allocs = $this->allocsWhere(fn ($a) => $a->whereIn('order_item_id', $s->order->items()->pluck('id'))); }
         elseif ($b = Batch::where('code', preg_match('/-(B\d+)$/i', $q, $m) ? strtoupper($m[1]) : $up)->first()) { $anchor = 'Batch '.$b->code; $allocs = $this->allocsWhere(fn ($a) => $a->where('batch_id', $b->id)); $bare = collect([$b]); }
         elseif ($po = PurchaseOrder::where('number', $up)->first()) { $anchor = 'PO '.$po->number; $ids = $po->batches()->pluck('id'); $allocs = $this->allocsWhere(fn ($a) => $a->whereIn('batch_id', $ids)); $bare = $po->batches()->get(); }
         elseif ($r = CustomerReturn::where('code', $up)->first()) { $anchor = 'Return '.$r->code; $allocs = $this->allocsWhere(fn ($a) => $a->whereIn('order_item_id', $r->items()->pluck('order_item_id'))); }

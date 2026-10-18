@@ -8,6 +8,7 @@
         <div class="text-sm"><b>{{ $o->ship_name }}</b> · {{ $o->ship_phone }}<br>{{ $o->ship_address }}<br>{{ $o->zone?->name }}</div>
         <div class="flex items-center justify-between"><span class="text-lg font-bold">COD {{ tk($o->cod) }}</span><span class="text-sm">{{ $o->shipment?->courier->name ?? 'Courier —' }}</span></div>
         <svg class="bc" jsbarcode-value="{{ $o->shipment?->code ?? ltrim($o->number, '#') }}" jsbarcode-height="36" jsbarcode-width="1.6" jsbarcode-fontsize="11" jsbarcode-margin="0"></svg>
+        @if ($o->shipment && ($o->shipment->tracking || $o->shipment->consignment_id))<div class="text-xs">{{ $o->shipment->tracking ? 'Tracking '.$o->shipment->tracking : '' }}{{ $o->shipment->consignment_id && $o->shipment->consignment_id !== $o->shipment->tracking ? ($o->shipment->tracking ? ' · ' : '').'CID '.$o->shipment->consignment_id : '' }}</div>@endif
         <div class="text-xs text-ink-muted">{{ $o->items->map(fn ($i) => $i->variant->sku.' ×'.$i->qty)->join(', ') }}</div>
     </div>
 @endforeach

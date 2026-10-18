@@ -85,7 +85,7 @@
                             @foreach ($ex->items as $it)<div class="mt-1 flex items-center gap-2">@if ($p = $it->variant->product)<img src="{{ $p->thumb_url }}" alt="" loading="lazy" class="h-8 w-8 rounded bg-soft object-cover">@endif<span>{{ $it->variant->label }} ×{{ $it->qty }}</span></div>@endforeach</div>
                     </div>
                     <div class="flex flex-wrap items-center gap-1.5 text-sm">
-                        @if ($xs)<span class="text-ink-muted">Parcel <span class="mono text-ink">{{ $xs->code }}</span> · {{ $xs->courier?->name }}@if ($xs->tracking) · <span class="mono">{{ $xs->tracking }}</span>@endif</span><x-ops.badge map="courier_status" :status="$xs->courier_status" />@endif
+                        @if ($xs)<span class="text-ink-muted">Parcel <span class="mono text-ink">{{ $xs->code }}</span> · {{ $xs->courier?->name }}@if ($xs->tracking || $xs->consignment_id) · <x-ops.parcel-ref :s="$xs" inline />@endif</span><x-ops.badge map="courier_status" :status="$xs->courier_status" />@endif
                         <span class="ml-auto flex flex-wrap gap-1.5">
                             @if ($ex->status === 'pending')<button wire:click="setStatus({{ $ex->id }}, 'confirmed')" class="btn-secondary btn-sm">Confirm</button>@endif
                             @if (in_array($ex->status, ['pending', 'confirmed']))<a href="{{ route('ops.packing.scan', ['order' => $ex->number]) }}" wire:navigate class="btn-secondary btn-sm">Pack & scan</a>@endif
@@ -296,7 +296,7 @@
                             <span class="flex items-center gap-2"><span class="mono font-semibold">{{ $p->code }}</span>
                                 <span class="text-xs text-ink-muted">{{ $p->order->exchange_of_id ? 'Exchange '.\Illuminate\Support\Str::afterLast($p->order->number, '-EX') : ($p->kind === 'resend' ? 'Re-send' : 'Delivery') }}</span>
                                 <span class="ml-auto"><x-ops.badge map="courier_status" :status="$p->courier_status" /></span></span>
-                            <span class="text-xs text-ink-muted">{{ $p->courier?->name }}@if ($p->tracking) · {{ $p->tracking }}@endif · {{ $p->created_at->format('d M') }}@if ($p->isSuperseded()) · <span class="font-semibold text-warn">replaced {{ $p->superseded_at->format('d M') }}</span>@endif</span>
+                            <span class="text-xs text-ink-muted">{{ $p->courier?->name }}@if ($p->tracking || $p->consignment_id) · <x-ops.parcel-ref :s="$p" inline />@endif · {{ $p->created_at->format('d M') }}@if ($p->isSuperseded()) · <span class="font-semibold text-warn">replaced {{ $p->superseded_at->format('d M') }}</span>@endif</span>
                         </a>
                     @endforeach
                 </x-ops.card>

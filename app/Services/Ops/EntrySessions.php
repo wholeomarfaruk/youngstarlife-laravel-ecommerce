@@ -76,7 +76,7 @@ class EntrySessions
         $code = trim($code); if ($code === '') return null;
         if ($x = app(ExchangeService::class)->findReceivable($code)) return $x->shipment;   // exchange parcel / exchange no. / original no. while the old item is due
         $num = ltrim($code, '#');
-        return Shipment::where('code', $code)->orWhere('tracking', $code)
+        return Shipment::where('code', $code)->orWhere('tracking', $code)->orWhere('consignment_id', $code)
             ->orWhereHas('order', fn ($o) => $o->whereIn('number', [$code, '#'.$num, $num]))->latest('id')->first();
     }
 

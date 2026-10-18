@@ -163,7 +163,7 @@ class Receive extends Component
     {
         $code = trim($code); if ($code === '') return;
         $up = strtoupper($code); $num = preg_replace('/^\D+/', '', $code);
-        $matches = fn ($p) => in_array($up, [strtoupper($p->code), strtoupper((string) $p->tracking), strtoupper($p->order->number)]) || ($num !== '' && preg_replace('/^\D+/', '', $p->order->number) === $num && ctype_digit($num));
+        $matches = fn ($p) => in_array($up, array_filter([strtoupper($p->code), strtoupper((string) $p->tracking), strtoupper((string) $p->consignment_id), strtoupper($p->order->number)])) || ($num !== '' && preg_replace('/^\D+/', '', $p->order->number) === $num && ctype_digit($num));
         $s = $this->expected->first($matches);
         if (! $s && ! $this->activeId && ! $this->activeOrderId) {   // parcel belongs to another courier's list → switch to that courier
             $other = Shipment::where(fn ($w) => self::comingBack($w))->where('courier_id', '!=', $this->courier)

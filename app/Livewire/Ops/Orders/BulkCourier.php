@@ -229,7 +229,7 @@ class BulkCourier extends Component
     public function render()
     {
         $couriers = $this->couriers();
-        $items = $this->sheet()->items()->ordered()->with('order:id,number,status,customer_id', 'order.customer:id,delivered_count,returned_count', 'courier:id,name')->get();
+        $items = $this->sheet()->items()->ordered()->with('order:id,number,status,customer_id', 'order.customer:id,delivered_count,returned_count', 'courier:id,name', 'shipment:id,tracking,consignment_id')->get();
         $sheetIds = $items->pluck('order_id')->all();
         $orders = $this->eligible()->select(['id', 'number', 'customer_id', 'source', 'status', 'ship_name', 'ship_phone', 'ship_address', 'cod', 'total', 'placed_at'])
             ->with('customer:id,delivered_count,returned_count')->withSum('items as qty', 'qty')

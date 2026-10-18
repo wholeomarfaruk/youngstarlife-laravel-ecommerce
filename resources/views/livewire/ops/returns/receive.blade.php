@@ -76,7 +76,7 @@
             <x-ops.card :title="'Courier return list · '.$this->expected->count().' parcels'" flush>
                 <x-ops.table min-width="760px"><x-slot:head><th class="th">Parcel</th><th class="th">Tracking</th><th class="th">Order · customer</th><th class="th">Type</th><th class="th text-right">Items</th><th class="th text-right">Charge</th><th class="th">Status</th></x-slot:head>
                 @forelse ($this->expected as $s)
-                    <tr class="tr-hover cursor-pointer" wire:click="scan('{{ $s->code }}')" wire:key="ex{{ $s->id }}"><td class="td mono font-semibold">{{ $s->code }}</td><td class="td mono text-xs">{{ $s->tracking ?: '—' }}</td><td class="td">{{ $s->order->number }} · {{ $s->order->customer->name }}</td>
+                    <tr class="tr-hover cursor-pointer" wire:click="scan('{{ $s->code }}')" wire:key="ex{{ $s->id }}"><td class="td mono font-semibold">{{ $s->code }}</td><td class="td text-xs"><x-ops.parcel-ref :s="$s" /></td><td class="td">{{ $s->order->number }} · {{ $s->order->customer->name }}</td>
                         <td class="td">{{ $s->order->exchange_of_id ? 'Exchange' : ($s->courier_status === 'partial_delivered' ? 'Partial' : 'Full') }}</td><td class="td text-right">{{ $s->order->items->sum('qty') }}</td><td class="td text-right">{{ tk($s->charge) }}</td>
                         <td class="td">@if ($activeId === $s->id)<x-ops.badge tone="info">Checking</x-ops.badge>@else<x-ops.badge map="courier_status" :status="$s->courier_status" />@endif</td></tr>
                 @empty <x-ops.empty colspan="7" title="No parcels coming back from this courier" hint="" /> @endforelse

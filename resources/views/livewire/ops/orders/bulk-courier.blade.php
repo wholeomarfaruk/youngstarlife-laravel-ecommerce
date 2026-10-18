@@ -135,7 +135,7 @@
                                 <span x-show="current === {{ $i->id }}" x-cloak class="text-xs text-brand">Booking…</span>
                                 <div x-show="current !== {{ $i->id }}" class="min-w-0">
                                     @if ($booked)
-                                        <div class="mono truncate text-xs font-semibold text-ok select-all" title="{{ $i->tracking }}">✓ {{ $i->tracking }}</div>
+                                        <div class="truncate text-xs font-semibold text-ok select-all" title="{{ $i->tracking }}">✓ @if ($i->shipment)<x-ops.parcel-ref :s="$i->shipment" inline />@else<span class="mono">{{ $i->tracking }}</span>@endif</div>
                                         <div class="truncate text-[11px] text-ink-muted">{{ $i->courier?->name }} · {{ $i->booked_at?->format('H:i') }}</div>
                                     @elseif ($failed)
                                         <x-ops.badge tone="bad">Failed</x-ops.badge>
