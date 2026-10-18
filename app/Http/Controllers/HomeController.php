@@ -34,10 +34,37 @@ class HomeController extends Controller
         return view('reviews', compact('reviews'));
     }
 
-    public function shop()
+    public function shop(\Illuminate\Http\Request $request)
     {
-        $products = $this->listed()->paginate(12);
-        return view('shop', compact('products'));
+        $q = $this->query($request);
+        $products = $this->searched($this->listed(), $q)->paginate(12)->withQueryString();
+        return view('shop', compact('products', 'q'));
+    }
+
+    /** header search modal: live results while typing (JSON, cached briefly per query) */
+    public function searchSuggest(\Illuminate\Http\Request $request)
+    {
+        $q = $this->query($request);
+        if (mb_strlen($q) < 2) return response()->json(['items' => [], 'total' => 0]);
+        $data = cache()->remember('search:'.md5(mb_strtolower($q)), 60, function () use ($q) {
+            $base = $this->searched($this->listed(), $q);
+            return ['total' => (clone $base)->count(), 'items' => $base->limit(8)->get(['id', 'name', 'slug', 'code', 'price', 'sale_price', 'featured_image'])
+                ->map(fn ($p) => ['name' => $p->name, 'url' => route('product.show', $p->slug, false), 'image' => $p->thumb_url, 'price' => $p->sellPrice(), 'old' => $p->hasDiscount() ? (int) $p->price : 0])->all()];
+        });
+        return response()->json($data + ['all' => route('shop', ['q' => $q], false)]);
+    }
+
+    protected function query(\Illuminate\Http\Request $request): string { return mb_substr(trim(preg_replace('/\s+/u', ' ', (string) $request->query('q'))), 0, 60); }
+
+    /** every word must hit the name, code or a category name ("cargo combo" finds "… Cargo Pant Combo") */
+    protected function searched($query, string $q)
+    {
+        foreach (array_slice(array_filter(explode(' ', $q), fn ($w) => mb_strlen($w) > 0), 0, 6) as $w) {
+            $like = '%'.addcslashes($w, '%_\\').'%';   // a typed % or _ is a letter, not a wildcard
+            $query->where(fn ($x) => $x->where('ops_products.name', 'like', $like)->orWhere('ops_products.code', 'like', $like)
+                ->orWhereHas('categories', fn ($c) => $c->where('ops_categories.name', 'like', $like)));
+        }
+        return $query;
     }
 
     public function productShow(string $slug)

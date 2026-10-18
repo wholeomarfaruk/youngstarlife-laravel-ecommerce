@@ -1,5 +1,5 @@
 @extends('layouts.app')
-@section('title', 'সকল প্রোডাক্ট')
+@section('title', $q ? '“'.$q.'” — খুঁজে পাওয়া প্রোডাক্ট' : 'সকল প্রোডাক্ট')
 
 @section('content')
     <style>
@@ -125,10 +125,13 @@
 
 
             <div class="sec-header">
-                <h2 class="sec-title text-primary-color">Latest Products - নতুন পণ্য</h2>
+                <h2 class="sec-title text-primary-color">@if ($q)“{{ $q }}” — {{ $products->total() }}টি প্রোডাক্ট পাওয়া গেছে @else Latest Products - নতুন পণ্য @endif</h2>
                 <hr class="divider mt-0 text-primary-color bg-primary-color " style="height: 2px;">
             </div>
             <div class="sec-body">
+                @if ($q && $products->isEmpty())
+                    <div class="text-center py-5 text-muted">“{{ $q }}” এর সাথে মিলে এমন কোনো প্রোডাক্ট পাওয়া যায়নি। অন্য শব্দ দিয়ে খুঁজুন অথবা <a href="{{ route('shop') }}">সব প্রোডাক্ট দেখুন</a>।</div>
+                @endif
                 <div class="sec-grid-box">
                     @foreach ($products as $product)
                         <div class="sec-grid-item p-card-1">

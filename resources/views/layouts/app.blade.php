@@ -98,6 +98,33 @@
         }
         @media (max-width: 480px) { .ys-header-in { padding: 0 12px; gap: 8px; } .ys-logo-name { font-size: 16px; } }
         @media (max-width: 340px) { .ys-logo-name { display: none; } }
+        /* live search modal */
+        .ys-search { position: fixed; inset: 0; z-index: 1060; background: rgba(20,22,20,.5); display: flex; justify-content: center; align-items: flex-start; padding: 64px 16px 16px; font-family: 'Hind Siliguri', system-ui, sans-serif; }
+        .ys-search[hidden] { display: none; }
+        .ys-search-box { background: #fff; border-radius: 14px; width: 100%; max-width: 640px; max-height: calc(100vh - 96px); display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 20px 50px rgba(0,0,0,.25); animation: ys-drop .15s ease-out; }
+        @keyframes ys-drop { from { transform: translateY(-8px); opacity: .6; } }
+        .ys-search-bar { display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 16px; border-bottom: 1px solid #ececea; color: #7a7d7a; margin: 0; }
+        .ys-search-bar input { flex: 1; min-width: 0; border: 0; outline: 0; font-size: 17px; padding: 8px 0; color: #262826; background: transparent; }
+        .ys-search-bar input::-webkit-search-cancel-button { display: none; }
+        .ys-search-x { border: 0; background: #f4f4f2; width: 36px; height: 36px; border-radius: 50%; font-size: 22px; line-height: 1; color: #3f423f; cursor: pointer; flex: none; }
+        .ys-search-body { overflow-y: auto; overscroll-behavior: contain; padding: 6px; }
+        .ys-search-hint { margin: 0; padding: 14px 12px; color: #7a7d7a; font-size: 14px; text-align: center; }
+        .ys-search-list { list-style: none; margin: 0; padding: 0; }
+        .ys-search-list a { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 10px; color: #262826; text-decoration: none; }
+        .ys-search-list a:hover, .ys-search-list a.is-on { background: #f4f4f2; }
+        .ys-search-list img { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; flex: none; background: #ececea; }
+        .ys-search-name { flex: 1; min-width: 0; font-size: 15px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        .ys-search-name mark { background: #fff1b8; padding: 0; color: inherit; }
+        .ys-search-price { flex: none; text-align: right; font-weight: 700; font-size: 15px; white-space: nowrap; }
+        .ys-search-price del { display: block; font-weight: 400; font-size: 12px; color: #9a9d9a; }
+        .ys-search-all { display: block; margin: 4px 6px 6px; padding: 11px; border-radius: 10px; background: var(--primary-color, #545754); color: #fff !important; text-align: center; text-decoration: none; font-weight: 600; }
+        .ys-search-all[hidden] { display: none; }
+        .ys-search.is-loading .ys-search-bar { background: linear-gradient(90deg, transparent, #f4f4f2, transparent) 0 0 / 200% 100%; animation: ys-shimmer 1s linear infinite; }
+        @keyframes ys-shimmer { to { background-position: -200% 0; } }
+        @media (max-width: 575px) {
+            .ys-search { padding: 0; align-items: stretch; }
+            .ys-search-box { max-width: none; max-height: none; border-radius: 0; }
+        }
         /* mobile sidebar (☰) */
         .ys-side { width: min(320px, 86vw) !important; font-family: 'Hind Siliguri', system-ui, sans-serif; display: flex; flex-direction: column; }
         .ys-side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 12px 12px 16px; background: var(--primary-color, #545754); color: #fff; }
@@ -236,6 +263,10 @@
                     @foreach ($item['children'] as $child)<a href="{{ $child['url'] }}" class="ys-nav-flat" @if ($child['new_tab']) target="_blank" rel="noopener" @endif>{{ $child['label'] }}</a>@endforeach
                 @endforeach
             </nav>
+            {{-- search: opens the live search modal (frontend/js/search.js) — a real link to /shop without JavaScript --}}
+            <a href="{{ route('shop') }}" data-search-open class="ys-round" aria-label="খুঁজুন" title="খুঁজুন">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            </a>
             @if (site()->cartEnabled())
             {{-- cart (device cart) — badge kept in sync by window.ysCart.setCount(); click opens the drawer (frontend/js/cart-drawer.js) --}}
             <a href="{{ route('checkout') }}" data-cart-open class="ys-round ys-cart-link" aria-label="কার্ট">
@@ -258,6 +289,21 @@
         </div>
     </header>
     <aside id="sidebar"></aside>
+    {{-- live search modal: filled by frontend/js/search.js from /search/suggest --}}
+    <div class="ys-search" id="ysSearch" role="dialog" aria-modal="true" aria-label="প্রোডাক্ট খুঁজুন" hidden data-url="{{ route('search.suggest', [], false) }}" data-shop="{{ route('shop', [], false) }}">
+        <div class="ys-search-box">
+            <form class="ys-search-bar" action="{{ route('shop') }}" method="get" role="search">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <input type="search" name="q" placeholder="প্রোডাক্টের নাম বা কোড লিখুন…" autocomplete="off" enterkeyhint="search" aria-label="খুঁজুন" aria-controls="ysSearchList" maxlength="60">
+                <button type="button" class="ys-search-x" data-search-close aria-label="বন্ধ করুন">×</button>
+            </form>
+            <div class="ys-search-body" aria-live="polite">
+                <p class="ys-search-hint">কমপক্ষে ২টি অক্ষর লিখুন — যেমন “cargo”, “combo”, “denim”</p>
+                <ul class="ys-search-list" id="ysSearchList" role="listbox"></ul>
+                <a class="ys-search-all" hidden></a>
+            </div>
+        </div>
+    </div>
     {{-- mobile sidebar: Mobile sidebar menu, or the Main menu while that one is empty; Top bar links at the bottom --}}
     @php($side = $menus->get('mobile'))
     @php($sideItems = $side['items'] ?: $menus->get('header')['items'])
@@ -439,6 +485,7 @@
             }
         };
     </script>
+    <script src="{{ asset('frontend/js/search.js') }}?v={{ @filemtime(public_path('frontend/js/search.js')) }}" defer></script>
     @if (site()->cartEnabled())
         <script src="{{ asset('frontend/js/cart-drawer.js') }}?v={{ @filemtime(public_path('frontend/js/cart-drawer.js')) }}"></script>
     @endif

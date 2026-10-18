@@ -45,7 +45,8 @@ Route::get('/admin/login', [AdminController::class, 'login'])->name('admin.login
 Route::post('/record-session', [SessionRecordController::class, 'store']);
 
 
-Route::get('/shop', [HomeController::class, 'shop'])->name('shop');
+Route::get('/shop', [HomeController::class, 'shop'])->name('shop');   // ?q= → search results
+Route::get('/search/suggest', [HomeController::class, 'searchSuggest'])->name('search.suggest')->middleware('throttle:90,1');   // header search modal
 Route::get('/reviews', [HomeController::class, 'reviews'])->name('reviews');
 Route::get('/category/{slug}', [HomeController::class, 'categoryShow'])->name('category.show');
 Route::get('/product/{slug}', [HomeController::class, 'productShow'])->name('product.show');
