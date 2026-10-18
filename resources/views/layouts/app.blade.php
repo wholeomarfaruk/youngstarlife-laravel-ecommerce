@@ -89,14 +89,34 @@
         .ys-cart-badge[hidden] { display: none; }
         .ys-cart-bump { animation: ys-bump .4s ease; }
         @keyframes ys-bump { 50% { transform: scale(1.15); } }
+        .ys-burger { display: none; }
         @media (max-width: 991px) {
-            .ys-nav { overflow-x: auto; scrollbar-width: none; }
-            .ys-nav::-webkit-scrollbar { display: none; }
-            .ys-sub:not(.ys-sub-right) { display: none !important; }
-            .ys-caret { display: none; }
-            .ys-nav-flat { display: block !important; }
+            .ys-burger { display: flex; }
+            .ys-nav { display: none; }   /* phones / tablets: the ☰ sidebar has the menu */
+            .ys-logo { margin-right: auto; min-width: 0; }
+            .ys-logo-name { overflow: hidden; text-overflow: ellipsis; }
         }
-        @media (max-width: 480px) { .ys-header-in { padding: 0 12px; gap: 8px; } .ys-logo-name { display: none; } }
+        @media (max-width: 480px) { .ys-header-in { padding: 0 12px; gap: 8px; } .ys-logo-name { font-size: 16px; } }
+        @media (max-width: 340px) { .ys-logo-name { display: none; } }
+        /* mobile sidebar (☰) */
+        .ys-side { width: min(320px, 86vw) !important; font-family: 'Hind Siliguri', system-ui, sans-serif; display: flex; flex-direction: column; }
+        .ys-side-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 12px 12px 12px 16px; background: var(--primary-color, #545754); color: #fff; }
+        .ys-side-brand { display: flex; align-items: center; gap: 10px; color: #fff !important; text-decoration: none; font-size: 17px; font-weight: 600; min-width: 0; }
+        .ys-side-brand span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .ys-side-head .ys-dr-x { color: #fff; }
+        .ys-side-body { flex: 1; overflow-y: auto; overscroll-behavior: contain; padding: 8px; }
+        .ys-side-title { padding: 8px 10px 4px; font-size: 13px; color: #7a7d7a; }
+        .ys-side-link, .ys-side-group > summary { display: flex; align-items: center; gap: 10px; padding: 12px 10px; border-radius: 8px; color: #262826 !important; text-decoration: none; font-size: 16px; font-weight: 500; cursor: pointer; list-style: none; }
+        .ys-side-group > summary::-webkit-details-marker { display: none; }
+        .ys-side-link:hover, .ys-side-group > summary:hover, .ys-side-link.is-on, .ys-side-group > summary.is-on { background: #f4f4f2; }
+        .ys-side-link i, .ys-side-group > summary i { width: 18px; text-align: center; color: #545754; }
+        .ys-side-caret { margin-left: auto; font-size: 12px; transition: transform .15s; }
+        .ys-side-group[open] .ys-side-caret { transform: rotate(180deg); }
+        .ys-side-sub { display: block; padding: 10px 10px 10px 38px; border-radius: 8px; color: #3f423f !important; text-decoration: none; font-size: 15px; }
+        .ys-side-sub:hover, .ys-side-sub.is-on { background: #f4f4f2; }
+        .ys-side-foot { border-top: 1px solid #ececea; padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; gap: 2px; }
+        .ys-side-foot a { display: flex; align-items: center; gap: 10px; padding: 8px 6px; color: #3f423f !important; text-decoration: none; font-size: 14px; }
+        .ys-side-foot .fa-whatsapp { color: #25D366; }
         /* cart drawer */
         .ys-drawer { --bs-offcanvas-width: min(400px, 100%); max-width: 100vw; font-family: 'Hind Siliguri', system-ui, sans-serif; color: #262826; box-shadow: -8px 0 30px rgba(0,0,0,.12); }
         .offcanvas-backdrop.show { opacity: 1; background: rgba(20,20,20,.4); }
@@ -200,6 +220,10 @@
     </div>
     <header id="header-area" class="ys-header">
         <div class="ys-header-in">
+            {{-- phones / tablets: ☰ opens the sidebar (Ops → Storefront → Navigation menus → Mobile sidebar) --}}
+            <button type="button" class="ys-round ys-burger" data-bs-toggle="offcanvas" data-bs-target="#ysMenu" aria-controls="ysMenu" aria-label="মেনু খুলুন">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+            </button>
             <a href="{{ route('home') }}" class="ys-logo"><span class="ys-logo-mark"><img src="{{ site()->logoUrl() }}" alt="" width="34" height="34"></span><span class="ys-logo-name">{{ site()->storeName() }}</span></a>
             <nav class="ys-nav" aria-label="মেনু">
                 @foreach ($menus->get('header')['items'] as $item)
@@ -234,6 +258,34 @@
         </div>
     </header>
     <aside id="sidebar"></aside>
+    {{-- mobile sidebar: Mobile sidebar menu, or the Main menu while that one is empty; Top bar links at the bottom --}}
+    @php($side = $menus->get('mobile'))
+    @php($sideItems = $side['items'] ?: $menus->get('header')['items'])
+    <div class="offcanvas offcanvas-start ys-side" tabindex="-1" id="ysMenu" aria-labelledby="ysMenuTitle">
+        <div class="ys-side-head">
+            <a href="{{ route('home') }}" class="ys-side-brand"><span class="ys-logo-mark"><img src="{{ site()->logoUrl() }}" alt="" width="34" height="34" loading="lazy"></span><span id="ysMenuTitle">{{ site()->storeName() }}</span></a>
+            <button type="button" class="ys-dr-x" data-bs-dismiss="offcanvas" aria-label="বন্ধ করুন">×</button>
+        </div>
+        <nav class="ys-side-body" aria-label="মোবাইল মেনু">
+            @if ($side['title'])<div class="ys-side-title">{{ $side['title'] }}</div>@endif
+            @foreach ($sideItems as $item)
+                @if ($item['children'])
+                    <details class="ys-side-group" @if ($menus->isActive($item)) open @endif>
+                        <summary @class(['is-on' => $menus->isActive($item)])>@if ($item['icon'])<i class="{{ $item['icon'] }}" aria-hidden="true"></i>@endif<span>{{ $item['label'] }}</span><span class="ys-side-caret" aria-hidden="true">▾</span></summary>
+                        @unless (str_ends_with($item['url'], '#'))<a href="{{ $item['url'] }}" class="ys-side-sub" @if ($item['new_tab']) target="_blank" rel="noopener" @endif>সব দেখুন</a>@endunless {{-- a "#" parent is only a group title --}}
+                        @foreach ($item['children'] as $child)<a href="{{ $child['url'] }}" @class(['ys-side-sub', 'is-on' => $menus->isActive($child)]) @if ($child['new_tab']) target="_blank" rel="noopener" @endif>{{ $child['label'] }}</a>@endforeach
+                    </details>
+                @else
+                    <a href="{{ $item['url'] }}" @class(['ys-side-link', 'is-on' => $menus->isActive($item)]) @if ($menus->isActive($item)) aria-current="page" @endif @if ($item['new_tab']) target="_blank" rel="noopener" @endif>@if ($item['icon'])<i class="{{ $item['icon'] }}" aria-hidden="true"></i>@endif<span>{{ $item['label'] }}</span></a>
+                @endif
+            @endforeach
+        </nav>
+        @if ($contact = $menus->get('topbar')['items'])
+            <div class="ys-side-foot">
+                @foreach ($contact as $item)<a href="{{ $item['url'] }}" @if ($item['new_tab']) target="_blank" rel="noopener" @endif>@if ($item['icon'])<i class="{{ $item['icon'] }}" aria-hidden="true"></i>@endif<span>{{ $item['label'] }}</span></a>@endforeach
+            </div>
+        @endif
+    </div>
     @if (site()->cartEnabled())
     {{-- cart drawer: empty shell, filled by frontend/js/cart-drawer.js --}}
     <div class="offcanvas offcanvas-end ys-drawer" tabindex="-1" id="ysCartDrawer" aria-labelledby="ysCartDrawerTitle"

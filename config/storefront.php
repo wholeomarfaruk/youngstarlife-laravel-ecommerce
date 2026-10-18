@@ -6,6 +6,7 @@ return [
         'topbar' => ['label' => 'Top bar', 'description' => 'Contact links above the header', 'depth' => 1],
         'header' => ['label' => 'Main menu', 'description' => 'Header navigation (desktop + mobile). Items can have a dropdown.', 'depth' => 2],
         'footer' => ['label' => 'Footer', 'description' => 'Heading and contact links in the footer', 'depth' => 1],
+        'mobile' => ['label' => 'Mobile sidebar', 'description' => 'The ☰ sidebar on phones and tablets. Leave it empty to show the Main menu there. The heading shows above the links.', 'depth' => 2],
     ],
 
     // what a menu item can point to
