@@ -80,8 +80,26 @@ class ProductBuy extends Component
 
         $this->token = (string) Str::uuid();   // "আবার অর্ডার করুন" is a new order
         $lines = $checkout->lines($order);
-        return ['ok' => true, 'invoice' => CheckoutService::publicNumber($order), 'phone' => $phone, 'total' => (int) $order->total, 'url' => route('checkout.order', $order),
-            'purchase' => $checkout->shouldTrackPurchase($order) ? $checkout->purchaseEvent($order, $lines) : null];
+        $invoice = CheckoutService::publicNumber($order);
+        return ['ok' => true, 'invoice' => $invoice, 'phone' => $phone, 'total' => (int) $order->total, 'url' => route('checkout.order', $order),
+            'purchase' => $checkout->shouldTrackPurchase($order) ? $checkout->purchaseEvent($order, $lines) : null] + $this->placedDetails($order, $lines, $invoice, $address);
+    }
+
+    /** the "order placed" modal: short product lines + shipping from the saved order — best effort, the order is already saved */
+    protected function placedDetails(\App\Models\Ops\Order $order, $lines, string $invoice, string $address): array
+    {
+        try {
+            return [
+                'items' => $lines->map(fn ($i) => ['name' => $i->variant?->product?->name, 'image' => $i->variant?->product?->thumb_url, 'qty' => (int) $i->qty, 'line' => (int) $i->subtotal,
+                    'variant' => $i->combo_selection ? collect($i->combo_selection)->map(fn ($c) => collect([$c['color'] ?? null, $c['size'] ?? null])->filter()->join(' '))->filter()->join(' + ') : ($i->variant?->size ? 'সাইজ '.$i->variant->size : null)])->values()->all(),
+                'subtotal' => (int) $order->subtotal, 'delivery' => (int) $order->delivery_charge,
+                'ship' => ['name' => $order->ship_name, 'phone' => $order->ship_phone, 'address' => mb_substr($address, 0, 1000), 'area' => DeliveryZone::whereKey($order->delivery_zone_id)->value('name')],
+                'whatsapp' => site()->whatsappLink(site()->text('content.order_whatsapp_text', ['{invoice}' => $invoice])),
+            ];
+        } catch (\Throwable $e) {
+            report($e);
+            return ['items' => [], 'subtotal' => (int) $order->subtotal, 'delivery' => (int) $order->delivery_charge, 'ship' => null, 'whatsapp' => null];
+        }
     }
 
     /** a lead for Orders → Drafts once the phone is complete (the customer may still leave) — never shows an error */

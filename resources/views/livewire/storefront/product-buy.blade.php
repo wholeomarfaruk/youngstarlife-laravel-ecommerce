@@ -159,12 +159,55 @@
             <div class="pp-done" role="status">
                 <span class="pp-done-check">✓</span>
                 <span class="pp-h2">অর্ডার সম্পন্ন হয়েছে</span>
-                <span class="pp-muted2">আমাদের প্রতিনিধি শীঘ্রই <b x-text="placed.phone"></b> নাম্বারে কল করবেন।</span>
                 <span class="pp-muted2">অর্ডার নম্বর <b x-text="'#' + placed.invoice"></b> · মোট ৳ <span x-text="placed.total"></span></span>
-                <button type="button" class="pp-btn-ghost" @click="placed = null">আবার অর্ডার করুন</button>
+                <span class="pp-row-gap"><button type="button" class="pp-btn-ghost" @click="done = true">বিস্তারিত দেখুন</button><button type="button" class="pp-btn-ghost" @click="placed = null">আবার অর্ডার করুন</button></span>
             </div>
         </template>
     </div>
+
+    {{-- order placed: modal (bottom sheet on phones) — everything comes with the placeOrder answer, nothing to load --}}
+    <template x-teleport="body">
+        <div class="pp-modal" x-show="done && placed" x-cloak x-transition.opacity.duration.150ms @keydown.escape.window="done = false" @click.self="done = false" role="dialog" aria-modal="true" aria-labelledby="pp-modal-title">
+            <template x-if="placed">
+                <div class="pp-sheet" x-trap.noscroll="done">
+                    <button type="button" class="pp-sheet-x" @click="done = false" aria-label="বন্ধ করুন">×</button>
+                    <div class="pp-sheet-head">
+                        <span class="pp-done-check">✓</span>
+                        <span class="pp-h2" id="pp-modal-title">অর্ডার সম্পন্ন হয়েছে</span>
+                        <span class="pp-muted2">অর্ডার নম্বর <b x-text="'#' + placed.invoice"></b></span>
+                        <span class="pp-muted2">আমাদের প্রতিনিধি শীঘ্রই <b x-text="placed.phone"></b> নাম্বারে কল করবেন।</span>
+                    </div>
+                    <div class="pp-sheet-box">
+                        <template x-for="(it, i) in (placed.items || [])" :key="i">
+                            <div class="pp-sheet-item">
+                                <template x-if="it.image"><img :src="it.image" alt="" width="52" height="52" decoding="async"></template>
+                                <div class="pp-sheet-item-txt"><b x-text="it.name"></b><span class="pp-muted2" x-text="[it.variant, 'পরিমাণ ' + it.qty].filter(Boolean).join(' · ')"></span></div>
+                                <b class="pp-nowrap" x-text="'৳ ' + it.line"></b>
+                            </div>
+                        </template>
+                        <div class="pp-sheet-sum">
+                            <div><span class="pp-muted2">সাবটোটাল</span><span x-text="'৳ ' + placed.subtotal"></span></div>
+                            <div><span class="pp-muted2">ডেলিভারি চার্জ</span><span x-text="'৳ ' + placed.delivery"></span></div>
+                            <div class="pp-total"><span>মোট (ক্যাশ অন ডেলিভারি)</span><span x-text="'৳ ' + placed.total"></span></div>
+                        </div>
+                    </div>
+                    <template x-if="placed.ship">
+                        <div class="pp-sheet-box pp-sheet-ship">
+                            <span class="pp-label-sm">ডেলিভারি তথ্য</span>
+                            <div><span class="pp-muted2">নাম</span><b x-text="placed.ship.name"></b></div>
+                            <div><span class="pp-muted2">মোবাইল</span><b x-text="placed.ship.phone"></b></div>
+                            <div><span class="pp-muted2">ঠিকানা</span><b x-text="placed.ship.address"></b></div>
+                            <div x-show="placed.ship.area"><span class="pp-muted2">এরিয়া</span><b x-text="placed.ship.area"></b></div>
+                        </div>
+                    </template>
+                    <div class="pp-sheet-actions">
+                        <a x-show="placed.whatsapp" :href="placed.whatsapp" target="_blank" rel="noopener" class="pp-btn pp-btn-wa">WhatsApp করুন</a>
+                        <button type="button" class="pp-btn" @click="done = false">ঠিক আছে</button>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </template>
     @endif
 
     {{-- description --}}

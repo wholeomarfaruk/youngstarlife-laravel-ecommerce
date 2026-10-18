@@ -30,7 +30,7 @@
         Alpine.data('ysProduct', function (d) {
             return {
                 d: d, qty: 1, size: null, combo: {}, same: false, chart: false, err: '',
-                name: '', phone: '', address: '', area: d.area, formErr: '', bad: '', placing: false, placed: null, adding: false,
+                name: '', phone: '', address: '', area: d.area, formErr: '', bad: '', placing: false, placed: null, done: false, adding: false,   // done = the order-placed modal is open
                 begun: false, savedFor: null, saveTimer: null,
 
                 boot: function () {
@@ -144,9 +144,8 @@
                     this.$wire.placeOrder(this.pick(), this.form()).then(function (r) {
                         if (!r || !r.ok) { me.formErr = (r && r.error) || 'আবার চেষ্টা করুন'; if (r && r.field) me.bad = r.field; return; }
                         write({ name: me.name, phone: me.phone, address: me.address, area: me.area });
-                        me.placed = r; me.qty = 1;
+                        me.placed = r; me.qty = 1; me.done = true;   // modal opens at once — the answer already has the details
                         track(r.purchase);
-                        me.$nextTick(function () { me.$refs.form && me.$refs.form.scrollIntoView({ behavior: 'smooth', block: 'center' }); });
                     }).catch(function () {
                         me.formErr = 'ইন্টারনেট সংযোগ চেক করে আবার চেষ্টা করুন।';
                     }).finally(function () { me.placing = false; });

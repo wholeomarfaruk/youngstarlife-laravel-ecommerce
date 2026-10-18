@@ -128,6 +128,31 @@
     .pp-policy { margin-top: 12px; gap: 10px; } .pp-policy li > span:first-child { flex: none; }
     .pp details > summary, details.pp-card > summary { cursor: pointer; }
 
+    .pp-row-gap { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+    /* order placed modal (teleported to <body>): centred card, bottom sheet on phones */
+    .pp-modal { position: fixed; inset: 0; z-index: 1080; background: rgba(20, 22, 20, .55); display: flex; align-items: center; justify-content: center; padding: 16px; font-family: 'Hind Siliguri', sans-serif; }
+    .pp-sheet { position: relative; background: #fff; border-radius: 16px; width: 100%; max-width: 440px; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow-y: auto; overscroll-behavior: contain; padding: 20px 18px 16px; display: flex; flex-direction: column; gap: 12px; color: #262826; animation: pp-up .18s ease-out; }
+    .pp-sheet-x { position: absolute; top: 8px; right: 10px; width: 36px; height: 36px; border: 0; background: none; font-size: 26px; line-height: 1; color: #6b6e6b; cursor: pointer; }
+    .pp-sheet-head { display: flex; flex-direction: column; align-items: center; gap: 4px; text-align: center; }
+    .pp-sheet-head .pp-done-check { width: 44px; height: 44px; font-size: 22px; margin-bottom: 2px; }
+    .pp-sheet-box { background: #f7f7f5; border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+    .pp-sheet-item { display: flex; align-items: center; gap: 10px; }
+    .pp-sheet-item img { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; flex: none; background: #e9e9e6; }
+    .pp-sheet-item-txt { display: flex; flex-direction: column; min-width: 0; flex: 1; line-height: 1.35; }
+    .pp-sheet-item-txt b { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .pp-nowrap { white-space: nowrap; }
+    .pp-sheet-sum { display: flex; flex-direction: column; gap: 4px; border-top: 1px dashed #cfcfca; padding-top: 8px; }
+    .pp-sheet-sum > div, .pp-sheet-ship > div { display: flex; justify-content: space-between; gap: 12px; }
+    .pp-sheet-sum .pp-total { font-size: 16px; font-weight: 700; }
+    .pp-sheet-ship > div b { text-align: right; overflow-wrap: anywhere; font-weight: 600; }
+    .pp-sheet-actions { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 8px; }
+    .pp-sheet-actions .pp-btn { height: 46px; font-size: 16px; text-decoration: none; }
+    .pp-btn-wa { background: #25d366 !important; color: #fff !important; }
+    @keyframes pp-up { from { transform: translateY(16px); opacity: .6; } }
+    @media (max-width: 575px) {
+        .pp-modal { align-items: flex-end; padding: 0; }
+        .pp-sheet { max-width: none; border-radius: 16px 16px 0 0; max-height: 92vh; max-height: 92dvh; padding-bottom: calc(14px + env(safe-area-inset-bottom)); }
+    }
     @media (max-width: 939px) { .pp-gallery { position: static; } }
     @media (max-width: 480px) { .pp { padding: 12px 14px 24px; } .pp-title { font-size: 24px; } .pp-price { font-size: 28px; } .pp-btn, .pp-btn-outline { font-size: 16px; } }
 </style>
