@@ -70,6 +70,14 @@ class Index extends Component
         return ['n' => (int) $r->n, 'v' => (int) $r->v, 'avg' => $r->n ? (int) round($r->v / $r->n) : 0, 'cod' => (int) $r->cod, 'waiting' => (int) $r->waiting];
     }
 
+    /** phone "Sort" menu: 'placed_at:desc' · 'placed_at:asc' · 'total:desc' · 'total:asc' */
+    public function sortList(string $v): void
+    {
+        [$f, $d] = array_pad(explode(':', $v), 2, 'desc');
+        if (! in_array($f, ['placed_at', 'total'], true) || ! in_array($d, ['asc', 'desc'], true)) return;
+        $this->sortField = $f; $this->sortDir = $d; $this->resetPage();
+    }
+
     #[Computed]
     public function orders()
     {

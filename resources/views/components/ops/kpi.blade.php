@@ -3,5 +3,5 @@
 <{{ $href ? 'a' : 'div' }} @if($href) href="{{ $href }}" wire:navigate @endif {{ $attributes->class('kpi text-left hover:border-ink-faint') }}>
     <span class="text-xs text-ink-muted">{{ $label }}</span>
     <span class="text-xl font-semibold tabular-nums {{ $color }}">{{ $value }}</span>
-    @if ($hint)<span class="text-xs text-ink-muted">{{ $hint }}</span>@endif
+    @if ($hint)<span class="text-xs text-ink-muted max-[479px]:hidden">{{ $hint }}</span>@endif
 </{{ $href ? 'a' : 'div' }}>
