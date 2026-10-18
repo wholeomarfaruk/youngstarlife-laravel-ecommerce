@@ -29,13 +29,34 @@
         @php($addable = $orders->getCollection()->reject(fn ($o) => in_array($o->id, $sheetIds) || $lockedByOthers->has($o->id))->pluck('id'))
         <div class="flex flex-wrap items-center gap-2 border-b border-soft px-3 py-2">
             <span class="mr-auto font-semibold">Ready to ship <span class="text-sm font-normal text-ink-muted">{{ ops_num($orders->total()) }} not with a courier</span></span>
-            <input wire:model.live.debounce.400ms="search" class="input w-56" placeholder="Order no., name, phone…">
-            <select wire:model.live="filterStatus" class="input w-auto"><option value="">All statuses</option>@foreach (['pending', 'confirmed', 'packed'] as $st)<option value="{{ $st }}">{{ config("ops.order_status.$st.0") }}</option>@endforeach</select>
-            <select wire:model.live="filterSource" class="input w-auto"><option value="">All channels</option>@foreach (config('ops.sources') as $k => $l)<option value="{{ $k }}">{{ $l }}</option>@endforeach</select>
+            <input wire:model.live.debounce.400ms="search" class="input w-56 max-[479px]:w-full" placeholder="Order no., name, phone…">
+            <select wire:model.live="filterStatus" class="input w-auto max-[479px]:min-w-0 max-[479px]:flex-1"><option value="">All statuses</option>@foreach (['pending', 'confirmed', 'packed'] as $st)<option value="{{ $st }}">{{ config("ops.order_status.$st.0") }}</option>@endforeach</select>
+            <select wire:model.live="filterSource" class="input w-auto max-[479px]:min-w-0 max-[479px]:flex-1"><option value="">All channels</option>@foreach (config('ops.sources') as $k => $l)<option value="{{ $k }}">{{ $l }}</option>@endforeach</select>
             @if ($search !== '' || $filterStatus !== '' || $filterSource !== '')<button wire:click="clearFilters" class="text-sm text-brand">Clear</button>@endif
-            <button wire:click="addPage('{{ $addable->implode(',') }}')" @disabled($addable->isEmpty()) class="btn-secondary btn-sm">+ Add all on this page ({{ $addable->count() }})</button>
+            <button wire:click="addPage('{{ $addable->implode(',') }}')" @disabled($addable->isEmpty()) class="btn-secondary btn-sm max-[479px]:w-full">+ Add all on this page ({{ $addable->count() }})</button>
         </div>
-        <div class="max-h-[420px] overflow-auto">
+        {{-- phones: one card per order --}}
+        <div class="max-h-[60vh] overflow-auto min-[480px]:hidden">
+            @forelse ($orders as $o)
+                @php($in = in_array($o->id, $sheetIds)) @php($by = $lockedByOthers->get($o->id)) @php($rate = $o->customer?->delivery_rate)
+                <div wire:key="ready-m{{ $o->id }}" @class(['flex gap-2.5 border-b border-soft p-3', 'bg-brand-tint' => $in])>
+                    <div class="flex-none pt-0.5">
+                        @if ($in)<span class="grid h-9 w-9 place-items-center rounded-full bg-brand-tint text-brand" title="On the sheet">✓</span>
+                        @elseif ($by)<span class="grid h-9 w-9 place-items-center rounded-full bg-soft text-ink-muted" title="On {{ $by }}’s sheet">🔒</span>
+                        @else<button wire:click="addOrder({{ $o->id }})" wire:loading.attr="disabled" wire:target="addOrder({{ $o->id }})" class="grid h-9 w-9 place-items-center rounded-full bg-brand text-xl leading-none text-white" aria-label="Add {{ $o->number }} to the sheet">+</button>@endif
+                    </div>
+                    <div class="flex min-w-0 flex-1 flex-col gap-0.5 text-sm">
+                        <div class="flex items-center gap-2"><a href="{{ route('ops.orders.show', $o) }}" wire:navigate class="mono font-semibold">{{ $o->number }}</a><span class="min-w-0 flex-1 truncate text-xs text-ink-muted">{{ $o->placed_at->format('d M · H:i') }} · {{ config('ops.sources.'.$o->source, ucfirst($o->source)) }}</span><x-ops.badge map="order_status" :status="$o->status" /></div>
+                        <div class="truncate"><b>{{ $o->ship_name }}</b> <span class="mono text-xs text-ink-muted">{{ $o->ship_phone }}</span>@if ($rate !== null) <span @class(['text-xs font-semibold', 'text-bad' => $rate < .75, 'text-ok' => $rate >= .9])>{{ round($rate * 100) }}%</span>@endif</div>
+                        <div class="line-clamp-2 text-xs text-ink-3">{{ $o->ship_address }}</div>
+                        <div class="text-xs text-ink-muted">{{ (int) $o->qty }} item(s) · COD <b class="text-ink">{{ tk($o->cod) }}</b>@if ($by) · on {{ $by }}’s sheet @endif</div>
+                    </div>
+                </div>
+            @empty
+                <div class="py-10 text-center text-sm text-ink-muted">No orders waiting for a courier.</div>
+            @endforelse
+        </div>
+        <div class="max-h-[420px] overflow-auto max-[479px]:hidden">
             <x-ops.table min-width="900px">
                 <x-slot:head><th class="th w-12"></th><x-ops.th>Order</x-ops.th><x-ops.th>Customer</x-ops.th><x-ops.th>Address</x-ops.th><x-ops.th align="right">Items</x-ops.th><x-ops.th align="right">COD</x-ops.th><x-ops.th>Status</x-ops.th></x-slot:head>
                 @forelse ($orders as $o)
@@ -65,13 +86,15 @@
     <section class="card">
         <div class="flex flex-col gap-2 border-b border-soft px-3 py-2.5">
             <div class="flex flex-wrap items-center gap-2">
-                <span class="mr-auto font-semibold">Courier sheet <x-ops.badge tone="warn">Draft · auto-saved</x-ops.badge></span>
-                <select wire:model="bulkCourierId" class="input w-auto"><option value="">Courier for all rows…</option>@foreach ($couriers as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select>
+                <span class="mr-auto font-semibold max-[479px]:w-full">Courier sheet <x-ops.badge tone="warn">Draft · auto-saved</x-ops.badge></span>
+                <select wire:model="bulkCourierId" class="input w-auto max-[479px]:min-w-0 max-[479px]:flex-1"><option value="">Courier for all rows…</option>@foreach ($couriers as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach</select>
                 <button wire:click="applyCourierToAll" class="btn-secondary btn-sm">Apply</button>
                 @if ($stats['booked'])<button x-on:click="opsConfirm({ title: 'Complete this sheet?', text: 'Booked rows go to history; anything not booked stays on a new sheet.', confirm: 'Complete' }).then(ok => ok && $wire.completeSheet())" class="btn-secondary btn-sm">Complete sheet</button>@endif
                 @if ($stats['open'])<button x-on:click="opsConfirm({ title: 'Clear the sheet?', text: 'Every unbooked row is removed from the sheet (the orders are not touched).', confirm: 'Clear', danger: true }).then(ok => ok && $wire.clearSheet())" class="btn-sm text-ink-muted hover:text-bad">Clear</button>@endif
-                <button x-show="!booking" x-on:click="bookAll({{ $stats['risky'] }})" @disabled(! $stats['open'] || $couriers->isEmpty()) class="btn-primary">Book all ({{ $stats['open'] }})</button>
-                <button x-show="booking" x-cloak x-on:click="stop = true" class="btn-secondary text-bad"><span x-text="stop ? 'Stopping…' : 'Stop'"></span></button>
+                @php($bookedIds = $items->filter->isBooked()->pluck('order_id')->unique())
+                @if ($bookedIds->isNotEmpty())<a href="{{ route('ops.orders.parcel-labels', ['ids' => $bookedIds->implode(',')]) }}" target="_blank" class="btn-secondary btn-sm">Print labels ({{ $bookedIds->count() }} booked)</a>@endif
+                <button x-show="!booking" x-on:click="bookAll({{ $stats['risky'] }})" @disabled(! $stats['open'] || $couriers->isEmpty()) class="btn-primary max-[479px]:w-full">Book all ({{ $stats['open'] }})</button>
+                <button x-show="booking" x-cloak x-on:click="stop = true" class="btn-secondary text-bad max-[479px]:w-full"><span x-text="stop ? 'Stopping…' : 'Stop'"></span></button>
             </div>
             <div class="flex flex-wrap gap-1.5 text-xs">
                 <span class="rounded bg-zebra px-2 py-1"><b>{{ $stats['open'] }}</b> to book</span>
@@ -87,8 +110,63 @@
             </div>
         </div>
 
+        {{-- phones: one editable card per row (the grid below is 1760px wide) --}}
+        <div class="courier-sheet min-[480px]:hidden">
+            @forelse ($items as $i)
+                @php($k = 'r'.$i->id) @php($booked = $i->isBooked()) @php($failed = $i->status === 'failed')
+                <div wire:key="sheet-m{{ $i->id }}" @class(['flex flex-col gap-2 border-b border-soft p-3', 'bg-ok-bg' => $booked, 'bg-bad-bg' => $failed]) :class="current === {{ $i->id }} && '!bg-brand-tint'">
+                    <div class="flex items-center gap-2 text-sm">
+                        <span class="text-xs text-ink-muted">{{ $loop->iteration }}.</span>
+                        <a href="{{ route('ops.orders.show', $i->order_id) }}" wire:navigate class="mono font-semibold">{{ $i->order?->number }}</a>
+                        <span class="text-xs text-ink-muted">{{ config('ops.order_status.'.$i->order?->status.'.0') }}@if ($risky($i->order)) · <span class="font-semibold text-bad">risky</span>@endif</span>
+                        <span class="ml-auto">
+                            <span x-show="current === {{ $i->id }}" x-cloak class="text-xs text-brand">Booking…</span>
+                            <span x-show="current !== {{ $i->id }}">@if ($booked)<x-ops.badge tone="ok">Booked</x-ops.badge>@elseif ($failed)<x-ops.badge tone="bad">Failed</x-ops.badge>@else<x-ops.badge>Ready</x-ops.badge>@endif</span>
+                        </span>
+                    </div>
+                    @if ($booked)
+                        <div class="text-xs"><span class="font-semibold text-ok">✓</span> {{ $i->courier?->name }} · @if ($i->shipment)<x-ops.parcel-ref :s="$i->shipment" inline />@else<span class="mono">{{ $i->tracking }}</span>@endif · {{ $i->booked_at?->format('H:i') }}</div>
+                        <div class="text-xs text-ink-muted">{{ $i->name }} · {{ $i->phone }} · COD {{ tk($i->cod) }}</div>
+                    @else
+                        @if ($failed && $i->error)<div class="rounded bg-white/70 px-2 py-1 text-xs text-bad">{{ $i->error }}</div>@endif
+                        <div class="grid grid-cols-2 gap-2">
+                            <label class="flex flex-col gap-0.5 text-2xs text-ink-muted">Name *<input wire:model.blur="rows.{{ $k }}.name" class="input py-1.5 text-sm text-ink"></label>
+                            <label class="flex flex-col gap-0.5 text-2xs text-ink-muted">Phone *<input wire:model.blur="rows.{{ $k }}.phone" inputmode="tel" placeholder="01XXXXXXXXX" class="input mono py-1.5 text-sm text-ink"></label>
+                            <label class="col-span-2 flex flex-col gap-0.5 text-2xs text-ink-muted">Address *<textarea wire:model.blur="rows.{{ $k }}.address" rows="2" class="input py-1.5 text-sm text-ink"></textarea></label>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <label class="flex flex-col gap-0.5 text-2xs text-ink-muted">COD<input wire:model.blur="rows.{{ $k }}.cod" type="number" min="0" inputmode="numeric" class="input py-1.5 text-right text-sm tabular-nums text-ink"></label>
+                            <label class="flex flex-col gap-0.5 text-2xs text-ink-muted">Kg<input wire:model.blur="rows.{{ $k }}.weight" type="number" min="0.1" step="0.1" inputmode="decimal" class="input py-1.5 text-right text-sm tabular-nums text-ink"></label>
+                            <label class="flex flex-col gap-0.5 text-2xs text-ink-muted">Qty<input wire:model.blur="rows.{{ $k }}.qty" type="number" min="1" inputmode="numeric" class="input py-1.5 text-right text-sm tabular-nums text-ink"></label>
+                        </div>
+                        <label class="flex flex-col gap-0.5 text-2xs text-ink-muted">Courier *
+                            <select wire:model.live="rows.{{ $k }}.courier_id" @class(['input py-1.5 text-sm text-ink', '!border-warn' => ! $i->courier_id])>
+                                <option value="">— Pick —</option>
+                                @foreach ($couriers as $c)<option value="{{ $c->id }}">{{ $c->name }}</option>@endforeach
+                                @if ($i->courier && ! $couriers->contains('id', $i->courier_id))<option value="{{ $i->courier_id }}">{{ $i->courier->name }} (no API)</option>@endif
+                            </select>
+                        </label>
+                        <details class="text-xs">
+                            <summary class="cursor-pointer text-ink-muted">Items & rider note</summary>
+                            <div class="mt-1.5 flex flex-col gap-2">
+                                <label class="flex flex-col gap-0.5 text-2xs text-ink-muted">Items<input wire:model.blur="rows.{{ $k }}.description" class="input py-1.5 text-sm text-ink"></label>
+                                <label class="flex flex-col gap-0.5 text-2xs text-ink-muted">Note for the rider<input wire:model.blur="rows.{{ $k }}.note" placeholder="Optional" class="input py-1.5 text-sm text-ink"></label>
+                            </div>
+                        </details>
+                        <div class="flex gap-1.5">
+                            <button x-on:click="bookOne({{ $i->id }})" :disabled="booking" class="btn-primary btn-sm flex-1">{{ $failed ? 'Retry booking' : 'Book' }}</button>
+                            <button x-on:click="opsConfirm({ title: 'Re-fill this row from the order?', text: 'Your edits on this row are lost.', confirm: 'Re-fill' }).then(ok => ok && $wire.resetItem({{ $i->id }}))" :disabled="booking" class="btn-secondary btn-sm">Re-fill</button>
+                            <button wire:click="removeItem({{ $i->id }})" :disabled="booking" class="btn-secondary btn-sm text-bad">Remove</button>
+                        </div>
+                    @endif
+                </div>
+            @empty
+                <div class="px-4 py-12 text-center text-sm text-ink-muted">The sheet is empty — tap <b class="text-brand">+</b> on an order above to add it here.</div>
+            @endforelse
+        </div>
+
         {{-- wide grid: scrolls sideways; # + Order pinned left, actions right --}}
-        <div class="courier-sheet max-h-[70vh] overflow-auto">
+        <div class="courier-sheet max-h-[70vh] overflow-auto max-[479px]:hidden">
             <table class="table-fixed border-separate border-spacing-0 text-sm" style="width: 1760px">
                 <colgroup><col style="width:40px"><col style="width:96px"><col style="width:160px"><col style="width:130px"><col style="width:290px"><col style="width:90px"><col style="width:70px"><col style="width:60px"><col style="width:140px"><col style="width:250px"><col style="width:180px"><col style="width:120px"><col style="width:134px"></colgroup>
                 <thead class="sticky top-0 z-20"><tr class="whitespace-nowrap text-left text-xs font-semibold uppercase tracking-wide text-ink-muted">
@@ -163,6 +241,14 @@
         </div>
     </section>
 
+    {{-- phones: booking progress stays in view above the bottom nav --}}
+    <div x-show="booking || finished" x-cloak class="fixed inset-x-2 bottom-[calc(64px+env(safe-area-inset-bottom))] z-[56] rounded-md border border-line bg-panel px-3 py-2 shadow-pop min-[480px]:hidden">
+        <div class="flex items-center gap-2 text-xs"><span class="flex-1 font-medium" x-text="booking ? `Booking ${done + 1} of ${total}… · ${ok} ok · ${failed} failed` : `Done — ${ok} booked, ${failed} failed`"></span>
+            <button x-show="booking" x-on:click="stop = true" class="font-semibold text-bad" x-text="stop ? 'Stopping…' : 'Stop'"></button>
+            <button x-show="!booking" x-on:click="finished = false; $wire.$refresh()" class="text-ink-muted">Dismiss</button></div>
+        <div class="mt-1.5 h-1.5 overflow-hidden rounded-full bg-soft"><div class="h-full rounded-full bg-brand transition-all" :style="`width: ${total ? Math.round(done / total * 100) : 0}%`"></div></div>
+    </div>
+
     {{-- ══════════ Completed sheets ══════════ --}}
     @if ($history->isNotEmpty())
         <section class="card">
@@ -176,6 +262,8 @@
                         </button>
                         @if ($historyId === $b->id)
                             <div class="overflow-x-auto px-3 pb-3">
+                                @php($histIds = $historyItems->filter(fn ($h) => $h->tracking || $h->shipment_id)->pluck('order_id')->unique())
+                                @if ($histIds->isNotEmpty())<a href="{{ route('ops.orders.parcel-labels', ['ids' => $histIds->implode(',')]) }}" target="_blank" class="btn-secondary btn-sm mb-2 inline-flex">Print labels ({{ $histIds->count() }})</a>@endif
                                 <table class="min-w-full text-xs">
                                     <thead><tr class="text-left uppercase text-ink-muted"><th class="py-1.5 pr-4">Order</th><th class="py-1.5 pr-4">Recipient</th><th class="py-1.5 pr-4">Courier</th><th class="py-1.5 pr-4">Tracking</th><th class="py-1.5 text-right">COD</th></tr></thead>
                                     <tbody class="divide-y divide-soft">
