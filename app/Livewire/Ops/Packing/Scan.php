@@ -29,6 +29,7 @@ class Scan extends Component
     public ?int $pick = null;            // "Add product to parcel" picker
     public bool $autoNext = true;        // open the next order in the queue after packing
     public ?array $done = null;          // last packed: ['number', 'id', 'parcel']
+    public string $queueSearch = '';     // filter the "Waiting to pack" list: order no., name, phone
     public array $choices = [];          // the order has several parcels to pack → [['number', 'label', 'units', 'parcel']] to choose from
 
     public function mount(): void { if ($this->order) $this->openOrder($this->order); }
@@ -78,11 +79,28 @@ class Scan extends Component
     #[Computed]
     public function queue()
     {
-        return Order::live()->whereIn('status', self::PACKABLE)->with('customer:id,name')->withSum('items as units', 'qty')
+        return $this->queueQuery()->with('customer:id,name')->withSum('items as units', 'qty')
             ->withExists(['shipments as resent' => fn ($s) => $s->whereNotNull('superseded_at')])
             ->orderByRaw("status = 'confirmed' desc")->orderBy('placed_at')->limit(40)->get(['id', 'number', 'status', 'customer_id', 'ship_name', 'placed_at', 'exchange_of_id']);
     }
     #[Computed] public function queueCount(): int { return Order::live()->whereIn('status', self::PACKABLE)->count(); }
+    #[Computed] public function queueMatches(): int { return $this->queueQuery()->count(); }
+
+    /** waiting orders, narrowed by the queue search box: order number (with or without #), customer / ship name, phone */
+    protected function queueQuery()
+    {
+        $q = Order::live()->whereIn('status', self::PACKABLE);
+        $s = trim($this->queueSearch);
+        if ($s === '') return $q;
+        $digits = preg_replace('/\D/', '', $s);
+        return $q->where(function ($w) use ($s, $digits) {
+            $w->where('number', 'like', '%'.ltrim($s, '#').'%')->orWhere('ship_name', 'like', "%$s%")
+                ->orWhereHas('customer', fn ($c) => $c->where('name', 'like', "%$s%"));
+            if (strlen($digits) >= 4) $w->orWhere('ship_phone', 'like', '%'.substr($digits, -10).'%');   // 01XXXXXXXXX / +8801… / last digits
+        });
+    }
+
+    public function updatedQueueSearch(): void { unset($this->queue, $this->queueMatches); }
     #[Computed] public function packedToday(): int { return Shipment::whereDate('packed_at', today())->count(); }
     #[Computed] public function variants() { return ProductVariant::with('product:id,name,featured_image')->where('is_active', true)->get(); }
 
@@ -272,7 +290,8 @@ class Scan extends Component
         $this->dispatch('toast', message: $o->number.' packed'.($parcel ? ' · parcel '.$parcel : ''));
         $this->dispatch('ops-beep', tone: 'done');
         $done = $this->done;
-        $this->reset('order', 'scanned', 'manual', 'history', 'extraId', 'flash', 'choices'); unset($this->current, $this->lines, $this->parcels, $this->queue, $this->queueCount, $this->packedToday);
+        // the queue search found this order — clear it so "next order" continues the real queue, not the search matches
+        $this->reset('order', 'scanned', 'manual', 'history', 'extraId', 'flash', 'choices', 'queueSearch'); unset($this->current, $this->lines, $this->parcels, $this->queue, $this->queueCount, $this->queueMatches, $this->packedToday);
         $this->done = $done;
         if ($this->autoNext && ($next = $this->queue->first())) { $this->openOrder($next->number, true); $this->done = $done; }
     }
