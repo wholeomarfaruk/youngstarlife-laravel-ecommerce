@@ -18,6 +18,7 @@ class RichText
     {
         if ($html === null || trim($html) === '') return $html;
         $out = self::purifier()->purify($html);
+        $out = preg_replace('#<div[^>]*\bclass="[^"]*\bomar-text-editor-[\w-]*resize-handle\b[^"]*"[^>]*>\s*</div>#i', '', $out);   // the editor's table drag handles get saved with the HTML (fixed px width → page wider than the screen)
         return trim(preg_replace('#<iframe(?![^>]*\ssrc=)[^>]*>\s*</iframe>#i', '', $out));   // an embed from a host not on the list loses its src → drop the empty box
     }
 

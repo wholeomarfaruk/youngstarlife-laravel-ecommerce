@@ -129,7 +129,9 @@
     .pp details > summary, details.pp-card > summary { cursor: pointer; }
 
     /* formatted product description (Ops rich text editor) */
-    .pp-rich { font-size: 15px; line-height: 1.65; color: #3f423f; overflow-wrap: break-word; }
+    .pp-rich { font-size: 15px; line-height: 1.65; color: #3f423f; overflow-wrap: break-word; min-width: 0; max-width: 100%; }
+    .pp-rich * { max-width: 100%; }   /* px widths pasted / saved by the editor never push the page wider than the screen */
+    .pp-rich [class*="resize-handle"] { display: none !important; }
     .pp-rich > :last-child { margin-bottom: 0; }
     .pp-rich p, .pp-rich ul, .pp-rich ol, .pp-rich table, .pp-rich blockquote { margin: 0 0 .7em; }
     .pp-rich ul, .pp-rich ol { padding-left: 1.4em; }
@@ -140,7 +142,8 @@
     .pp-rich table { width: 100% !important; height: auto !important; border-collapse: collapse; table-layout: auto; }
     .pp-rich tr, .pp-rich td, .pp-rich th { height: auto !important; }
     .pp-rich td, .pp-rich th { width: auto !important; border: 1px solid #e4e4e0; padding: 6px 8px; text-align: center; word-break: normal; overflow-wrap: normal; }
-    @media (max-width: 480px) { .pp-rich table { font-size: 12.5px; } .pp-rich td, .pp-rich th { padding: 5px 3px; } }
+    /* phones: a 7-column size chart must fit ~250–330px — the editor saves inline cell padding (4px 8px), so override it */
+    @media (max-width: 480px) { .pp-rich table { font-size: clamp(10.5px, 3.1vw, 12.5px); } .pp-rich td, .pp-rich th { padding: 5px 2px !important; } }
     .pp-rich blockquote { border-left: 3px solid #d6d6d1; padding-left: 10px; color: #6b6e6b; }
     .pp-rich a { color: #1F6FB2; }
     .pp-row-gap { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
