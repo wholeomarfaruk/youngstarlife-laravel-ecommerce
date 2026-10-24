@@ -236,7 +236,7 @@ class Index extends Component
         $this->validate(['cfg.message' => 'required|max:500', 'cfg.auto.returns' => 'required|integer|min:1|max:50', 'cfg.auto.rate' => 'required|integer|min:1|max:100',
             'cfg.auto.action' => 'required|in:block,flag', 'cfg.auto.days' => 'required|integer|min:0|max:3650']);
         $c = $this->cfg;
-        Setting::put('blacklist', ['message' => trim($c['message']), 'match_user_agent' => (bool) $c['match_user_agent'], 'skip_autosave' => (bool) $c['skip_autosave'],
+        Setting::put('blacklist', ['message' => trim($c['message']), 'match_fingerprint' => (bool) $c['match_fingerprint'], 'skip_autosave' => (bool) $c['skip_autosave'],
             'auto' => ['on' => (bool) $c['auto']['on'], 'returns' => (int) $c['auto']['returns'], 'rate' => (int) $c['auto']['rate'], 'action' => $c['auto']['action'], 'days' => (int) $c['auto']['days']]]);
         $bl->syncAll();
         ops_log('Updated blacklist settings');

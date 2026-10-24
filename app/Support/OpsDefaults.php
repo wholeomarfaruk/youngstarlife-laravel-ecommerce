@@ -91,7 +91,7 @@ class OpsDefaults
             // Users → Blacklist → Settings
             'blacklist' => [
                 'message' => 'দুঃখিত, এই নম্বর / ডিভাইস থেকে অর্ডার গ্রহণ করা যাচ্ছে না। প্রয়োজনে {whatsapp} নম্বরে WhatsApp এ যোগাযোগ করুন।',
-                'match_user_agent' => true,      // old admin rule: same browser string as a blocked device = blocked
+                'match_fingerprint' => true,     // new device with a blocked device's browser fingerprint (cookies cleared) = blocked
                 'skip_autosave' => true,         // no abandoned-checkout drafts for blocked visitors
                 'auto' => ['on' => false, 'returns' => 3, 'rate' => 34, 'action' => 'flag', 'days' => 0],
             ],

@@ -489,6 +489,10 @@
     @if (site()->cartEnabled())
         <script src="{{ asset('frontend/js/cart-drawer.js') }}?v={{ @filemtime(public_path('frontend/js/cart-drawer.js')) }}"></script>
     @endif
+    {{-- browser fingerprint of this device, for the Ops blacklist (DeviceManager::fingerprint) --}}
+    @if (app(\App\Services\Storefront\DeviceManager::class)->current())
+        <script src="{{ asset('frontend/js/device-fp.js') }}?v={{ @filemtime(public_path('frontend/js/device-fp.js')) }}" data-url="{{ route('device.fingerprint') }}" data-csrf="{{ csrf_token() }}" defer></script>
+    @endif
     @stack('scripts')
     <!--Start of Tawk.to Script-->
     {{-- <script type="text/javascript">

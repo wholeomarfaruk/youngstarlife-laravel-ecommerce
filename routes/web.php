@@ -64,6 +64,7 @@ Route::post('/cart/items', [StorefrontCartController::class, 'store'])->name('ca
 Route::patch('/cart/items/{item}', [StorefrontCartController::class, 'update'])->name('cart.items.update')->whereNumber('item');
 Route::delete('/cart/items/{item}', [StorefrontCartController::class, 'destroy'])->name('cart.items.destroy')->whereNumber('item');
 Route::get('/cart/summary', [StorefrontCartController::class, 'summary'])->name('cart.summary');
+Route::post('/device/fingerprint', \App\Http\Controllers\DeviceFingerprintController::class)->name('device.fingerprint')->middleware('throttle:10,1');
 // old URLs → the checkout page
 Route::redirect('/cart', '/checkout')->name('cart.index');
 Route::redirect('/cart/checkout', '/checkout')->name('cart.checkout');

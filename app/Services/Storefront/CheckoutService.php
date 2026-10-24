@@ -95,7 +95,7 @@ class CheckoutService
 
     protected function blacklistContext(Request $request, string $phone, ?Device $device): array
     {
-        return ['phone' => $phone, 'device_id' => $device?->id, 'ip' => $request->ip(), 'user_agent' => $request->userAgent()];
+        return ['phone' => $phone, 'device_id' => $device?->id, 'ip' => $request->ip()];
     }
 
     /** which ad / link brought the customer (kept on the order as JSON); never blocks the order */

@@ -12,7 +12,7 @@ use InvalidArgumentException;
  * Users → Blacklist. Every channel that makes an order asks here first:
  *   website checkout + abandoned checkout (CheckoutService), bulk / AI order (PlaceBulkOrder), Draft → order (Drafts),
  *   and OrderWorkflow::placed() tags orders that only match a "flag" entry.
- * A context is ['phone' => ?, 'device_id' => ?, 'ip' => ?, 'email' => ?, 'user_agent' => ?, 'name' => ?].
+ * A context is ['phone' => ?, 'device_id' => ?, 'ip' => ?, 'email' => ?, 'name' => ?].
  * ops_customers.is_blocked mirrors the active "block" phone entries (old screens and the AI intake read it).
  */
 class Blacklist
@@ -41,17 +41,28 @@ class Blacklist
             'phone' => static::normalize('phone', $ctx['phone'] ?? null), 'device' => ! empty($ctx['device_id']) ? (string) (int) $ctx['device_id'] : null,
             'ip' => static::normalize('ip', $ctx['ip'] ?? null), 'email' => static::normalize('email', $ctx['email'] ?? null),
         ]);
-        // the old admin blocked browsers by user agent too: another device with the same browser string as a blocked device
-        if (! empty($ctx['user_agent']) && ops_setting('blacklist.match_user_agent', true))
-            $pairs['ua'] = Device::whereIn('id', BlacklistEntry::active()->where('type', 'device')->select('device_id'))->where('user_agent', $ctx['user_agent'])->pluck('id')->map(fn ($id) => (string) $id)->all();
+        // a blocked visitor who cleared cookies: a new device with the same browser fingerprint as a blocked one
+        if (! empty($ctx['device_id']) && ops_setting('blacklist.match_fingerprint', true) && $same = $this->lookalikes((int) $ctx['device_id'])) $pairs['lookalike'] = $same;
         if (! $pairs) return collect();
 
         return BlacklistEntry::active()->where(function ($q) use ($pairs) {
-            foreach ($pairs as $type => $v) $type === 'ua' ? $q->orWhere(fn ($q) => $q->where('type', 'device')->whereIn('value', $v)) : $q->orWhere(fn ($q) => $q->where('type', $type)->where('value', $v));
+            foreach ($pairs as $type => $v) $type === 'lookalike' ? $q->orWhere(fn ($q) => $q->where('type', 'device')->whereIn('value', $v)) : $q->orWhere(fn ($q) => $q->where('type', $type)->where('value', $v));
         })->orderByRaw("action = 'block' desc")->orderBy('id')->get();
     }
 
     public function find(array $ctx): ?BlacklistEntry { return $this->matches($ctx)->first(); }
+
+    /**
+     * Blocked device ids this device looks like (same fingerprint, DeviceManager::fingerprint). Only a device first seen after the block
+     * can be its cookie-cleared copy — a returning customer (cookie kept, device older than the entry) is judged by their own device alone.
+     */
+    protected function lookalikes(int $deviceId): array
+    {
+        $d = Device::find($deviceId, ['id', 'fingerprint', 'created_at']);
+        if (! $d?->fingerprint) return [];
+        return BlacklistEntry::active()->where('type', 'device')->where('created_at', '<', $d->created_at)
+            ->whereHas('device', fn ($q) => $q->where('fingerprint', $d->fingerprint)->whereKeyNot($d->id))->pluck('value')->all();
+    }
 
     /**
      * Gate for an order channel: a "block" match is logged and returned (the caller refuses the order with message());
@@ -72,7 +83,7 @@ class Blacklist
     /** New live order: "flag" matches tag it for review, log the attempt and notify (block matches made by staff keep their order). */
     public function screen(Order $order): void
     {
-        $ctx = ['phone' => $order->ship_phone, 'device_id' => $order->device_id, 'ip' => $order->ip_address, 'email' => $order->customer?->email, 'user_agent' => $order->user_agent, 'name' => $order->ship_name];
+        $ctx = ['phone' => $order->ship_phone, 'device_id' => $order->device_id, 'ip' => $order->ip_address, 'email' => $order->customer?->email, 'name' => $order->ship_name];
         if (! $e = $this->find($ctx)) return;
         $order->tag('Blacklist review');
         $order->log('automation', 'Matches blacklist ('.config('ops.blacklist_types.'.$e->type).' '.$e->label.' · '.config('ops.blacklist_reasons.'.$e->reason, 'no reason').') → review before confirming');

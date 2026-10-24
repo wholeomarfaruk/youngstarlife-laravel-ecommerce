@@ -56,6 +56,20 @@ class DeviceManager
         Cart::where('device_id', $device->id)->update(['user_id' => $user->id]);
     }
 
+    /**
+     * Browser signals from frontend/js/device-fp.js (+ this request's user agent) → SHA-256 kept on the device.
+     * Ops Blacklist matches it to spot a blocked visitor who cleared cookies. Without model / GPU / canvas the rest is too common to tell browsers apart → none kept.
+     */
+    public function fingerprint(Device $device, array $signals, ?string $ua): void
+    {
+        $parts = ['ua' => (string) $ua];
+        foreach (['model', 'os', 'screen', 'tz', 'lang', 'cpu', 'mem', 'touch', 'gpu', 'canvas'] as $k) $parts[$k] = is_scalar($signals[$k] ?? null) ? mb_substr((string) $signals[$k], 0, 255) : '';
+        if ($parts['model'] === '' && $parts['gpu'] === '' && $parts['canvas'] === '') return;
+
+        $fp = hash('sha256', json_encode($parts));
+        if ($device->fingerprint !== $fp) $device->forceFill(['fingerprint' => $fp])->saveQuietly();
+    }
+
     protected function describe(?string $ua): string
     {
         $browser = match (true) {
