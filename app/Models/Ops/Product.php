@@ -25,8 +25,8 @@ class Product extends OpsModel
         $this->categories()->sync(collect($ids)->mapWithKeys(fn ($id) => [$id => in_array($id, $new)
             ? ['sort_order' => (int) \Illuminate\Support\Facades\DB::table('ops_category_product')->where('category_id', $id)->max('sort_order') + 1] : []])->all());
     }
-    /** combo: sets that can be made = min over components of floor(available / qty) */
-    public function getComboAvailableAttribute(): int { return (int) ($this->comboItems->map(fn ($c) => intdiv(max(0, $c->variant->stock - $c->variant->reserved), max(1, $c->qty)))->min() ?? 0); }
+    /** combo: sets that can be made = min over components of floor(available over the item's sizes / qty) — the customer picks the size */
+    public function getComboAvailableAttribute(): int { return (int) ($this->comboItems->map(fn ($c) => intdiv($c->choices()->sum(fn ($v) => max(0, $v->stock - $v->reserved)), max(1, $c->qty)))->min() ?? 0); }
 
     public function variants(): HasMany { return $this->hasMany(ProductVariant::class); }
     public function categories(): BelongsToMany { return $this->belongsToMany(Category::class, 'ops_category_product')->withPivot('sort_order'); }

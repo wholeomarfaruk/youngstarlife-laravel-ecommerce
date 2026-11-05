@@ -174,19 +174,24 @@
                     </div>
                 </x-ops.card>
             @elseif ($tab === 'combo')
-                <x-ops.card title="Combo components" :subtitle="'Available sets = min over components · now '.($product->type === 'combo' ? $product->load('comboItems.variant')->combo_available : 0)" flush>
+                <x-ops.card title="Combo components" :subtitle="'Link products, not sizes — the customer picks each item\'s size on the website · sets available now '.($product->type === 'combo' ? $product->load('comboItems.variant.product.variants')->combo_available : 0)" flush>
                     @if (isset($variants[0]))
                         <div class="flex flex-wrap items-center gap-2 border-b border-soft bg-zebra px-3.5 py-2.5 text-sm"><span class="font-semibold">Combo barcode</span><span class="mono">{{ $variants[0]['barcode'] ?: 'generated on save' }}</span><span class="text-xs text-ink-muted">· scanning it picks the whole set · edit on the General tab</span></div>
                     @endif
                     @foreach ($combo as $i => $c)
-                        @php($cv = $this->allVariants->firstWhere('id', $c['variant_id']))
-                        <div class="flex items-center gap-2.5 border-b border-soft px-3.5 py-2"><span class="w-24 flex-none text-xs font-semibold uppercase tracking-wide text-ink-muted">Linked {{ $loop->iteration }}</span><span class="min-w-0 flex-1">{{ $cv?->label }} <span class="mono block text-xs text-ink-muted">barcode {{ $cv?->barcode ?: '—' }} · {{ $cv?->sku }} · {{ $cv?->stock }} in stock</span></span><input type="number" min="1" wire:model="combo.{{ $i }}.qty" class="input w-20 py-1"><button type="button" wire:click="removeComboItem({{ $i }})" class="text-bad">×</button></div>
+                        {{-- an item is a product (+ colour); the size it was linked with doesn't matter — the customer picks one --}}
+                        @php($cg = $this->comboChoices->first(fn ($g) => in_array($c['variant_id'], $g['ids'])))
+                        <div class="flex items-center gap-2.5 border-b border-soft px-3.5 py-2"><span class="w-24 flex-none text-xs font-semibold uppercase tracking-wide text-ink-muted">Linked {{ $loop->iteration }}</span>
+                            <span class="min-w-0 flex-1">{{ collect([$cg['name'] ?? 'Unknown product', $cg['color'] ?? null])->filter()->join(' · ') }}
+                                <span class="block text-xs text-ink-muted">@if (! empty($cg['sizes']))Customer picks the size:
+                                    @foreach ($cg['sizes'] as $s)<span @class(['mono', 'line-through opacity-60' => ! $s['available']])>{{ $s['size'] }}</span><span class="opacity-60">({{ $s['available'] }})</span>@if (! $loop->last) · @endif @endforeach
+                                @else No sizes · {{ $cg['available'] ?? 0 }} available @endif</span></span>
+                            <input type="number" min="1" wire:model="combo.{{ $i }}.qty" class="input w-20 py-1"><button type="button" wire:click="removeComboItem({{ $i }})" class="text-bad">×</button></div>
                     @endforeach
                     <div class="flex gap-2 p-3">
-                        {{-- search by name, size, SKU or barcode — scanning a barcode into it works too --}}
-                        <x-ops.searchable-select field="comboPick" class="flex-1" placeholder="Add a linked product…" searchPlaceholder="Name, size, SKU or barcode…"
-                            :options="$this->allVariants->mapWithKeys(fn ($v) => [$v->id => $v->label.' · '.$v->sku.' · '.$v->barcode])->all()"
-                            :images="$this->allVariants->mapWithKeys(fn ($v) => [$v->id => $v->product->thumb_url])->all()" />
+                        <x-ops.searchable-select field="comboPick" class="flex-1" placeholder="Add a linked product…" searchPlaceholder="Product name or code…"
+                            :options="$this->comboChoices->mapWithKeys(fn ($g) => [$g['id'] => $g['label']])->all()"
+                            :images="$this->comboChoices->mapWithKeys(fn ($g) => [$g['id'] => $g['image']])->all()" />
                         <button type="button" wire:click="addComboItem" class="btn-secondary">+ Add</button></div>
                 </x-ops.card>
             @elseif ($tab === 'seo')

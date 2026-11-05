@@ -51,7 +51,18 @@ class Edit extends Component
     #[Computed] public function batches() { return Batch::whereIn('variant_id', $this->product->variants->pluck('id'))->with('supplier:id,name', 'variant:id,color,size,sku', 'purchaseOrder:id,number')->withSum(['movements as sold' => fn ($q) => $q->where('type', 'sale')], 'qty')->withSum(['movements as returned' => fn ($q) => $q->where('type', 'return_restock')], 'qty')->latest('received_at')->get(); }
     #[Computed] public function movements() { return StockMovement::whereIn('variant_id', $this->product->variants->pluck('id'))->with('batch:id,code', 'ref')->latest('created_at')->limit(60)->get(); }
     #[Computed] public function users() { return \App\Models\User::staff()->pluck('name', 'id'); }
-    #[Computed] public function allVariants() { return ProductVariant::with('product:id,name,featured_image')->where('product_id', '!=', $this->product->id)->where('is_active', true)->get(); }
+    #[Computed] public function allVariants() { return ProductVariant::with('product:id,name,code,featured_image')->where('product_id', '!=', $this->product->id)->where('is_active', true)->get(); }
+    /** combo picker: one row per product (and colour), not per size — the customer picks the size on the website. id = the variant stored on the combo item */
+    #[Computed] public function comboChoices()
+    {
+        return $this->allVariants->groupBy(fn ($v) => $v->product_id.'|'.mb_strtolower((string) $v->color))->map(function ($g) {
+            $g = $g->sortBy('id')->values(); $first = $g->first();
+            $sizes = $g->filter(fn ($v) => filled($v->size))->sortBy('size', SORT_NATURAL)->map(fn ($v) => ['size' => $v->size, 'available' => max(0, $v->available)])->values();
+            $label = collect([$first->product->name, $first->color, $sizes->isNotEmpty() ? 'sizes '.$sizes->pluck('size')->join(', ') : null, $first->product->code])->filter()->join(' · ');
+            return ['id' => $first->id, 'ids' => $g->pluck('id')->all(), 'name' => $first->product->name, 'color' => $first->color, 'label' => $label,
+                'image' => $first->product->thumb_url, 'sizes' => $sizes->all(), 'available' => $g->sum(fn ($v) => max(0, $v->available))];
+        })->values();
+    }
 
     // ── categories / brand / tags
     public function addCategory(): void
