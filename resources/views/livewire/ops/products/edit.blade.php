@@ -18,11 +18,13 @@
     </div>
 
     <div class="grid gap-3 lg:grid-cols-[minmax(0,1fr)_300px]">
-        <div class="flex min-w-0 flex-col gap-3">
+        {{-- keyed per tab: without it Livewire's morph reuses one tab's inputs for the next (Name → Regular price, Code → Sale price)
+             and their old bindings write the wrong values into form.* on Save --}}
+        <div class="flex min-w-0 flex-col gap-3" wire:key="tab-{{ $tab }}">
             @if ($tab === 'general')
                 <x-ops.card title="Basic information"><div class="grid gap-3 sm:grid-cols-2">
-                    <x-ops.field label="Product name" required class="sm:col-span-2" :error="$errors->first('form.name')"><input wire:model.blur="form.name" class="input"></x-ops.field>
-                    <x-ops.field label="Code" required :error="$errors->first('form.code')"><input wire:model.blur="form.code" class="input mono"></x-ops.field>
+                    <x-ops.field label="Product name" required class="sm:col-span-2" :error="$errors->first('form.name')"><input wire:model="form.name" class="input"></x-ops.field>
+                    <x-ops.field label="Code" required :error="$errors->first('form.code')"><input wire:model="form.code" class="input mono"></x-ops.field>
                     <x-ops.field label="Brand"><x-ops.searchable-select field="form.brand_id" :options="$brands" placeholder="No brand" searchPlaceholder="Search brands…" /><div class="flex gap-1.5"><input wire:model="newBrand" wire:keydown.enter.prevent="addBrand" class="input py-1" placeholder="New brand…"><button type="button" wire:click="addBrand" class="btn-secondary btn-sm">Add</button></div></x-ops.field>
                     <x-ops.field label="Short description" class="sm:col-span-2"><input wire:model="form.short_description" class="input"></x-ops.field>
                     <x-ops.field label="Full description" class="sm:col-span-2" hint="Plain lines or a simple list show as ✓ points on the product page; bold, headings, images, tables or videos show as written"><x-ops.rich-text wire:model="form.description" :value="$form['description'] ?? ''" /></x-ops.field>
@@ -45,8 +47,8 @@
                 </x-ops.card>
             @elseif ($tab === 'pricing')
                 <x-ops.card title="Pricing" subtitle="Cost comes from the batch at packing — it is not stored on the product."><div class="grid gap-3 sm:grid-cols-2">
-                    <x-ops.field label="Regular price (৳)" required :error="$errors->first('form.price')"><input type="number" min="0" wire:model.blur="form.price" class="input"></x-ops.field>
-                    <x-ops.field label="Sale price (৳)" :error="$errors->first('form.sale_price')" hint="Must be lower than the regular price"><input type="number" min="0" wire:model.blur="form.sale_price" class="input"></x-ops.field>
+                    <x-ops.field label="Regular price (৳)" required :error="$errors->first('form.price')"><input type="number" min="0" wire:model="form.price" class="input"></x-ops.field>
+                    <x-ops.field label="Sale price (৳)" :error="$errors->first('form.sale_price')" hint="Must be lower than the regular price"><input type="number" min="0" wire:model="form.sale_price" class="input"></x-ops.field>
                     <x-ops.field label="Sale starts"><x-ops.date wire:model="form.sale_starts_at" class="w-full" /></x-ops.field>
                     <x-ops.field label="Sale ends" :error="$errors->first('form.sale_ends_at')"><x-ops.date wire:model="form.sale_ends_at" class="w-full" /></x-ops.field>
                     <x-ops.field label="Tax class"><select wire:model="form.tax_class" class="input"><option value="">Standard (no VAT)</option><option value="vat5">VAT 5%</option><option value="vat7.5">VAT 7.5%</option><option value="vat15">VAT 15%</option></select></x-ops.field>
