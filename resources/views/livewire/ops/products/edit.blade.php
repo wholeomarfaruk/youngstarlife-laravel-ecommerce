@@ -12,6 +12,8 @@
     <div class="flex gap-1 overflow-x-auto border-b border-line-2 [scrollbar-width:none]">
         @foreach (['general' => 'General', 'pricing' => 'Pricing', 'stock' => 'Stocks', 'supplier' => 'Supplier', 'media' => 'Media', 'shipment' => 'Shipment', 'variants' => 'Variants', 'combo' => 'Combo', 'seo' => 'SEO'] as $k => $l)
             @continue($k === 'variants' && $product->type === 'simple')
+            {{-- a combo has no stock, variants or suppliers of its own: stock comes from its linked products (bought from their suppliers), it sells through one variant --}}
+            @continue(in_array($k, ['stock', 'variants', 'supplier']) && $product->type === 'combo')
             @continue($k === 'combo' && $product->type !== 'combo')
             <button type="button" wire:click="$set('tab','{{ $k }}')" @class(['mtab', 'mtab-on' => $tab === $k])>{{ $l }}</button>
         @endforeach
@@ -52,7 +54,7 @@
                     <x-ops.field label="Sale starts"><x-ops.date wire:model="form.sale_starts_at" class="w-full" /></x-ops.field>
                     <x-ops.field label="Sale ends" :error="$errors->first('form.sale_ends_at')"><x-ops.date wire:model="form.sale_ends_at" class="w-full" /></x-ops.field>
                     <x-ops.field label="Tax class"><select wire:model="form.tax_class" class="input"><option value="">Standard (no VAT)</option><option value="vat5">VAT 5%</option><option value="vat7.5">VAT 7.5%</option><option value="vat15">VAT 15%</option></select></x-ops.field>
-                    <x-ops.field label="Low-stock threshold" :error="$errors->first('form.low_stock_threshold')"><input type="number" min="0" wire:model="form.low_stock_threshold" class="input"></x-ops.field>
+                    @if ($product->type !== 'combo')<x-ops.field label="Low-stock threshold" :error="$errors->first('form.low_stock_threshold')"><input type="number" min="0" wire:model="form.low_stock_threshold" class="input"></x-ops.field>@endif
                 </div></x-ops.card>
             @elseif ($tab === 'stock')
                 @php($b = $this->batches)
@@ -226,8 +228,14 @@
             <x-ops.card title="Tags"><div class="flex flex-wrap gap-1.5">@foreach ($tags as $i => $t)<span class="chip">{{ $t }}<button type="button" wire:click="removeTag({{ $i }})" class="text-ink-muted">×</button></span>@endforeach</div><div class="mt-2 flex gap-1.5"><input wire:model="newTag" wire:keydown.enter.prevent="addTag" class="input py-1" placeholder="Add tag, press Enter"><button type="button" wire:click="addTag" class="btn-secondary btn-sm">Add</button></div></x-ops.card>
             <x-ops.card title="Summary"><dl class="grid grid-cols-[1fr_auto] gap-x-3 gap-y-1.5 text-sm">
                 <dt class="text-ink-muted">Type</dt><dd class="capitalize">{{ $product->type }}</dd>
-                <dt class="text-ink-muted">Variants</dt><dd>{{ $product->variants->count() }}</dd>
-                <dt class="text-ink-muted">Stock</dt><dd @class(['font-semibold', 'text-bad' => $product->variants->sum('stock') < $product->low_stock_threshold])>{{ $product->variants->sum('stock') }}</dd>
+                @if ($product->type === 'combo')
+                    <dt class="text-ink-muted">Linked products</dt><dd>{{ $product->comboItems->count() }}</dd>
+                    @php($sets = $product->load('comboItems.variant.product.variants')->combo_available)
+                    <dt class="text-ink-muted">Sets available</dt><dd @class(['font-semibold', 'text-bad' => ! $sets])>{{ $sets }}</dd>
+                @else
+                    <dt class="text-ink-muted">Variants</dt><dd>{{ $product->variants->count() }}</dd>
+                    <dt class="text-ink-muted">Stock</dt><dd @class(['font-semibold', 'text-bad' => $product->variants->sum('stock') < $product->low_stock_threshold])>{{ $product->variants->sum('stock') }}</dd>
+                @endif
                 <dt class="text-ink-muted">Price</dt><dd>@if ($product->sale_price){{ tk($product->sale_price) }} <s class="text-ink-muted">{{ tk($product->price) }}</s>@else{{ tk($product->price) }}@endif</dd>
                 <dt class="text-ink-muted">Updated</dt><dd>{{ $product->updated_at?->diffForHumans() }}</dd>
             </dl></x-ops.card>

@@ -45,7 +45,7 @@ class Edit extends Component
         $this->categoryIds = $product->categories->pluck('id')->map('strval')->all();
         $this->supplierLinks = $product->suppliers->mapWithKeys(fn ($s) => [$s->id => ['supplier_code' => $s->pivot->supplier_code, 'supplier_name' => $s->pivot->supplier_name, 'image' => $s->pivot->image]])->all();
         $this->tags = $product->tags ?? [];
-        if ($product->type === 'simple' && $this->tab === 'variants') $this->tab = 'general';
+        if (($product->type === 'simple' && $this->tab === 'variants') || ($product->type === 'combo' && in_array($this->tab, ['stock', 'variants', 'supplier']))) $this->tab = $product->type === 'combo' ? 'combo' : 'general';
     }
 
     #[Computed] public function batches() { return Batch::whereIn('variant_id', $this->product->variants->pluck('id'))->with('supplier:id,name', 'variant:id,color,size,sku', 'purchaseOrder:id,number')->withSum(['movements as sold' => fn ($q) => $q->where('type', 'sale')], 'qty')->withSum(['movements as returned' => fn ($q) => $q->where('type', 'return_restock')], 'qty')->latest('received_at')->get(); }
@@ -217,7 +217,7 @@ class Edit extends Component
         foreach ($this->product->variants->whereNotIn('id', array_column($this->variants, 'id')) as $v)
             $this->variants[] = $v->only(['id', 'sku', 'barcode', 'color', 'size', 'price', 'sale_price', 'stock']) + ['options' => $this->optionsOf($v)];
         // the tab that belonged to the old type is gone
-        if (($this->tab === 'variants' && $type === 'simple') || ($this->tab === 'combo' && $type !== 'combo')) $this->tab = 'general';
+        if (($this->tab === 'variants' && $type === 'simple') || ($this->tab === 'combo' && $type !== 'combo') || (in_array($this->tab, ['stock', 'variants', 'supplier']) && $type === 'combo')) $this->tab = 'general';
         ops_log('Product '.$this->product->name.' type: '.config("ops.product_types.$from").' → '.config("ops.product_types.$type"), $this->product);
         $this->dispatch('toast', message: 'Type changed to '.config("ops.product_types.$type"));
     }

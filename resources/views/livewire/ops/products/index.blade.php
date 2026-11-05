@@ -36,8 +36,15 @@
                             <td class="td"><div class="flex items-center gap-2.5">@if ($p->featured_image)<img src="{{ asset('storage/'.$p->featured_image) }}" alt="" loading="lazy" class="h-9 w-9 rounded-md bg-soft object-cover">@else<span class="grid h-9 w-9 place-items-center rounded-md bg-soft text-xs font-semibold text-ink-muted">{{ mb_substr($p->name, 0, 1) }}</span>@endif<div><a href="{{ route('ops.products.edit', $p) }}" wire:navigate class="font-medium text-ink hover:text-brand">{{ $p->name }}</a><div class="mono text-xs text-ink-muted">{{ $p->code }}</div></div></div></td>
                             <td class="td capitalize">{{ $p->type }}</td><td class="td text-sm">{{ $p->categories->pluck('name')->join(', ') ?: '—' }}</td>
                             <td class="td text-right tabular-nums">@if ($p->sale_price)<span class="font-semibold">{{ tk($p->sale_price) }}</span> <s class="text-xs text-ink-muted">{{ tk($p->price) }}</s>@else{{ tk($p->price) }}@endif</td>
-                            <td class="td text-right">{{ $p->variants_count }}</td>
-                            <td @class(['td text-right font-semibold tabular-nums', 'text-bad' => (int) $p->stock < $p->low_stock_threshold])>{{ (int) $p->stock }}@if ((int) $p->damaged)<div class="text-xs font-normal text-bad">{{ (int) $p->damaged }} damaged</div>@endif</td>
+                            @if ($p->type === 'combo')
+                                {{-- a combo holds no stock: show its linked products and the sets they make --}}
+                                @php($sets = $p->combo_available)
+                                <td class="td text-right text-sm text-ink-muted">{{ $p->comboItems->count() }} linked</td>
+                                <td @class(['td text-right font-semibold tabular-nums', 'text-bad' => ! $sets])>{{ $sets }}<div class="text-xs font-normal text-ink-muted">sets</div></td>
+                            @else
+                                <td class="td text-right">{{ $p->variants_count }}</td>
+                                <td @class(['td text-right font-semibold tabular-nums', 'text-bad' => (int) $p->stock < $p->low_stock_threshold])>{{ (int) $p->stock }}@if ((int) $p->damaged)<div class="text-xs font-normal text-bad">{{ (int) $p->damaged }} damaged</div>@endif</td>
+                            @endif
                             <td class="td"><x-ops.badge map="product_status" :status="$p->status" /></td>
                             <td class="td">@include('livewire.ops.products.partials.row-menu', ['p' => $p])</td>
                         </tr>
@@ -51,7 +58,8 @@
                         x-on:change="$wire.set('selected', $event.target.checked ? @js($this->products->pluck('id')->map(fn ($i) => (string) $i)->all()) : [])"> Select page</label>
                 </div>
                 @forelse ($this->products as $p)
-                    @php($low = (int) $p->stock < $p->low_stock_threshold)
+                    @php($combo = $p->type === 'combo') @php($sets = $combo ? $p->combo_available : null)
+                    @php($low = $combo ? ! $sets : (int) $p->stock < $p->low_stock_threshold)
                     <div wire:key="m{{ $p->id }}" @class(['flex gap-2.5 border-b border-soft p-3', 'bg-brand-tint' => in_array((string) $p->id, $selected)])>
                         <input type="checkbox" value="{{ $p->id }}" wire:model.live="selected" class="mt-1 h-5 w-5 flex-none accent-ink" aria-label="Select {{ $p->name }}">
                         <a href="{{ route('ops.products.edit', $p) }}" wire:navigate class="flex-none">
@@ -63,10 +71,10 @@
                                 <a href="{{ route('ops.products.edit', $p) }}" wire:navigate class="min-w-0 flex-1 font-semibold leading-snug text-ink">{{ $p->name }}</a>
                                 @include('livewire.ops.products.partials.row-menu', ['p' => $p])
                             </div>
-                            <div class="truncate text-xs text-ink-muted"><span class="mono">{{ $p->code }}</span> · {{ $p->variants_count }} {{ str('variant')->plural($p->variants_count) }} · <span class="capitalize">{{ $p->type }}</span>@if ($p->categories->isNotEmpty()) · {{ $p->categories->pluck('name')->join(', ') }}@endif</div>
+                            <div class="truncate text-xs text-ink-muted"><span class="mono">{{ $p->code }}</span> · @if ($combo){{ $p->comboItems->count() }} linked @else{{ $p->variants_count }} {{ str('variant')->plural($p->variants_count) }}@endif · <span class="capitalize">{{ $p->type }}</span>@if ($p->categories->isNotEmpty()) · {{ $p->categories->pluck('name')->join(', ') }}@endif</div>
                             <div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm">
                                 <span class="tabular-nums">@if ($p->sale_price)<b>{{ tk($p->sale_price) }}</b> <s class="text-xs text-ink-muted">{{ tk($p->price) }}</s>@else<b>{{ tk($p->price) }}</b>@endif</span>
-                                <span @class(['tabular-nums', 'font-semibold text-bad' => $low, 'text-ink-3' => ! $low])>{{ (int) $p->stock }} in stock{{ $low ? ' · low' : '' }}</span>
+                                <span @class(['tabular-nums', 'font-semibold text-bad' => $low, 'text-ink-3' => ! $low])>@if ($combo){{ $sets }} {{ str('set')->plural($sets) }} available @else{{ (int) $p->stock }} in stock{{ $low ? ' · low' : '' }}@endif</span>
                                 @if ((int) $p->damaged)<span class="text-xs text-bad">{{ (int) $p->damaged }} damaged</span>@endif
                                 <x-ops.badge map="product_status" :status="$p->status" />
                                 @if ($p->sold_out)<x-ops.badge tone="warn">Stock out (website)</x-ops.badge>@endif

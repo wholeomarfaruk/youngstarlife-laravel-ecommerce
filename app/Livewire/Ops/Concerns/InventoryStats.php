@@ -13,6 +13,7 @@ trait InventoryStats
     public static function lowQuery()
     {
         return ProductVariant::query()->join('ops_products as lp', 'lp.id', '=', 'ops_product_variants.product_id')->whereNull('lp.deleted_at')
+            ->where('lp.type', '!=', 'combo')   // a combo's own variant never holds stock
             ->where('ops_product_variants.is_active', true)->whereColumn('ops_product_variants.stock', '<', 'lp.low_stock_threshold');
     }
 

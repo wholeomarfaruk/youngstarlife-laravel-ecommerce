@@ -1,8 +1,12 @@
 {{-- product ⋯ menu: catalog table row and phone card (needs the Products\Index actions) --}}
 <x-ops.row-menu>
     <a href="{{ route('ops.products.edit', $p) }}" wire:navigate class="flex items-center justify-between rounded px-2 py-1.5 text-ink hover:bg-soft">Edit product</a>
-    <a href="{{ route('ops.products.edit', ['product' => $p, 'tab' => 'stock']) }}" wire:navigate class="flex items-center justify-between rounded px-2 py-1.5 text-ink hover:bg-soft">Stock & batches</a>
-    <a href="{{ route('ops.batches.index', ['search' => $p->name]) }}" wire:navigate class="flex items-center justify-between rounded px-2 py-1.5 text-ink hover:bg-soft">View batches</a>
+    @if ($p->type === 'combo')
+        <a href="{{ route('ops.products.edit', ['product' => $p, 'tab' => 'combo']) }}" wire:navigate class="flex items-center justify-between rounded px-2 py-1.5 text-ink hover:bg-soft">Combo items</a>
+    @else
+        <a href="{{ route('ops.products.edit', ['product' => $p, 'tab' => 'stock']) }}" wire:navigate class="flex items-center justify-between rounded px-2 py-1.5 text-ink hover:bg-soft">Stock & batches</a>
+        <a href="{{ route('ops.batches.index', ['search' => $p->name]) }}" wire:navigate class="flex items-center justify-between rounded px-2 py-1.5 text-ink hover:bg-soft">View batches</a>
+    @endif
     <a href="{{ route('ops.labels.print', ['products' => $p->id]) }}" target="_blank" class="flex items-center justify-between rounded px-2 py-1.5 text-ink hover:bg-soft">Print labels <span class="text-ink-faint">↗</span></a>
     {{-- the website shows Active products only — a draft's page would be a 404 --}}
     @if ($p->status === 'active' && $p->slug)

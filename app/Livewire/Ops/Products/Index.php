@@ -34,6 +34,8 @@ class Index extends Component
 
     protected function applyStatus($q, string $s)
     {
+        // stock chips: a combo holds no stock of its own (its linked products do), so it is never low / out / damaged here
+        if (in_array($s, ['low', 'out', 'damaged'])) $q->where('type', '!=', 'combo');
         return match ($s) {
             'all' => $q, 'low' => $q->havingRaw('COALESCE(stock,0) > 0 AND COALESCE(stock,0) < low_stock_threshold'),
             'out' => $q->havingRaw('COALESCE(stock,0) <= 0'), 'damaged' => $q->havingRaw('COALESCE(damaged,0) > 0'),
@@ -45,8 +47,9 @@ class Index extends Component
     public function counts(): array
     {
         $rows = $this->base()->setEagerLoads([])->get();   // one query, counted in PHP
+        $stocked = $rows->where('type', '!=', 'combo');
         return ['all' => $rows->count(), 'active' => $rows->where('status', 'active')->count(), 'draft' => $rows->where('status', 'draft')->count(), 'archived' => $rows->where('status', 'archived')->count(),
-            'low' => $rows->filter(fn ($p) => $p->stock > 0 && $p->stock < $p->low_stock_threshold)->count(), 'out' => $rows->filter(fn ($p) => $p->stock <= 0)->count(), 'damaged' => $rows->filter(fn ($p) => $p->damaged > 0)->count()];
+            'low' => $stocked->filter(fn ($p) => $p->stock > 0 && $p->stock < $p->low_stock_threshold)->count(), 'out' => $stocked->filter(fn ($p) => $p->stock <= 0)->count(), 'damaged' => $stocked->filter(fn ($p) => $p->damaged > 0)->count()];
     }
 
     #[Computed]
@@ -54,7 +57,7 @@ class Index extends Component
     {
         [$col, $dir] = match ($this->sort) { 'name' => ['name', 'asc'], 'price_low' => ['price', 'asc'], 'price_high' => ['price', 'desc'], 'stock_low' => ['stock', 'asc'], 'stock_high' => ['stock', 'desc'], default => ['updated_at', 'desc'] };
         if ($this->sortField !== 'id') [$col, $dir] = [$this->sortField, $this->sortDir];
-        return $this->applyStatus($this->base(), $this->status)->orderBy($col, $dir)->paginate($this->perPage);
+        return $this->applyStatus($this->base(), $this->status)->with('comboItems.variant.product.variants')->orderBy($col, $dir)->paginate($this->perPage);   // combos: sets available
     }
 
     public function mount(): void
