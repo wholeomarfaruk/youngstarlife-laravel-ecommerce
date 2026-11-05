@@ -234,6 +234,14 @@ class Edit extends Component
         $this->product->update(['featured_image' => $img, 'gallery' => $g]); $this->form['gallery'] = $g; $this->dispatch('toast', message: 'Featured image changed');
     }
     public function removeGallery(int $i): void { $g = $this->form['gallery']; unset($g[$i]); $this->form['gallery'] = array_values($g); $this->product->update(['gallery' => $this->form['gallery']]); }
+    /** gallery images are added at once (like ★ / ×): a file input replaces its list on every pick, so waiting for Save dropped the images picked before */
+    public function updatedGalleryUploads(): void
+    {
+        $this->validate(['galleryUploads.*' => 'image|max:4096']);
+        $g = array_merge($this->form['gallery'] ?? [], collect($this->galleryUploads)->map->store('products', 'public')->all());
+        $this->product->update(['gallery' => $g]); $this->form['gallery'] = $g; $this->galleryUploads = [];
+        $this->dispatch('toast', message: 'Images added');
+    }
 
     public function save(): void
     {
@@ -273,7 +281,6 @@ class Edit extends Component
             $data['tags'] = $this->tags ?: null; $data['requires_shipping'] = (bool) ($this->form['requires_shipping'] ?? true);
             $data['sold_out'] = (bool) ($this->form['sold_out'] ?? false); $data['sort_order'] = (int) ($this->form['sort_order'] ?? 0);   // website
             if ($this->featured) $data['featured_image'] = $this->featured->store('products', 'public');
-            if ($this->galleryUploads) { $data['gallery'] = array_merge($this->form['gallery'], collect($this->galleryUploads)->map->store('products', 'public')->all()); }
             $data['options'] = array_values(array_filter($this->options, fn ($o) => isset($this->catalog[$o['attribute_id']]))) ?: null;
             $this->product->update($data);
             $this->product->syncCategoriesAtEnd($this->categoryIds);   // a newly ticked category puts the product at the end of its page

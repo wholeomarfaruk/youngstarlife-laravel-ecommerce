@@ -98,8 +98,8 @@
                 <x-ops.card title="Gallery" subtitle="★ makes an image the featured image">
                     <div class="grid grid-cols-[repeat(auto-fill,minmax(110px,1fr))] gap-2.5">
                         @foreach ($form['gallery'] ?? [] as $i => $g)<div class="group relative"><img src="{{ asset('storage/'.$g) }}" class="aspect-square w-full rounded-md bg-soft object-cover" alt=""><div class="absolute inset-x-1 top-1 flex justify-between"><button type="button" wire:click="makeFeatured({{ $i }})" class="grid h-7 w-7 place-items-center rounded bg-white text-warn shadow-seg" title="Make featured">★</button><button type="button" wire:click="removeGallery({{ $i }})" class="grid h-7 w-7 place-items-center rounded bg-white text-bad shadow-seg" title="Remove">×</button></div></div>@endforeach
-                        @foreach ($galleryUploads as $u)<img src="{{ $u->temporaryUrl() }}" class="aspect-square w-full rounded-md bg-soft object-cover opacity-70" alt="">@endforeach
-                        <label class="grid aspect-square cursor-pointer place-items-center rounded-md border border-dashed border-line-2 text-sm text-ink-muted hover:bg-zebra">+ Add images<input type="file" wire:model="galleryUploads" accept="image/*" multiple class="sr-only"></label>
+                        {{-- each pick is stored and added to the gallery right away (Edit::updatedGalleryUploads) --}}
+                        <label class="grid aspect-square cursor-pointer place-items-center rounded-md border border-dashed border-line-2 text-sm text-ink-muted hover:bg-zebra"><span wire:loading.remove wire:target="galleryUploads">+ Add images</span><span wire:loading wire:target="galleryUploads">Uploading…</span><input type="file" wire:model="galleryUploads" accept="image/*" multiple class="sr-only"></label>
                     </div>
                 </x-ops.card>
                 <x-ops.card title="Video"><x-ops.field label="Video URL" :error="$errors->first('form.video_url')"><input wire:model="form.video_url" class="input" placeholder="YouTube / Facebook URL"></x-ops.field></x-ops.card>
